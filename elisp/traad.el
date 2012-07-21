@@ -67,7 +67,7 @@
   (traad-call 'get_all_resources))
 
 (defun traad-get-children (path)
-  (traad-call 'get_children path))
+  (traad-call 'get_children ""))
 
 ;(defmacro for (var from init to final do &rest body)
 ;       "Execute a simple for loop: (for i from 1 to 10 do (print i))."
