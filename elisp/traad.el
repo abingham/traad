@@ -64,18 +64,28 @@
   "The port on which the traad server is listening.")
 
 (defun traad-get-all-resources ()
-  (xml-rpc-method-call 
-   (concat "http://" traad-host ":" (number-to-string traad-port))
-   'get_all_resources))
+  (traad-call 'get_all_resources))
 
 (defun traad-get-children (path)
-  (xml-rpc-method-call
-   (concat "http://" traad-host ":" (number-to-string traad-port))
-   'get_children 'path))
+  (traad-call 'get_children path))
 
-(defun traad-call (func &rest args)
-  (xml-rpc-method-call 
-   (concat 'traad-host ":" (number-to-string 'traad-port))
-   'func 'args))
+;(defmacro for (var from init to final do &rest body)
+;       "Execute a simple for loop: (for i from 1 to 10 do (print i))."
+;       `(let ((,var ,init)
+;              (max ,final))
+;          (while (<= ,var max)
+;            ,@body
+;            (inc ,var))))
+
+(defmacro traad-call (func &rest args)
+  `(xml-rpc-method-call (concat "http://" ,traad-host ":" (number-to-string ,traad-port))
+			func ,@args))
+;  (let* 
+;   ((x (list xml-rpc-method-call
+;	     (concat traad-host ":" (number-to-string traad-port))
+;	     func))
+;    (y (append x args)))
+;   (print y)
+;   (y)))
 
 (provide 'traad)
