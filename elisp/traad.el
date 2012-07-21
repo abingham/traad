@@ -57,17 +57,25 @@
 
 (require 'xml-rpc)
 
-(defvar traad-host "localhost"
+(defvar traad-host "localhost.localdomain"
   "The host on which the traad server is running.")
 
-(defvar traad-port 7654
+(defvar traad-port 6942
   "The port on which the traad server is listening.")
 
 (defun traad-get-all-resources ()
-  (xml-rpc-method-call (concat 'traad-host ":" (number-to-string 'traad-port))
-		       'get_all_resource))
+  (xml-rpc-method-call 
+   (concat "http://" traad-host ":" (number-to-string traad-port))
+   'get_all_resources))
+
+(defun traad-get-children (path)
+  (xml-rpc-method-call
+   (concat "http://" traad-host ":" (number-to-string traad-port))
+   'get_children 'path))
 
 (defun traad-call (func &rest args)
   (xml-rpc-method-call 
    (concat 'traad-host ":" (number-to-string 'traad-port))
    'func 'args))
+
+(provide 'traad)
