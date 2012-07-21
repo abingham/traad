@@ -1,4 +1,5 @@
 import logging
+import os
 
 import rope.base.project
 import rope.refactor.rename
@@ -44,9 +45,34 @@ class ProjectServer(SimpleXMLRPCServer):
         self.register_function(self.rename)
 
     def get_children(self, path):
-        return [(child.path, child.is_folder()) for child in self.proj.get_resource(path).get_children()]
+        '''Get a list of all child resources of a given path.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          path: The path of the file/directory to query.
+
+        Returns: A list of tuples of the form (path,
+          is_folder).
+
+        '''
+
+        # Convert absolute paths to relative.
+        if os.path.isabs(path):
+            path = os.path.relpath(
+                path,
+                self.proj.root.real_path)
+
+        children = self.proj.get_resource(path).get_children()
+        return [(child.path, child.is_folder()) for child in children]
 
     def get_all_resources(self):
+        '''Get a list of all resources in the project.
+
+        Returns: A list of tuples of the form (path,
+            is_folder).
+        '''
         return list(get_all_resources(self.proj))
 
     def rename(self, new_name, path, offset=None):
@@ -55,16 +81,6 @@ class ProjectServer(SimpleXMLRPCServer):
             self.proj.get_resource(path),
             offset)
         self.proj.do(renamer.get_changes(new_name))
-
-
-#     import xmlrpc.client
-
-#     s = xmlrpc.client.ServerProxy('http://localhost:3456')
-#     print(s.get_all_resources())
-#     print(s.get_children(''))
-#     s.rename('Bar', 'yak.py', 7)
-
-#     server_proc.terminate()
 
 def run_server(port, project):
     log.info(
@@ -85,7 +101,7 @@ def main():
 
     parser.add_argument(
         '-p, --port', metavar='N', type=int,
-        dest='port', default=1975,
+        dest='port', default=6942,
         help='the port on which the server will listen')
 
     parser.add_argument(
