@@ -69,23 +69,11 @@
 (defun traad-get-children (path)
   (traad-call 'get_children ""))
 
-;(defmacro for (var from init to final do &rest body)
-;       "Execute a simple for loop: (for i from 1 to 10 do (print i))."
-;       `(let ((,var ,init)
-;              (max ,final))
-;          (while (<= ,var max)
-;            ,@body
-;            (inc ,var))))
-
 (defmacro traad-call (func &rest args)
-  `(xml-rpc-method-call (concat "http://" ,traad-host ":" (number-to-string ,traad-port))
-			func ,@args))
-;  (let* 
-;   ((x (list xml-rpc-method-call
-;	     (concat traad-host ":" (number-to-string traad-port))
-;	     func))
-;    (y (append x args)))
-;   (print y)
-;   (y)))
+  `(xml-rpc-method-call 
+    (concat 
+     "http://" ,traad-host ":" 
+     (number-to-string ,traad-port))
+    ,func ,@args))
 
 (provide 'traad)
