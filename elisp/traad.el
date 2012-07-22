@@ -78,6 +78,24 @@ the project root."
       (traad-call 'rename new-name path offset)
       (traad-call 'rename new-name path)))
 
+(defun traad-rename-current-file (new-name)
+  "Rename the current file/module."
+  (interactive
+   (list
+    (read-string "New file name: ")))
+  (print new-name)
+  (print buffer-file-name)
+  (traad-rename new-name buffer-file-name)
+  (let ((dirname (file-name-directory buffer-file-name))
+	(extension (file-name-extension buffer-file-name))
+	(old-buff (current-buffer)))
+    (switch-to-buffer 
+     (find-file
+      (expand-file-name 
+       (concat new-name "." extension) 
+       dirname)))
+    (kill-buffer old-buff)))
+
 (defmacro traad-call (func &rest args)
   "Make an XMLRPC to FUNC with ARGS on the traad server."
   `(xml-rpc-method-call 
