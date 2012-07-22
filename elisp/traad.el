@@ -64,12 +64,22 @@
   "The port on which the traad server is listening.")
 
 (defun traad-get-all-resources ()
+  "Get all resources in a project."
   (traad-call 'get_all_resources))
 
 (defun traad-get-children (path)
+  "Get all child resources for PATH. PATH may be absolute or relative to
+the project root."
   (traad-call 'get_children path))
 
+(defun traad-rename (new-name path &optional offset)
+  "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
+  (if offset
+      (traad-call 'rename new-name path offset)
+      (traad-call 'rename new-name path)))
+
 (defmacro traad-call (func &rest args)
+  "Make an XMLRPC to FUNC with ARGS on the traad server."
   `(xml-rpc-method-call 
     (concat 
      "http://" ,traad-host ":" 
