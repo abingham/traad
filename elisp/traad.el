@@ -67,7 +67,7 @@
   (traad-call 'get_all_resources))
 
 (defun traad-get-children (path)
-  (traad-call 'get_children ""))
+  (traad-call 'get_children path))
 
 (defmacro traad-call (func &rest args)
   `(xml-rpc-method-call 
