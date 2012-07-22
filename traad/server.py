@@ -58,12 +58,7 @@ class ProjectServer(SimpleXMLRPCServer):
 
         '''
 
-        # Convert absolute paths to relative.
-        if os.path.isabs(path):
-            path = os.path.relpath(
-                path,
-                self.proj.root.real_path)
-
+        path = self._to_relative_path(path)
         children = self.proj.get_resource(path).get_children()
         return [(child.path, child.is_folder()) for child in children]
 
@@ -76,11 +71,41 @@ class ProjectServer(SimpleXMLRPCServer):
         return list(get_all_resources(self.proj))
 
     def rename(self, new_name, path, offset=None):
+        '''Rename a resource.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          path: The path of the file/directory to query.
+        '''
+
+        path = self._to_relative_path(path)
+
         renamer = rope.refactor.rename.Rename(
             self.proj,
             self.proj.get_resource(path),
             offset)
         self.proj.do(renamer.get_changes(new_name))
+
+    def _to_relative_path(self, path):
+        '''Get a version of a path relative to the project root.
+
+        If ``path`` is already relative, then it is unchanged. If
+        ``path`` is absolute, then it is made relative to the project
+        root.
+
+        Args:
+          path: The path to make relative.
+
+        Returns: ``path`` relative to the project root.
+
+        '''
+        if os.path.isabs(path):
+            path = os.path.relpath(
+                path,
+                self.proj.root.real_path)
+        return path
 
 def run_server(port, project):
     log.info(
