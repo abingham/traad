@@ -2,6 +2,7 @@ import logging
 import os
 
 import rope.base.project
+import rope.refactor.extract
 import rope.refactor.rename
 
 from .util import cmap
@@ -42,6 +43,7 @@ class ProjectServer(SimpleXMLRPCServer):
             *args, **kwargs)
 
         exported_functions = [
+            self.extract_method,
             self.get_all_resources,
             self.get_children,
             self.undo,
@@ -85,6 +87,30 @@ class ProjectServer(SimpleXMLRPCServer):
         '''Redo the last undone operation.
         '''
         self.proj.history.redo()
+
+    def extract_method(self, name, path, start_offset, end_offset):
+        '''Extract a method.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          new_name: The name for the new method.
+          path: The path of the resource containing the code.
+          start_offset: The starting offset of the region to extract.
+          end_offset: The end (one past the last character) of the
+            region to extract.
+        '''
+
+        path = self._to_relative(path)
+
+        extractor = rope.refactor.extract(
+            path,
+            self.proj.get_resource(name),
+            start_offset,
+            end_offset)
+
+        self.proj.do(extractor.get_changes(name))
 
     def rename(self, new_name, path, offset=None):
         '''Rename a resource.

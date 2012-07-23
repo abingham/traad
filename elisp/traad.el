@@ -156,6 +156,23 @@ the project root."
   (traad-rename new-name buffer-file-name (point)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; extraction support
+
+(defun traad-extract-method (name)
+  "Extract the currently selected region to a new method."
+  (interactive
+   (list
+    (read-string "Method name: ")))
+  ; get selected region
+  (traad-call 
+   'extract_method 
+   name 
+   (buffer-file-name)
+   ; region start point
+   ; region end point
+   ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
 (defmacro traad-call (func &rest args)
