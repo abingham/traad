@@ -109,6 +109,19 @@ the project root."
   (traad-call 'get_children path))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; history
+
+(defun traad-undo ()
+  "Undo last operation."
+  (interactive)
+  (traad-call 'undo))
+
+(defun traad-redo ()
+  "Redo last undone operation."
+  (interactive)
+  (traad-call 'redo))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
 (defun traad-rename (new-name path &optional offset)
