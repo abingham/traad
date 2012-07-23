@@ -105,8 +105,8 @@ class ProjectServer(SimpleXMLRPCServer):
         path = self._to_relative_path(path)
 
         extractor = rope.refactor.extract.ExtractMethod(
-            path,
-            self.proj.get_resource(name),
+            self.proj,
+            self.proj.get_resource(path),
             start_offset,
             end_offset)
 
