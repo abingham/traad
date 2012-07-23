@@ -102,9 +102,9 @@ class ProjectServer(SimpleXMLRPCServer):
             region to extract.
         '''
 
-        path = self._to_relative(path)
+        path = self._to_relative_path(path)
 
-        extractor = rope.refactor.extract(
+        extractor = rope.refactor.extract.ExtractMethod(
             path,
             self.proj.get_resource(name),
             start_offset,

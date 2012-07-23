@@ -158,18 +158,16 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
 
-(defun traad-extract-method (name)
+(defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
-  (interactive
-   (list
-    (read-string "Method name: ")))
+  (interactive "sMethod name: \nr")
   ; get selected region
   (traad-call 
    'extract_method 
    name 
    (buffer-file-name)
-   ; region start point
-   ; region end point
+   begin
+   end
    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
