@@ -63,6 +63,33 @@
 (defvar traad-port 6942
   "The port on which the traad server is listening.")
 
+(defvar traad-server-program "traad"
+  "The name of the traad server program.")
+
+(defun traad-open (directory)
+  "Open a traad project on the files in DIRECTORY."
+  (interactive
+   (list
+    (read-directory-name "Directory: ")))
+  (traad-close)
+  (start-process 
+   "traad-server" 
+   "*traad-server*" 
+   traad-server-program 
+   "-V"
+   directory))
+
+(defun traad-close ()
+  "Close the current traad project, if any."
+  (interactive)
+  (if (traad-running?)
+      (delete-process "traad-server")))
+
+(defun traad-running? ()
+  "Determine if a traad server is running."
+  (interactive)
+  (if (get-process "traad-server") 't nil))
+
 (defun traad-get-all-resources ()
   "Get all resources in a project."
   (traad-call 'get_all_resources))
@@ -108,5 +135,11 @@ the project root."
      "http://" ,traad-host ":" 
      (number-to-string ,traad-port))
     ,func ,@args))
+
+; TODO: undo/redo...history support
+; TODO: invalidation support?
+; TODO: Improved error reporting when server can't be contacted. The
+; traad-call macro should probably say something friendlier like "No
+; traad server found. Have you called traad-open?"
 
 (provide 'traad)
