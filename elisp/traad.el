@@ -83,8 +83,6 @@ the project root."
   (interactive
    (list
     (read-string "New file name: ")))
-  (print new-name)
-  (print buffer-file-name)
   (traad-rename new-name buffer-file-name)
   (let ((dirname (file-name-directory buffer-file-name))
 	(extension (file-name-extension buffer-file-name))
@@ -95,6 +93,13 @@ the project root."
        (concat new-name "." extension) 
        dirname)))
     (kill-buffer old-buff)))
+
+(defun traad-rename-object (new-name)
+  "Rename the object at the current location."
+  (interactive
+   (list
+    (read-string "New name: ")))
+  (traad-rename new-name buffer-file-name (point)))
 
 (defmacro traad-call (func &rest args)
   "Make an XMLRPC to FUNC with ARGS on the traad server."
