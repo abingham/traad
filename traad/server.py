@@ -4,6 +4,7 @@ import os
 import rope.base.project
 import rope.refactor.rename
 
+from .util import cmap
 from .xmlrpc import SimpleXMLRPCServer
 
 log = logging.getLogger(__name__)
@@ -40,9 +41,14 @@ class ProjectServer(SimpleXMLRPCServer):
             allow_none=True,
             *args, **kwargs)
 
-        self.register_function(self.get_all_resources)
-        self.register_function(self.get_children)
-        self.register_function(self.rename)
+        exported_functions = [
+            self.get_all_resources,
+            self.get_children,
+            self.undo,
+            self.redo,
+            self.rename,
+            ]
+        cmap(self.register_function, exported_functions)
 
     def get_children(self, path):
         '''Get a list of all child resources of a given path.
@@ -69,6 +75,16 @@ class ProjectServer(SimpleXMLRPCServer):
             is_folder).
         '''
         return list(get_all_resources(self.proj))
+
+    def undo(self):
+        '''Undo the last operation.
+        '''
+        self.proj.history.undo()
+
+    def redo(self):
+        '''Redo the last undone operation.
+        '''
+        self.proj.history.redo()
 
     def rename(self, new_name, path, offset=None):
         '''Rename a resource.

@@ -57,6 +57,9 @@
 
 (require 'xml-rpc)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; user variables
+
 (defvar traad-host "localhost.localdomain"
   "The host on which the traad server is running.")
 
@@ -65,6 +68,9 @@
 
 (defvar traad-server-program "traad"
   "The name of the traad server program.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; open-close 
 
 (defun traad-open (directory)
   "Open a traad project on the files in DIRECTORY."
@@ -90,6 +96,9 @@
   (interactive)
   (if (get-process "traad-server") 't nil))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; resource access
+
 (defun traad-get-all-resources ()
   "Get all resources in a project."
   (traad-call 'get_all_resources))
@@ -98,6 +107,22 @@
   "Get all child resources for PATH. PATH may be absolute or relative to
 the project root."
   (traad-call 'get_children path))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; history
+
+(defun traad-undo ()
+  "Undo last operation."
+  (interactive)
+  (traad-call 'undo))
+
+(defun traad-redo ()
+  "Redo last undone operation."
+  (interactive)
+  (traad-call 'redo))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; renaming support
 
 (defun traad-rename (new-name path &optional offset)
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
@@ -127,6 +152,9 @@ the project root."
    (list
     (read-string "New name: ")))
   (traad-rename new-name buffer-file-name (point)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; low-level support
 
 (defmacro traad-call (func &rest args)
   "Make an XMLRPC to FUNC with ARGS on the traad server."
