@@ -175,18 +175,19 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
-(defmacro traad-call (func &rest args)
+(defun traad-call (func &rest args)
   "Make an XMLRPC to FUNC with ARGS on the traad server."
-  `(xml-rpc-method-call 
-    (concat 
-     "http://" ,traad-host ":" 
-     (number-to-string ,traad-port))
-    ,func ,@args))
+  (apply
+   #'xml-rpc-method-call
+   (concat
+    "http://" traad-host ":"
+    (number-to-string traad-port))
+   func args))
 
 ; TODO: undo/redo...history support
 ; TODO: invalidation support?
 ; TODO: Improved error reporting when server can't be contacted. The
-; traad-call macro should probably say something friendlier like "No
+; traad-call function should probably say something friendlier like "No
 ; traad server found. Have you called traad-open?"
 
 (provide 'traad)
