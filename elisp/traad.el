@@ -84,7 +84,8 @@
          (append (if (listp traad-server-program)
                      traad-server-program
                    (list traad-server-program))
-                 (list "-V" directory))))
+                 (list "-V" directory)))
+        (default-directory "~/"))
     (apply #'start-process "traad-server" "*traad-server*" program+args)))
 
 (defun traad-close ()
