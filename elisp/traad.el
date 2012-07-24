@@ -62,7 +62,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; user variables
 
-(defvar traad-host "localhost.localdomain"
+(defvar traad-host "127.0.0.1"
   "The host on which the traad server is running.")
 
 (defvar traad-port 6942

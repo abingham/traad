@@ -156,7 +156,7 @@ def run_server(port, project):
 
     server = ProjectServer(
         project,
-        ('localhost', port))
+        ('127.0.0.1', port))
 
     server.serve_forever()
 
