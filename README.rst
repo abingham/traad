@@ -111,7 +111,7 @@ new file.
 
 You can also rename sub-file elements like classes, functions, etc. To
 do that, just put the point (i.e. your cursor) over the name you want
-to change, and then run ``traad-rename-object``. You will be prompted
+to change, and then run ``traad-rename``. You will be prompted
 for the new name, after which rope will run that refactoring.
 
 In general, you'll probably want to configure emacs to automatically
