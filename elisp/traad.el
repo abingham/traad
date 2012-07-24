@@ -62,13 +62,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; user variables
 
-(defvar traad-host "127.0.0.1"
+(defcustom traad-host "127.0.0.1"
   "The host on which the traad server is running.")
 
-(defvar traad-port 6942
+(defcustom traad-port 6942
   "The port on which the traad server is listening.")
 
-(defvar traad-server-program "traad"
+(defcustom traad-server-program "traad"
   "The name of the traad server program. This may be a string or a list.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
