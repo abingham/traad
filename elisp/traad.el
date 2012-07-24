@@ -69,7 +69,7 @@
   "The port on which the traad server is listening.")
 
 (defvar traad-server-program "traad"
-  "The name of the traad server program.")
+  "The name of the traad server program. This may be a string or a list.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close 
