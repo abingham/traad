@@ -80,12 +80,12 @@
    (list
     (read-directory-name "Directory: ")))
   (traad-close)
-  (start-process 
-   "traad-server" 
-   "*traad-server*" 
-   traad-server-program 
-   "-V"
-   directory))
+  (let ((program+args
+         (append (if (listp traad-server-program)
+                     traad-server-program
+                   (list traad-server-program))
+                 (list "-V" directory))))
+    (apply #'start-process "traad-server" "*traad-server*" program+args)))
 
 (defun traad-close ()
   "Close the current traad project, if any."
