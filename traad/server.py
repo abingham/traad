@@ -44,6 +44,7 @@ class ProjectServer(SimpleXMLRPCServer):
 
         exported_functions = [
             self.extract_method,
+            self.extract_variable,
             self.get_all_resources,
             self.get_children,
             self.undo,
@@ -88,6 +89,21 @@ class ProjectServer(SimpleXMLRPCServer):
         '''
         self.proj.history.redo()
 
+    def _extract(self, path, name, start_offset, end_offset, cls):
+        '''Core extract-* method, parameterized on the class of
+        the extraction.
+        '''
+
+        path = self._to_relative_path(path)
+
+        extractor = cls(
+            self.proj,
+            self.proj.get_resource(path),
+            start_offset,
+            end_offset)
+
+        self.proj.do(extractor.get_changes(name))
+
     def extract_method(self, name, path, start_offset, end_offset):
         '''Extract a method.
 
@@ -102,15 +118,31 @@ class ProjectServer(SimpleXMLRPCServer):
             region to extract.
         '''
 
-        path = self._to_relative_path(path)
+        self._extract(path,
+                      name,
+                      start_offset,
+                      end_offset,
+                      rope.refactor.extract.ExtractMethod)
 
-        extractor = rope.refactor.extract.ExtractMethod(
-            self.proj,
-            self.proj.get_resource(path),
-            start_offset,
-            end_offset)
+    def extract_variable(self, name, path, start_offset, end_offset):
+        '''Extract a variable.
 
-        self.proj.do(extractor.get_changes(name))
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          new_name: The name for the new variable.
+          path: The path of the resource containing the code.
+          start_offset: The starting offset of the region to extract.
+          end_offset: The end (one past the last character) of the
+            region to extract.
+        '''
+
+        self._extract(path,
+                      name,
+                      start_offset,
+                      end_offset,
+                      rope.refactor.extract.ExtractVariable)
 
     def rename(self, new_name, path, offset=None):
         '''Rename a resource.
