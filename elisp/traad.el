@@ -159,17 +159,24 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
 
-(defun traad-extract-method (name begin end)
-  "Extract the currently selected region to a new method."
-  (interactive "sMethod name: \nr")
-  ; get selected region
+(defun traad-extract-core (type name begin end)
   (traad-call 
-   'extract_method 
+   type 
    name 
    (buffer-file-name)
    begin
    end
    ))
+
+(defun traad-extract-method (name begin end)
+  "Extract the currently selected region to a new method."
+  (interactive "sMethod name: \nr")
+  (traad-extract-core 'extract_method name begin end))
+
+(defun traad-extract-variable (name begin end)
+  "Extract the currently selected region to a new variable."
+  (interactive "sVariable name: \nr")
+  (traad-extract-core 'extract_variable name begin end))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
