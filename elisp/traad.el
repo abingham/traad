@@ -71,6 +71,10 @@
 (defcustom traad-server-program "traad"
   "The name of the traad server program. This may be a string or a list.")
 
+(defcustom traad-auto-revert nil
+  "Whether proximal buffers should be automatically reverted \
+after successful refactorings.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close 
 
@@ -117,12 +121,14 @@ the project root."
 (defun traad-undo ()
   "Undo last operation."
   (interactive)
-  (traad-call 'undo))
+  (traad-call 'undo)
+  (traad-maybe-revert))
 
 (defun traad-redo ()
   "Redo last undone operation."
   (interactive)
-  (traad-call 'redo))
+  (traad-call 'redo)
+  (traad-maybe-revert))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
@@ -131,7 +137,8 @@ the project root."
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
   (if offset
       (traad-call 'rename new-name path offset)
-      (traad-call 'rename new-name path)))
+      (traad-call 'rename new-name path))
+  (traad-maybe-revert))
 
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
@@ -160,13 +167,12 @@ the project root."
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
-  (traad-call 
-   type 
-   name 
-   (buffer-file-name)
-   begin
-   end
-   ))
+  (traad-call type 
+	      name 
+	      (buffer-file-name)
+	      begin
+	      end)
+  (traad-maybe-revert))
 
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
@@ -189,6 +195,10 @@ the project root."
     "http://" traad-host ":"
     (number-to-string traad-port))
    func args))
+
+(defun traad-maybe-revert ()
+  "If configured, revert the current buffer without asking."
+  (if traad-auto-revert (revert-buffer nil 't)))
 
 ; TODO: undo/redo...history support
 ; TODO: invalidation support?
