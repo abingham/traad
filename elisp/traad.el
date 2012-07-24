@@ -127,7 +127,7 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
-(defun traad-rename (new-name path &optional offset)
+(defun traad-rename-core (new-name path &optional offset)
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
   (if offset
       (traad-call 'rename new-name path offset)
@@ -138,7 +138,7 @@ the project root."
   (interactive
    (list
     (read-string "New file name: ")))
-  (traad-rename new-name buffer-file-name)
+  (traad-rename-core new-name buffer-file-name)
   (let ((dirname (file-name-directory buffer-file-name))
 	(extension (file-name-extension buffer-file-name))
 	(old-buff (current-buffer)))
@@ -149,12 +149,12 @@ the project root."
        dirname)))
     (kill-buffer old-buff)))
 
-(defun traad-rename-object (new-name)
+(defun traad-rename (new-name)
   "Rename the object at the current location."
   (interactive
    (list
     (read-string "New name: ")))
-  (traad-rename new-name buffer-file-name (point)))
+  (traad-rename-core new-name buffer-file-name (point)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
