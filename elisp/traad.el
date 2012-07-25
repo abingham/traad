@@ -185,6 +185,18 @@ the project root."
   (traad-extract-core 'extract_variable name begin end))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; code assist
+
+(defun traad-code-assist (pos)
+  "Get possible completions at POS in current buffer. This returns a list of \
+lists: ((name, documentation, scope, type), . . .)."
+  (interactive "d")
+  (traad-call 'code_assist
+	      (buffer-string)
+	      pos
+	      (buffer-file-name)))
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
 (defun traad-call (func &rest args)
