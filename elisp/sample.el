@@ -1,1 +1,0 @@
-(xml-rpc-method-call "http://localhost.localdomain:3456/" 'get_all_resources)
