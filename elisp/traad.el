@@ -69,7 +69,7 @@
   "The port on which the traad server is listening.")
 
 (defcustom traad-server-program "traad"
-  "The name of the traad server program. This may be a string or a list.")
+  "The name of the traad server program. This may be a string or a list. For python3 projects this commonly needs to be set to 'traad3'.")
 
 (defcustom traad-auto-revert nil
   "Whether proximal buffers should be automatically reverted \
