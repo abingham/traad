@@ -192,7 +192,7 @@ the project root."
 lists: ((name, documentation, scope, type), . . .)."
   (interactive "d")
   (traad-call 'code_assist
-	      (buffer-string)
+	      (buffer-substring-no-properties (point-min) (point-max))
 	      pos
 	      (buffer-file-name)))
   
