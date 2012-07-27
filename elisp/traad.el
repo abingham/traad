@@ -138,6 +138,25 @@ the project root."
   (traad-call 'redo)
   (traad-maybe-revert))
 
+(defun traad-history-core (func buffname)
+  (let ((history (traad-call func))
+	(buff (get-buffer-create buffname)))
+    (erase-buffer buff)
+    (switch-to-buffer buff)
+    ; TODO: These should probably be numbered, since that's what we'll
+    ; communicate back to the server for (undo <history index>)
+    (if history (insert (pp-to-string history)))))
+
+(defun traad-undo-history ()
+  "Get a list of undo-able changes."
+  (interactive)
+  (traad-history-core 'undo_history "*traad-undo-history*"))
+
+(defun traad-redo-history ()
+  "Get a list of redo-able changes."
+  (interactive)
+  (traad-history-core 'redo_history "*traad-redo-history*"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 

@@ -49,9 +49,11 @@ class ProjectServer(SimpleXMLRPCServer):
             self.extract_variable,
             self.get_all_resources,
             self.get_children,
-            self.undo,
             self.redo,
+            self.redo_history,
             self.rename,
+            self.undo,
+            self.undo_history,
             ]
         cmap(self.register_function, exported_functions)
 
@@ -90,6 +92,23 @@ class ProjectServer(SimpleXMLRPCServer):
         '''Redo the last undone operation.
         '''
         self.proj.history.redo()
+
+    def undo_history(self):
+        '''Get a list of undo-able changes.
+
+        Returns:
+          A list of descriptions of undoable changes/refactorings.
+        '''
+        return [cs.description for cs in self.proj.history.undo_list]
+
+
+    def redo_history(self):
+        '''Get a list of redo-able changes.
+
+        Returns:
+          A list of descriptions of redoable changes/refactorings.
+        '''
+        return [cs.description for cs in self.proj.history.redo_list]
 
     def _extract(self, path, name, start_offset, end_offset, cls):
         '''Core extract-* method, parameterized on the class of
