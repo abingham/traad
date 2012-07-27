@@ -63,17 +63,25 @@
 ;; user variables
 
 (defcustom traad-host "127.0.0.1"
-  "The host on which the traad server is running.")
+  "The host on which the traad server is running."
+  :type '(string)
+  :group 'traad)
 
 (defcustom traad-port 6942
-  "The port on which the traad server is listening.")
+  "The port on which the traad server is listening."
+  :type '(integer)
+  :group 'traad)
 
 (defcustom traad-server-program "traad"
-  "The name of the traad server program. This may be a string or a list. For python3 projects this commonly needs to be set to 'traad3'.")
+  "The name of the traad server program. This may be a string or a list. For python3 projects this commonly needs to be set to 'traad3'."
+  :type '(string)
+  :group 'traad)
 
 (defcustom traad-auto-revert nil
   "Whether proximal buffers should be automatically reverted \
-after successful refactorings.")
+after successful refactorings."
+  :type '(boolean)
+  :group 'traad)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close 
