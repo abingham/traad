@@ -141,11 +141,11 @@ the project root."
 (defun traad-history-core (func buffname)
   (let ((history (traad-call func))
 	(buff (get-buffer-create buffname)))
-    (erase-buffer buff)
     (switch-to-buffer buff)
+    (erase-buffer)
     ; TODO: These should probably be numbered, since that's what we'll
     ; communicate back to the server for (undo <history index>)
-    (if history (insert (pp-to-string history)))))
+    (if history (insert (pp-to-string (traad-enumerate history))))))
 
 (defun traad-undo-history ()
   "Get a list of undo-able changes."
@@ -238,6 +238,16 @@ lists: ((name, documentation, scope, type), . . .)."
 (defun traad-maybe-revert ()
   "If configured, revert the current buffer without asking."
   (if traad-auto-revert (revert-buffer nil 't)))
+
+(defun traad-range (upto)
+  (defun range_ (x)
+    (if (> x 0)
+	(cons x (range_ (- x 1)))
+      (list 0)))
+  (nreverse (range_ upto)))
+
+(defun traad-enumerate (l)
+  (map 'list 'cons (traad-range (length l)) l))
 
 ; TODO: undo/redo...history support
 ; TODO: invalidation support?
