@@ -83,6 +83,11 @@ after successful refactorings."
   :type '(boolean)
   :group 'traad)
 
+(defcustom traad-debug nil
+  "Whether debug info should be generated."
+  :type '(boolean)
+  :group 'traad)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close 
 
@@ -228,12 +233,34 @@ lists: ((name, documentation, scope, type), . . .)."
 
 (defun traad-call (func &rest args)
   "Make an XMLRPC to FUNC with ARGS on the traad server."
-  (apply
-   #'xml-rpc-method-call
-   (concat
-    "http://" traad-host ":"
-    (number-to-string traad-port))
-   func args))
+  (let* ((tbegin (time-to-seconds))
+	 (rslt (apply
+		#'xml-rpc-method-call
+		(concat
+		 "http://" traad-host ":"
+		 (number-to-string traad-port))
+		func args))
+	 (_ (traad-trace tbegin func args)))
+    rslt))
+
+(defun traad-shorten-string (x)
+  (let* ((s (if (stringp x) 
+		x 
+	      (pp-to-string x)))
+	 (l (length s)))
+    (subseq s 0 (min l 10))))
+
+(defun traad-trace (start-time func args)
+  "Trace output for a function."
+  (if traad-debug
+      (message 
+       (concat
+	"[traad-call] "
+	(pp-to-string func) " "
+	(mapconcat 'traad-shorten-string args " ") " "
+	(number-to-string (- (time-to-seconds) start-time))
+	"s"
+	))))
 
 (defun traad-maybe-revert ()
   "If configured, revert the current buffer without asking."
