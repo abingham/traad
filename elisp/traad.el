@@ -162,6 +162,16 @@ the project root."
   (interactive)
   (traad-history-core 'redo_history "*traad-redo-history*"))
 
+(defun traad-undo-info (i)
+  "Get info on the I'th undo history."
+  (interactive)
+  (traad-call 'undo_info i))
+
+(defun traad-redo-info (i)
+  "Get info on the I'th redo history."
+  (interactive)
+  (traad-call 'redo_info i))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
