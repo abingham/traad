@@ -31,33 +31,10 @@ def get_all_resources(proj):
         if res.is_folder():
             todo.extend((child.path for child in res.get_children()))
 
-class ProjectServer(SimpleXMLRPCServer):
+class ProjectServer:
     def __init__(self,
-                 project_dir,
-                 *args,
-                 **kwargs):
+                 project_dir):
         self.proj = rope.base.project.Project(project_dir)
-
-        SimpleXMLRPCServer.__init__(
-            self,
-            allow_none=True,
-            *args, **kwargs)
-
-        exported_functions = [
-            self.code_assist,
-            self.extract_method,
-            self.extract_variable,
-            self.get_all_resources,
-            self.get_children,
-            self.redo,
-            self.redo_history,
-            self.redo_info,
-            self.rename,
-            self.undo,
-            self.undo_history,
-            self.undo_info,
-            ]
-        cmap(self.register_function, exported_functions)
 
     def get_children(self, path):
         '''Get a list of all child resources of a given path.
@@ -278,9 +255,13 @@ def run_server(port, project):
         'Running traad server for project "{}" on port {}'.format(
             project, port))
 
-    server = ProjectServer(
-        project,
-        ('127.0.0.1', port))
+    server = SimpleXMLRPCServer(
+        ('127.0.0.1', port),
+        logRequests=True,
+        allow_none=True)
+
+    server.register_instance(
+        ProjectServer(project))
 
     server.serve_forever()
 
