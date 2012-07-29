@@ -30,6 +30,7 @@ setup(
         },
 
     install_requires=[
-        rope_lib
+        'decorator',
+        rope_lib,
     ],
 )
