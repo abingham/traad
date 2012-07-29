@@ -249,6 +249,24 @@ lists: ((name, documentation, scope, type), . . .)."
 	      pos
 	      (buffer-file-name)))
   
+(defun traad-get-doc (pos)
+  "Display docstring for an object."
+  (interactive "d")
+  (let ((cbuff (current-buffer))
+	(doc (or (traad-call 'get_doc
+			     (buffer-substring-no-properties (point-min) (point-max))
+			     pos
+			     (buffer-file-name))
+		 "<no docs available>"))
+	(buff (get-buffer-create "*traad-doc*")))
+    (pop-to-buffer buff)
+    (toggle-read-only)
+    (erase-buffer)
+    (insert doc)
+    (toggle-read-only)
+    (pop-to-buffer cbuff)
+    ))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
