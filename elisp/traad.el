@@ -164,12 +164,16 @@ the project root."
 
 (defun traad-undo-info (i)
   "Get info on the I'th undo history."
-  (interactive)
+  (interactive
+   (list
+    (read-number "Undo index: " 0)))
   (traad-call 'undo_info i))
 
 (defun traad-redo-info (i)
   "Get info on the I'th redo history."
-  (interactive)
+  (interactive
+   (list
+    (read-number "Redo index: " 0)))
   (traad-call 'redo_info i))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
