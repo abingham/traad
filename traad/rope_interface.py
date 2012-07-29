@@ -242,6 +242,29 @@ class RopeInterface:
             self.proj.get_resource(path))
         return [(r.name, r.get_doc(), r.scope, r.type) for r in results]
 
+    @trace
+    def get_doc(self, code, offset, path):
+        '''Get docstring for an object.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          code: The source code.
+          offset: An offset into ``code`` of the object to query.
+          path: The path to the resource in which the completion is
+            being done.
+
+        Returns: The docstring for the object.
+        '''
+
+        path = self._to_relative_path(path)
+        return rope.contrib.codeassist.get_doc(
+            self.proj,
+            code,
+            offset,
+            self.proj.get_resource(path))
+
     def _to_relative_path(self, path):
         '''Get a version of a path relative to the project root.
 
