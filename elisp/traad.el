@@ -258,14 +258,12 @@ lists: ((name, documentation, scope, type), . . .)."
 			     pos
 			     (buffer-file-name))
 		 "<no docs available>"))
-	(buff (get-buffer-create "*traad-doc*")))
+	(buff (get-buffer-create "*traad-doc*"))
+	(inhibit-read-only 't))
     (pop-to-buffer buff)
-    (toggle-read-only)
     (erase-buffer)
-    (insert doc)
-    (toggle-read-only)
-    (pop-to-buffer cbuff)
-    ))
+    (insert doc))
+    (pop-to-buffer cbuff))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
