@@ -92,6 +92,15 @@ class RopeInterface:
         '''
         return self._history_info(self.proj.history.undo_list, idx)
 
+    def redo_history(self):
+        '''Get a list of redo-able changes.
+
+        Returns:
+          A list of descriptions of redoable changes/refactorings.
+        '''
+        return [cs.description for cs in self.proj.history.redo_list]
+
+
     def redo_info(self, idx):
         '''Get information about a single redoable operation.
 
@@ -120,14 +129,6 @@ class RopeInterface:
             'full_change': c.get_description(),
             'changes': [contents(x) for x in c.changes],
             }
-
-    def redo_history(self):
-        '''Get a list of redo-able changes.
-
-        Returns:
-          A list of descriptions of redoable changes/refactorings.
-        '''
-        return [cs.description for cs in self.proj.history.redo_list]
 
     def _extract(self, path, name, start_offset, end_offset, cls):
         '''Core extract-* method, parameterized on the class of
