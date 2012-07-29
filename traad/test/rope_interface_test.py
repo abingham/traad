@@ -97,6 +97,76 @@ class Tests(unittest.TestCase):
             self.ri.redo,
             1)
 
+    def test_undo_history(self):
+        self.assertEqual(
+            len(self.ri.undo_history()), 0)
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.assertEqual(
+            len(self.ri.undo_history()), 1)
+
+    def test_undo_info(self):
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        i = self.ri.undo_info(0)
+        for k in ['description', 'time', 'full_change', 'changes']:
+            self.assertIn(k, i)
+
+    def test_undo_info_exceptions(self):
+        self.assertRaises(
+            IndexError,
+            self.ri.undo_info,
+            0)
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.ri.undo_info(0)
+        self.assertRaises(
+            IndexError,
+            self.ri.undo_info,
+            1)
+
+    def test_redo_history(self):
+        self.assertEqual(
+            len(self.ri.redo_history()), 0)
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.ri.undo()
+        self.assertEqual(
+            len(self.ri.redo_history()), 1)
+
+    def test_redo_info(self):
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.ri.undo()
+        i = self.ri.redo_info(0)
+        for k in ['description', 'time', 'full_change', 'changes']:
+            self.assertIn(k, i)
+
+    def test_redo_info_exceptions(self):
+        self.assertRaises(
+            IndexError,
+            self.ri.redo_info,
+            0)
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.ri.undo()
+        self.ri.redo_info(0)
+        self.assertRaises(
+            IndexError,
+            self.ri.redo_info,
+            1)
 
 if __name__ == '__main__':
     unittest.main()
