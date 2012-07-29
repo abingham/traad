@@ -143,38 +143,45 @@ the project root."
   (traad-call 'redo)
   (traad-maybe-revert))
 
-(defun traad-history-core (func buffname)
-  (let ((history (traad-call func))
-	(buff (get-buffer-create buffname)))
+(defun traad-history ()
+  "Display undo and redo history."
+  (interactive)
+  (let ((undo (traad-call 'undo_history))
+	(redo (traad-call 'redo_history))
+	(buff (get-buffer-create "*traad-history*")))
     (switch-to-buffer buff)
     (erase-buffer)
-    ; TODO: These should probably be numbered, since that's what we'll
-    ; communicate back to the server for (undo <history index>)
-    (if history (insert (pp-to-string (traad-enumerate history))))))
+    (insert "== UNDO HISTORY ==\n")
+    (if undo (insert (pp-to-string (traad-enumerate undo))))
+    (insert "\n")
+    (insert "== REDO HISTORY ==\n")
+    (if redo (insert (pp-to-string (traad-enumerate redo))))))
 
-(defun traad-undo-history ()
-  "Get a list of undo-able changes."
-  (interactive)
-  (traad-history-core 'undo_history "*traad-undo-history*"))
-
-(defun traad-redo-history ()
-  "Get a list of redo-able changes."
-  (interactive)
-  (traad-history-core 'redo_history "*traad-redo-history*"))
+(defun traad-history-info-core (info)
+  "Display information on a single undo/redo operation."
+  (let ((buff (get-buffer-create "*traad-change*")))
+    (switch-to-buffer buff)
+    (diff-mode)
+    (erase-buffer)
+    (insert "Description: " (cdr (assoc "description" info)) "\n"
+	    "Time: " (number-to-string (cdr (assoc "time" info))) "\n"
+	    "Change:\n"
+	    (cdr (assoc "full_change" info))
+	    )))
 
 (defun traad-undo-info (i)
   "Get info on the I'th undo history."
   (interactive
    (list
     (read-number "Undo index: " 0)))
-  (traad-call 'undo_info i))
+  (traad-history-info-core (traad-call 'undo_info i)))
 
 (defun traad-redo-info (i)
   "Get info on the I'th redo history."
   (interactive
    (list
     (read-number "Redo index: " 0)))
-  (traad-call 'redo_info i))
+  (traad-history-info-core (traad-call 'redo_info i)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
