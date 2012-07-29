@@ -5,7 +5,6 @@ from .xmlrpc import SimpleXMLRPCServer
 
 log = logging.getLogger(__name__)
 
-
 def run_server(port, project):
     log.info(
         'Running traad server for project "{}" on port {}'.format(
@@ -21,7 +20,6 @@ def run_server(port, project):
 
     server.serve_forever()
 
-
 def main():
     import argparse
 
@@ -34,9 +32,9 @@ def main():
         help='the port on which the server will listen')
 
     parser.add_argument(
-        '-V, --verbose',
-        dest='verbose', default=False, action='store_true',
-        help='print debug information')
+        '-V, --verbosity', metavar='N', type=int,
+        dest='verbosity', default=0,
+        help='Verbosity level (0=normal, 1=info, 2=debug).')
 
     parser.add_argument(
         'project', metavar='P', type=str,
@@ -45,9 +43,12 @@ def main():
     args = parser.parse_args()
 
     # Configure logging
-    level = logging.INFO
-    if args.verbose:
-        level = logging.DEBUG
+    level = {
+        0: logging.WARNING,
+        1: logging.INFO,
+        2: logging.DEBUG
+    }[args.verbosity]
+
     logging.basicConfig(
         level=level)
 
