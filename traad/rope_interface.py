@@ -58,15 +58,17 @@ class RopeInterface:
         '''
         return list(get_all_resources(self.proj))
 
-    def undo(self):
+    def undo(self, idx=0):
         '''Undo the last operation.
         '''
-        self.proj.history.undo()
+        self.proj.history.undo(
+            self.proj.history.undo_list[idx])
 
-    def redo(self):
+    def redo(self, idx=0):
         '''Redo the last undone operation.
         '''
-        self.proj.history.redo()
+        self.proj.history.redo(
+            self.proj.history.redo_list[idx])
 
     def undo_history(self):
         '''Get a list of undo-able changes.

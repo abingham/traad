@@ -38,5 +38,65 @@ class Tests(unittest.TestCase):
              ('basic/bar.py', False),
              ('basic/foo.py', False)])
 
+    def test_get_children(self):
+        self.assertEqual(
+            sorted(self.ri.get_children('basic')),
+            [('basic/__init__.py', False),
+             ('basic/bar.py', False),
+             ('basic/foo.py', False)])
+
+    def test_undo_exceptions(self):
+        self.assertRaises(
+            IndexError,
+            self.ri.undo)
+
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+
+        self.ri.undo()
+
+        self.assertRaises(
+            IndexError,
+            self.ri.undo,
+            1)
+
+    def test_undo_adds_history(self):
+        self.assertEqual(len(self.ri.proj.history.undo_list), 0)
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.assertEqual(len(self.ri.proj.history.undo_list), 1)
+
+    def test_redo_adds_history(self):
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+        self.assertEqual(len(self.ri.proj.history.redo_list), 0)
+        self.ri.undo()
+        self.assertEqual(len(self.ri.proj.history.redo_list), 1)
+
+    def test_redo_exceptions(self):
+        self.assertRaises(
+            IndexError,
+            self.ri.redo)
+
+        self.ri.rename(
+            'Llama',
+            'basic/foo.py',
+            8)
+
+        self.ri.undo()
+        self.ri.redo()
+
+        self.assertRaises(
+            IndexError,
+            self.ri.redo,
+            1)
+
+
 if __name__ == '__main__':
     unittest.main()
