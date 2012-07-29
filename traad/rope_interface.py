@@ -5,6 +5,7 @@ import rope.contrib.codeassist
 import rope.refactor.extract
 import rope.refactor.rename
 
+from .trace import trace
 
 def get_all_resources(proj):
     '''Generate a sequence of (path, is_folder) tuples for all
@@ -32,6 +33,7 @@ class RopeInterface:
                  project_dir):
         self.proj = rope.base.project.Project(project_dir)
 
+    @trace
     def get_children(self, path):
         '''Get a list of all child resources of a given path.
 
@@ -50,6 +52,7 @@ class RopeInterface:
         children = self.proj.get_resource(path).get_children()
         return [(child.path, child.is_folder()) for child in children]
 
+    @trace
     def get_all_resources(self):
         '''Get a list of all resources in the project.
 
@@ -58,18 +61,21 @@ class RopeInterface:
         '''
         return list(get_all_resources(self.proj))
 
+    @trace
     def undo(self, idx=0):
         '''Undo the last operation.
         '''
         self.proj.history.undo(
             self.proj.history.undo_list[idx])
 
+    @trace
     def redo(self, idx=0):
         '''Redo the last undone operation.
         '''
         self.proj.history.redo(
             self.proj.history.redo_list[idx])
 
+    @trace
     def undo_history(self):
         '''Get a list of undo-able changes.
 
@@ -78,6 +84,7 @@ class RopeInterface:
         '''
         return [cs.description for cs in self.proj.history.undo_list]
 
+    @trace
     def undo_info(self, idx):
         '''Get information about a single undoable operation.
 
@@ -92,6 +99,7 @@ class RopeInterface:
         '''
         return self._history_info(self.proj.history.undo_list, idx)
 
+    @trace
     def redo_history(self):
         '''Get a list of redo-able changes.
 
@@ -100,7 +108,7 @@ class RopeInterface:
         '''
         return [cs.description for cs in self.proj.history.redo_list]
 
-
+    @trace
     def redo_info(self, idx):
         '''Get information about a single redoable operation.
 
@@ -145,6 +153,7 @@ class RopeInterface:
 
         self.proj.do(extractor.get_changes(name))
 
+    @trace
     def extract_method(self, name, path, start_offset, end_offset):
         '''Extract a method.
 
@@ -165,6 +174,7 @@ class RopeInterface:
                       end_offset,
                       rope.refactor.extract.ExtractMethod)
 
+    @trace
     def extract_variable(self, name, path, start_offset, end_offset):
         '''Extract a variable.
 
@@ -185,6 +195,7 @@ class RopeInterface:
                       end_offset,
                       rope.refactor.extract.ExtractVariable)
 
+    @trace
     def rename(self, new_name, path, offset=None):
         '''Rename a resource.
 
@@ -203,6 +214,7 @@ class RopeInterface:
             offset)
         self.proj.do(renamer.get_changes(new_name))
 
+    @trace
     def code_assist(self, code, offset, path):
         '''Get code-assist completions for a point in a file.
 
