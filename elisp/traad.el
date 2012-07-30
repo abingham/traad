@@ -265,6 +265,19 @@ lists: ((name, documentation, scope, type), . . .)."
     (insert doc))
     (pop-to-buffer cbuff))
 
+(defun traad-get-definition (pos)
+  "Go to definition of the object at POS."
+  (interactive "d")
+  (let* ((loc (traad-call 'get_definition_location
+			  (buffer-substring-no-properties (point-min) (point-max))
+			  pos
+			  (buffer-file-name)))
+	 (path (elt loc 0))
+	 (lineno (elt loc 1)))
+    (when path
+      (find-file path)
+      (goto-line lineno))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 

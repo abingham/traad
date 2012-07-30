@@ -265,6 +265,37 @@ class RopeInterface:
             offset,
             self.proj.get_resource(path))
 
+    @trace
+    def get_definition_location(self, code, offset, path):
+        '''Get docstring for an object.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          code: The source code.
+          offset: An offset into ``code`` of the object to query.
+          path: The path to the resource in which the search is
+            being done.
+
+        Returns: A tuple of the form (path, lineno). If no definition
+          can be found, then (None, None) is returned.
+        '''
+        path = self._to_relative_path(path)
+        rslt = rope.contrib.codeassist.get_definition_location(
+            self.proj,
+            code,
+            offset,
+            self.proj.get_resource(path))
+
+        if rslt[1] is None:
+            return rslt
+
+        if rslt[0] is None:
+            return (path, rslt[1])
+
+        return (rslt[0].real_path, rslt[1])
+
     def _to_relative_path(self, path):
         '''Get a version of a path relative to the project root.
 
