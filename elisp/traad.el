@@ -101,7 +101,7 @@ after successful refactorings."
          (append (if (listp traad-server-program)
                      traad-server-program
                    (list traad-server-program))
-                 (list "-V" directory)))
+                 (list "-V" "1" directory)))
         (default-directory "~/"))
     (apply #'start-process "traad-server" "*traad-server*" program+args)))
 
