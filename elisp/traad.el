@@ -307,11 +307,26 @@ lists: ((name, documentation, scope, type), . . .)."
 	 (_ (traad-trace tbegin func args)))
     rslt))
 
+(defun traad-async-handler (rslt)
+  "Called with result of asynchronous calls made with traad-call-async."
+  (cond 
+   ((not rslt) nil)
+   (t
+    ; TODO: This feels wrong, but I don't know the "proper" way to
+    ; deconstruct the result object.
+    (let ((type (car rslt)))
+      (if (eq type ':error) 
+	  (let* ((info (cadr rslt))
+		 (reason (cadr info)))
+	    (if (eq reason 'connection-failed)
+		(message "Unable to contact traad server. Is it running?")
+	      (message (pp-to-string reason)))))))))
+
 (defun traad-call-async (func &rest args)
   "Make an asynchronous XMLRPC call to FUNC with ARGS on the traad server."
   (apply
    #'xml-rpc-method-call-async
-   (lambda (rslt) (if rslt (message (pp-to-string rslt))))
+   'traad-async-handler
    (concat
     "http://" traad-host ":"
     (number-to-string traad-port))
