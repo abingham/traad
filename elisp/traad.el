@@ -139,7 +139,7 @@ undone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call 'undo idx)
+  (traad-call-async 'undo idx)
   (traad-maybe-revert))
 
 (defun traad-redo (idx)
@@ -150,7 +150,7 @@ redone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call 'redo idx)
+  (traad-call-async 'redo idx)
   (traad-maybe-revert))
 
 (defun traad-history ()
@@ -199,8 +199,8 @@ redone."
 (defun traad-rename-core (new-name path &optional offset)
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
   (if offset
-      (traad-call 'rename new-name path offset)
-      (traad-call 'rename new-name path))
+      (traad-call-async 'rename new-name path offset)
+      (traad-call-async 'rename new-name path))
   (traad-maybe-revert))
 
 (defun traad-rename-current-file (new-name)
@@ -230,11 +230,11 @@ redone."
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
-  (traad-call type 
-	      name 
-	      (buffer-file-name)
-	      begin
-	      end)
+  (traad-call-async type 
+		    name 
+		    (buffer-file-name)
+		    begin
+		    end)
   (traad-maybe-revert))
 
 (defun traad-extract-method (name begin end)
@@ -292,10 +292,10 @@ lists: ((name, documentation, scope, type), . . .)."
 ;; low-level support
 
 (defun traad-call (func &rest args)
-  "Make an XMLRPC to FUNC with ARGS on the traad server."
+  "Make an XMLRPC call to FUNC with ARGS on the traad server."
   (let* ((tbegin (time-to-seconds))
 	 (rslt 
-	  (condition-case err
+	  (condition-case nil
 	      (apply
 	       #'xml-rpc-method-call
 	       (concat
@@ -306,6 +306,16 @@ lists: ((name, documentation, scope, type), . . .)."
 	     (error "Unable to contact traad server. Is it running?"))))
 	 (_ (traad-trace tbegin func args)))
     rslt))
+
+(defun traad-call-async (func &rest args)
+  "Make an asynchronous XMLRPC call to FUNC with ARGS on the traad server."
+  (apply
+   #'xml-rpc-method-call-async
+   (lambda (rslt) (if rslt (message (pp-to-string rslt))))
+   (concat
+    "http://" traad-host ":"
+    (number-to-string traad-port))
+   func args))
 
 (defun traad-shorten-string (x)
   (let* ((s (if (stringp x) 
@@ -340,10 +350,6 @@ lists: ((name, documentation, scope, type), . . .)."
 (defun traad-enumerate (l)
   (map 'list 'cons (traad-range (length l)) l))
 
-; TODO: undo/redo...history support
 ; TODO: invalidation support?
-; TODO: Improved error reporting when server can't be contacted. The
-; traad-call function should probably say something friendlier like "No
-; traad server found. Have you called traad-open?"
 
 (provide 'traad)
