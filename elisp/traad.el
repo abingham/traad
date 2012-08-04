@@ -294,12 +294,16 @@ lists: ((name, documentation, scope, type), . . .)."
 (defun traad-call (func &rest args)
   "Make an XMLRPC to FUNC with ARGS on the traad server."
   (let* ((tbegin (time-to-seconds))
-	 (rslt (apply
-		#'xml-rpc-method-call
-		(concat
-		 "http://" traad-host ":"
-		 (number-to-string traad-port))
-		func args))
+	 (rslt 
+	  (condition-case err
+	      (apply
+	       #'xml-rpc-method-call
+	       (concat
+		"http://" traad-host ":"
+		(number-to-string traad-port))
+	       func args)
+	    (error 
+	     (error "Unable to contact traad server. Is it running?"))))
 	 (_ (traad-trace tbegin func args)))
     rslt))
 
