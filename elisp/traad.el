@@ -101,7 +101,7 @@ after successful refactorings."
          (append (if (listp traad-server-program)
                      traad-server-program
                    (list traad-server-program))
-                 (list "-V" directory)))
+                 (list "-V" "1" directory)))
         (default-directory "~/"))
     (apply #'start-process "traad-server" "*traad-server*" program+args)))
 
@@ -131,16 +131,26 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
 
-(defun traad-undo ()
-  "Undo last operation."
-  (interactive)
-  (traad-call 'undo)
+(defun traad-undo (idx)
+  "Undo the IDXth change from the history. \
+IDX is the position of an entry in the undo list (see: \
+traad-history). This change and all that depend on it will be \
+undone."
+  (interactive
+   (list
+    (read-number "Index: " 0)))
+  (traad-call 'undo idx)
   (traad-maybe-revert))
 
-(defun traad-redo ()
-  "Redo last undone operation."
-  (interactive)
-  (traad-call 'redo)
+(defun traad-redo (idx)
+  "Redo the IDXth change from the history. \
+IDX is the position of an entry in the redo list (see: \
+traad-history). This change and all that depend on it will be \
+redone."
+  (interactive
+   (list
+    (read-number "Index: " 0)))
+  (traad-call 'redo idx)
   (traad-maybe-revert))
 
 (defun traad-history ()
