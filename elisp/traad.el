@@ -139,8 +139,10 @@ undone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call-async 'undo idx)
-  (traad-maybe-revert))
+  (lexical-let ((buff (current-buffer)))
+    (traad-call-async 
+     (lambda (_) (traad-maybe-revert buff))
+     'undo idx)))
 
 (defun traad-redo (idx)
   "Redo the IDXth change from the history. \
@@ -150,8 +152,10 @@ redone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call-async 'redo idx)
-  (traad-maybe-revert))
+  (lexical-let ((buff (current-buffer)))
+    (traad-call-async 
+     (lambda (_) (traad-maybe-revert buff))
+     'redo idx)))
 
 (defun traad-history ()
   "Display undo and redo history."
@@ -198,10 +202,14 @@ redone."
 
 (defun traad-rename-core (new-name path &optional offset)
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
-  (if offset
-      (traad-call-async 'rename new-name path offset)
-      (traad-call-async 'rename new-name path))
-  (traad-maybe-revert))
+  (lexical-let ((buff (current-buffer)))
+    (if offset
+	(traad-call-async 
+	 (lambda (_) (traad-maybe-revert buff))
+	 'rename new-name path offset)
+      (traad-call-async 
+       (lambda (_) (traad-maybe-revert buff))
+       'rename new-name path))))
 
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
@@ -230,12 +238,14 @@ redone."
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
-  (traad-call-async type 
-		    name 
-		    (buffer-file-name)
-		    begin
-		    end)
-  (traad-maybe-revert))
+  (lexical-let ((buff (current-buffer)))
+    (traad-call-async 
+     (lambda (_) (traad-maybe-revert buff))
+     type 
+     name 
+     (buffer-file-name)
+     begin
+     end)))
 
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
@@ -307,26 +317,32 @@ lists: ((name, documentation, scope, type), . . .)."
 	 (_ (traad-trace tbegin func args)))
     rslt))
 
-(defun traad-async-handler (rslt)
+(defun traad-async-handler (rslt callback)
   "Called with result of asynchronous calls made with traad-call-async."
-  (cond 
-   ((not rslt) nil)
-   (t
-    ; TODO: This feels wrong, but I don't know the "proper" way to
-    ; deconstruct the result object.
-    (let ((type (car rslt)))
-      (if (eq type ':error) 
-	  (let* ((info (cadr rslt))
-		 (reason (cadr info)))
-	    (if (eq reason 'connection-failed)
-		(message "Unable to contact traad server. Is it running?")
-	      (message (pp-to-string reason)))))))))
 
-(defun traad-call-async (func &rest args)
+  ; Print out ay error messages
+  (if rslt
+					; TODO: This feels wrong, but
+					; I don't know the "proper"
+					; way to deconstruct the
+					; result object.
+      (let ((type (car rslt)))
+	(if (eq type ':error) 
+	    (let* ((info (cadr rslt))
+		   (reason (cadr info)))
+	      (if (eq reason 'connection-failed)
+		  (message "Unable to contact traad server. Is it running?")
+		(message (pp-to-string reason)))))))
+
+  ; Call the user callback
+  (apply callback (list rslt)))
+
+(defun traad-call-async (callback func &rest args)
   "Make an asynchronous XMLRPC call to FUNC with ARGS on the traad server."
   (apply
    #'xml-rpc-method-call-async
-   'traad-async-handler
+   (lexical-let ((callback callback))
+     (lambda (result) (traad-async-handler result callback)))
    (concat
     "http://" traad-host ":"
     (number-to-string traad-port))
@@ -351,9 +367,13 @@ lists: ((name, documentation, scope, type), . . .)."
 	"s"
 	))))
 
-(defun traad-maybe-revert ()
+(defun traad-maybe-revert (buff)
   "If configured, revert the current buffer without asking."
-  (if traad-auto-revert (revert-buffer nil 't)))
+  (if traad-auto-revert 
+      (save-excursion
+	(message "auto revert activated")
+	(switch-to-buffer buff)
+	(revert-buffer nil 't))))
 
 (defun traad-range (upto)
   (defun range_ (x)
