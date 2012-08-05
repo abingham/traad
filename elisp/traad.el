@@ -362,6 +362,9 @@ lists: ((name, documentation, scope, type), . . .)."
 
 (defun traad-maybe-revert (buff)
   "If traad-auto-revert is true, revert BUFF without asking."
+  ; TODO: Fix this so that it does't attempt to revert buffers for
+  ; files which no longer exist. This occurrs e.g. when undoing a file
+  ; rename.
   (if (and traad-auto-revert 
 	   (buffer-file-name buff))
       (save-excursion
