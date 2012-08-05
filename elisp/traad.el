@@ -139,10 +139,10 @@ undone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (lexical-let ((buff (current-buffer)))
-    (traad-call-async 
-     (lambda (_) (traad-maybe-revert buff))
-     'undo idx)))
+  (traad-call-async
+   'undo (list idx)
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 (defun traad-redo (idx)
   "Redo the IDXth change from the history. \
@@ -152,10 +152,10 @@ redone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (lexical-let ((buff (current-buffer)))
-    (traad-call-async 
-     (lambda (_) (traad-maybe-revert buff))
-     'redo idx)))
+  (traad-call-async
+   'redo (list idx)
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 (defun traad-history ()
   "Display undo and redo history."
@@ -202,14 +202,17 @@ redone."
 
 (defun traad-rename-core (new-name path &optional offset)
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
-  (lexical-let ((buff (current-buffer)))
-    (if offset
-	(traad-call-async 
-	 (lambda (_) (traad-maybe-revert buff))
-	 'rename new-name path offset)
-      (traad-call-async 
-       (lambda (_) (traad-maybe-revert buff))
-       'rename new-name path))))
+  ; TODO: Combine the two clauses since they only differ by the
+  ; absense or presence of 'offset'
+  (if offset
+      (traad-call-async
+       'rename (list new-name path offset)
+       (lambda (_ buff) (traad-maybe-revert buff))
+       (list (current-buffer)))
+    (traad-call-async
+     'rename (list new-name path)
+     (lambda (_ buff) (traad-maybe-revert buff))
+     (list (current-buffer)))))
 
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
@@ -238,14 +241,10 @@ redone."
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
-  (lexical-let ((buff (current-buffer)))
-    (traad-call-async 
-     (lambda (_) (traad-maybe-revert buff))
-     type 
-     name 
-     (buffer-file-name)
-     begin
-     end)))
+  (traad-call-async
+   type (list name (buffer-file-name) begin end)
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
@@ -317,7 +316,7 @@ lists: ((name, documentation, scope, type), . . .)."
 	 (_ (traad-trace tbegin func args)))
     rslt))
 
-(defun traad-async-handler (rslt callback)
+(defun traad-async-handler (rslt callback cbargs)
   "Called with result of asynchronous calls made with traad-call-async."
 
   ; Print out ay error messages
@@ -326,6 +325,7 @@ lists: ((name, documentation, scope, type), . . .)."
 					; I don't know the "proper"
 					; way to deconstruct the
 					; result object.
+					; Look at "destructuring-bind".
       (let ((type (car rslt)))
 	(if (eq type ':error) 
 	    (let* ((info (cadr rslt))
@@ -335,18 +335,19 @@ lists: ((name, documentation, scope, type), . . .)."
 		(message (pp-to-string reason)))))))
 
   ; Call the user callback
-  (apply callback (list rslt)))
+  (apply callback (append (list rslt) cbargs)))
 
-(defun traad-call-async (callback func &rest args)
+(defun traad-call-async (fun funargs callback &optional cbargs)
   "Make an asynchronous XMLRPC call to FUNC with ARGS on the traad server."
   (apply
    #'xml-rpc-method-call-async
-   (lexical-let ((callback callback))
-     (lambda (result) (traad-async-handler result callback)))
+   (lexical-let ((callback callback)
+		 (cbargs cbargs))
+     (lambda (result) (traad-async-handler result callback cbargs)))
    (concat
     "http://" traad-host ":"
     (number-to-string traad-port))
-   func args))
+   fun funargs))
 
 (defun traad-shorten-string (x)
   (let* ((s (if (stringp x) 
