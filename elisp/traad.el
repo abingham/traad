@@ -368,10 +368,10 @@ lists: ((name, documentation, scope, type), . . .)."
 	))))
 
 (defun traad-maybe-revert (buff)
-  "If configured, revert the current buffer without asking."
-  (if traad-auto-revert 
+  "If traad-auto-revert is true, revert BUFF without asking."
+  (if (and traad-auto-revert 
+	   (buffer-file-name buff))
       (save-excursion
-	(message "auto revert activated")
 	(switch-to-buffer buff)
 	(revert-buffer nil 't))))
 
