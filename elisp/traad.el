@@ -200,39 +200,34 @@ redone."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
-(defun traad-rename-core (new-name path &optional offset)
-  "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
-  ; TODO: This no longer works with rename-file! That's because we try
-  ; to revert the file that just been deleted!
-  (let* ((args (list new-name path)))
-    (if offset (add-to-list 'args offset t))
-    (traad-call-async
-     'rename args
-     (lambda (_ buff) (traad-maybe-revert buff))
-     (list (current-buffer)))))
-
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
   (interactive
    (list
     (read-string "New file name: ")))
-  (traad-rename-core new-name buffer-file-name)
-  (let ((dirname (file-name-directory buffer-file-name))
-	(extension (file-name-extension buffer-file-name))
-	(old-buff (current-buffer)))
-    (switch-to-buffer 
-     (find-file
-      (expand-file-name 
-       (concat new-name "." extension) 
-       dirname)))
-    (kill-buffer old-buff)))
+  (traad-call-async
+   'rename (list new-name buffer-file-name)
+   (lambda (_ new-name dirname extension old-buff)
+     (switch-to-buffer 
+      (find-file
+       (expand-file-name 
+	(concat new-name "." extension) 
+	dirname)))
+     (kill-buffer old-buff))
+   (list new-name
+	 (file-name-directory buffer-file-name)
+	 (file-name-extension buffer-file-name)
+	 (current-buffer))))
 
 (defun traad-rename (new-name)
   "Rename the object at the current location."
   (interactive
    (list
     (read-string "New name: ")))
-  (traad-rename-core new-name buffer-file-name (point)))
+  (traad-call-async
+   'rename (list new-name buffer-file-name (point))
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
