@@ -202,15 +202,12 @@ redone."
 
 (defun traad-rename-core (new-name path &optional offset)
   "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
-  ; TODO: Combine the two clauses since they only differ by the
-  ; absense or presence of 'offset'
-  (if offset
-      (traad-call-async
-       'rename (list new-name path offset)
-       (lambda (_ buff) (traad-maybe-revert buff))
-       (list (current-buffer)))
+  ; TODO: This no longer works with rename-file! That's because we try
+  ; to revert the file that just been deleted!
+  (let* ((args (list new-name path)))
+    (if offset (add-to-list 'args offset t))
     (traad-call-async
-     'rename (list new-name path)
+     'rename args
      (lambda (_ buff) (traad-maybe-revert buff))
      (list (current-buffer)))))
 
