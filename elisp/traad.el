@@ -131,17 +131,31 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
 
-(defun traad-undo ()
-  "Undo last operation."
-  (interactive)
-  (traad-call 'undo)
-  (traad-maybe-revert))
+(defun traad-undo (idx)
+  "Undo the IDXth change from the history. \
+IDX is the position of an entry in the undo list (see: \
+traad-history). This change and all that depend on it will be \
+undone."
+  (interactive
+   (list
+    (read-number "Index: " 0)))
+  (traad-call-async
+   'undo (list idx)
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
-(defun traad-redo ()
-  "Redo last undone operation."
-  (interactive)
-  (traad-call 'redo)
-  (traad-maybe-revert))
+(defun traad-redo (idx)
+  "Redo the IDXth change from the history. \
+IDX is the position of an entry in the redo list (see: \
+traad-history). This change and all that depend on it will be \
+redone."
+  (interactive
+   (list
+    (read-number "Index: " 0)))
+  (traad-call-async
+   'redo (list idx)
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 (defun traad-history ()
   "Display undo and redo history."
@@ -186,46 +200,43 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
-(defun traad-rename-core (new-name path &optional offset)
-  "Rename PATH (or the subelement at OFFSET) to NEW-NAME."
-  (if offset
-      (traad-call 'rename new-name path offset)
-      (traad-call 'rename new-name path))
-  (traad-maybe-revert))
-
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
   (interactive
    (list
     (read-string "New file name: ")))
-  (traad-rename-core new-name buffer-file-name)
-  (let ((dirname (file-name-directory buffer-file-name))
-	(extension (file-name-extension buffer-file-name))
-	(old-buff (current-buffer)))
-    (switch-to-buffer 
-     (find-file
-      (expand-file-name 
-       (concat new-name "." extension) 
-       dirname)))
-    (kill-buffer old-buff)))
+  (traad-call-async
+   'rename (list new-name buffer-file-name)
+   (lambda (_ new-name dirname extension old-buff)
+     (switch-to-buffer 
+      (find-file
+       (expand-file-name 
+	(concat new-name "." extension) 
+	dirname)))
+     (kill-buffer old-buff))
+   (list new-name
+	 (file-name-directory buffer-file-name)
+	 (file-name-extension buffer-file-name)
+	 (current-buffer))))
 
 (defun traad-rename (new-name)
   "Rename the object at the current location."
   (interactive
    (list
     (read-string "New name: ")))
-  (traad-rename-core new-name buffer-file-name (point)))
+  (traad-call-async
+   'rename (list new-name buffer-file-name (point))
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
-  (traad-call type 
-	      name 
-	      (buffer-file-name)
-	      begin
-	      end)
-  (traad-maybe-revert))
+  (traad-call-async
+   type (list name (buffer-file-name) begin end)
+   (lambda (_ buff) (traad-maybe-revert buff))
+   (list (current-buffer))))
 
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
@@ -282,16 +293,53 @@ lists: ((name, documentation, scope, type), . . .)."
 ;; low-level support
 
 (defun traad-call (func &rest args)
-  "Make an XMLRPC to FUNC with ARGS on the traad server."
+  "Make an XMLRPC call to FUNC with ARGS on the traad server."
   (let* ((tbegin (time-to-seconds))
-	 (rslt (apply
-		#'xml-rpc-method-call
-		(concat
-		 "http://" traad-host ":"
-		 (number-to-string traad-port))
-		func args))
+	 (rslt 
+	  (condition-case nil
+	      (apply
+	       #'xml-rpc-method-call
+	       (concat
+		"http://" traad-host ":"
+		(number-to-string traad-port))
+	       func args)
+	    (error 
+	     (error "Unable to contact traad server. Is it running?"))))
 	 (_ (traad-trace tbegin func args)))
     rslt))
+
+(defun traad-async-handler (rslt callback cbargs)
+  "Called with result of asynchronous calls made with traad-call-async."
+
+  ; Print out ay error messages
+  (if rslt
+					; TODO: This feels wrong, but
+					; I don't know the "proper"
+					; way to deconstruct the
+					; result object.
+					; Look at "destructuring-bind".
+      (let ((type (car rslt)))
+	(if (eq type ':error) 
+	    (let* ((info (cadr rslt))
+		   (reason (cadr info)))
+	      (if (eq reason 'connection-failed)
+		  (message "Unable to contact traad server. Is it running?")
+		(message (pp-to-string reason)))))))
+
+  ; Call the user callback
+  (apply callback (append (list rslt) cbargs)))
+
+(defun traad-call-async (fun funargs callback &optional cbargs)
+  "Make an asynchronous XMLRPC call to FUNC with ARGS on the traad server."
+  (apply
+   #'xml-rpc-method-call-async
+   (lexical-let ((callback callback)
+		 (cbargs cbargs))
+     (lambda (result) (traad-async-handler result callback cbargs)))
+   (concat
+    "http://" traad-host ":"
+    (number-to-string traad-port))
+   fun funargs))
 
 (defun traad-shorten-string (x)
   (let* ((s (if (stringp x) 
@@ -312,9 +360,16 @@ lists: ((name, documentation, scope, type), . . .)."
 	"s"
 	))))
 
-(defun traad-maybe-revert ()
-  "If configured, revert the current buffer without asking."
-  (if traad-auto-revert (revert-buffer nil 't)))
+(defun traad-maybe-revert (buff)
+  "If traad-auto-revert is true, revert BUFF without asking."
+  ; TODO: Fix this so that it does't attempt to revert buffers for
+  ; files which no longer exist. This occurrs e.g. when undoing a file
+  ; rename.
+  (if (and traad-auto-revert 
+	   (buffer-file-name buff))
+      (save-excursion
+	(switch-to-buffer buff)
+	(revert-buffer nil 't))))
 
 (defun traad-range (upto)
   (defun range_ (x)
@@ -326,10 +381,6 @@ lists: ((name, documentation, scope, type), . . .)."
 (defun traad-enumerate (l)
   (map 'list 'cons (traad-range (length l)) l))
 
-; TODO: undo/redo...history support
 ; TODO: invalidation support?
-; TODO: Improved error reporting when server can't be contacted. The
-; traad-call function should probably say something friendlier like "No
-; traad server found. Have you called traad-open?"
 
 (provide 'traad)
