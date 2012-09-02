@@ -38,7 +38,7 @@ def main():
 
     parser.add_argument(
         'project', metavar='P', type=str,
-        help='the directory containing the project to server')
+        help='the directory containing the project to serve')
 
     args = parser.parse_args()
 
