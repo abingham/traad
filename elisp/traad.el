@@ -141,7 +141,10 @@ undone."
     (read-number "Index: " 0)))
   (traad-call-async
    'undo (list idx)
-   (lambda (_ buff) (traad-maybe-revert buff))
+   (lambda (_ buff) 
+     (progn
+       (traad-maybe-revert buff)
+       (traad-update-history-buffer)))
    (list (current-buffer))))
 
 (defun traad-redo (idx)
@@ -154,22 +157,33 @@ redone."
     (read-number "Index: " 0)))
   (traad-call-async
    'redo (list idx)
-   (lambda (_ buff) (traad-maybe-revert buff))
+   (lambda (_ buff) 
+     (progn 
+       (traad-maybe-revert buff)
+       (traad-update-history-buffer)))
    (list (current-buffer))))
+
+(defun traad-update-history-buffer ()
+  "Update the contents of the history buffer, creating it if \
+necessary. Return the history buffer."
+  (save-excursion
+    (let ((undo (traad-call 'undo_history))
+	  (redo (traad-call 'redo_history))
+	  (buff (get-buffer-create "*traad-history*")))
+      (set-buffer buff)
+      (erase-buffer)
+      (insert "== UNDO HISTORY ==\n")
+      (if undo (insert (pp-to-string (traad-enumerate undo))))
+      (insert "\n")
+      (insert "== REDO HISTORY ==\n")
+      (if redo (insert (pp-to-string (traad-enumerate redo))))
+      buff)
+    ))
 
 (defun traad-history ()
   "Display undo and redo history."
   (interactive)
-  (let ((undo (traad-call 'undo_history))
-	(redo (traad-call 'redo_history))
-	(buff (get-buffer-create "*traad-history*")))
-    (switch-to-buffer buff)
-    (erase-buffer)
-    (insert "== UNDO HISTORY ==\n")
-    (if undo (insert (pp-to-string (traad-enumerate undo))))
-    (insert "\n")
-    (insert "== REDO HISTORY ==\n")
-    (if redo (insert (pp-to-string (traad-enumerate redo))))))
+  (switch-to-buffer (traad-update-history-buffer)))
 
 (defun traad-history-info-core (info)
   "Display information on a single undo/redo operation."
@@ -213,7 +227,8 @@ redone."
        (expand-file-name 
 	(concat new-name "." extension) 
 	dirname)))
-     (kill-buffer old-buff))
+     (kill-buffer old-buff)
+     (traad-update-history-buffer))
    (list new-name
 	 (file-name-directory buffer-file-name)
 	 (file-name-extension buffer-file-name)
@@ -226,7 +241,10 @@ redone."
     (read-string "New name: ")))
   (traad-call-async
    'rename (list new-name buffer-file-name (point))
-   (lambda (_ buff) (traad-maybe-revert buff))
+   (lambda (_ buff) 
+     (progn
+       (traad-maybe-revert buff)
+       (traad-update-history-buffer)))
    (list (current-buffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -235,7 +253,10 @@ redone."
 (defun traad-extract-core (type name begin end)
   (traad-call-async
    type (list name (buffer-file-name) begin end)
-   (lambda (_ buff) (traad-maybe-revert buff))
+   (lambda (_ buff) 
+     (progn
+       (traad-maybe-revert buff)
+       (traad-update-history-buffer)))
    (list (current-buffer))))
 
 (defun traad-extract-method (name begin end)
