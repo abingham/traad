@@ -52,7 +52,10 @@ def main():
     logging.basicConfig(
         level=level)
 
-    run_server(args.port, args.project)
+    try:
+        run_server(args.port, args.project)
+    except KeyboardInterrupt:
+        log.info('Keyboard interrupt')
 
 if __name__ == '__main__':
     main()
