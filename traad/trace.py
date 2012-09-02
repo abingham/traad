@@ -7,7 +7,18 @@ log = logging.getLogger('traad.trace')
 def trace(f, *args, **kw):
     '''A simple tracing decorator, mostly to help with debugging.
     '''
+
+    def short_repr(x, max_length=200):
+        r = repr(x)
+        if len(r) > max_length:
+            r = r[:max_length - 3] + '...'
+        return r
+
     log.info('{}({})'.format(
         f.__name__,
-        ', '.join(map(repr, itertools.chain(args, kw.values())))))
+        ', '.join(
+            map(short_repr,
+                itertools.chain(
+                    args,
+                    kw.values())))))
     return f(*args, **kw)
