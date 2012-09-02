@@ -1,4 +1,4 @@
-import decorator, logging
+import decorator, itertools, logging
 
 
 log = logging.getLogger('traad.trace')
@@ -7,8 +7,7 @@ log = logging.getLogger('traad.trace')
 def trace(f, *args, **kw):
     '''A simple tracing decorator, mostly to help with debugging.
     '''
-    log.info('{}({}, {})'.format(
+    log.info('{}({})'.format(
         f.__name__,
-        args,
-        kw))
+        ', '.join(map(repr, itertools.chain(args, kw.values())))))
     return f(*args, **kw)
