@@ -314,3 +314,10 @@ class RopeInterface:
                 path,
                 self.proj.root.real_path)
         return path
+
+    def __repr__(self):
+        return 'RopeInterface("{}")'.format(
+            self.proj.root.real_path)
+
+    def __str__(self):
+        return repr(self)
