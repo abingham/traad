@@ -1,3 +1,4 @@
+import logging
 import os
 
 import rope.base.project
@@ -6,6 +7,8 @@ import rope.refactor.extract
 import rope.refactor.rename
 
 from .trace import trace
+
+log = logging.getLogger(__file__)
 
 def get_all_resources(proj):
     '''Generate a sequence of (path, is_folder) tuples for all
@@ -151,7 +154,10 @@ class RopeInterface:
             start_offset,
             end_offset)
 
-        self.proj.do(extractor.get_changes(name))
+        try:
+            self.proj.do(extractor.get_changes(name))
+        except Exception as e:
+            log.exception('_extract failed')
 
     @trace
     def extract_method(self, name, path, start_offset, end_offset):
