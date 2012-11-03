@@ -383,14 +383,17 @@ lists: ((name, documentation, scope, type), . . .)."
 
 (defun traad-maybe-revert (buff)
   "If traad-auto-revert is true, revert BUFF without asking."
-  ; TODO: Fix this so that it does't attempt to revert buffers for
-  ; files which no longer exist. This occurrs e.g. when undoing a file
-  ; rename.
-  (if (and traad-auto-revert 
-	   (buffer-file-name buff))
-      (save-excursion
-	(switch-to-buffer buff)
-	(revert-buffer nil 't))))
+  (let ((fname (buffer-file-name buff)))
+    (if (and traad-auto-revert 
+	     fname)
+      (if (file-exists-p fname)
+	  (save-excursion
+	    (switch-to-buffer buff)
+	    (revert-buffer nil 't))
+	(message 
+	 (format 
+	  "File %s no longer exists. Possibly removed by an un/redo." 
+	  fname))))))
 
 (defun traad-range (upto)
   (defun range_ (x)
