@@ -155,11 +155,7 @@ class RopeInterface:
             start_offset,
             end_offset)
 
-        try:
-            self.proj.do(extractor.get_changes(name))
-        except Exception:
-            log.exception('_extract failed')
-            raise
+        self.proj.do(extractor.get_changes(name))
 
     @trace
     def extract_method(self, name, path, start_offset, end_offset):
@@ -221,11 +217,7 @@ class RopeInterface:
             self.proj.get_resource(path),
             offset)
 
-        try:
-            self.proj.do(renamer.get_changes(new_name))
-        except Exception:
-            log.exception('rename failed')
-            raise
+        self.proj.do(renamer.get_changes(new_name))
 
     @trace
     def code_assist(self, code, offset, path):

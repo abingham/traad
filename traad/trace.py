@@ -21,4 +21,9 @@ def trace(f, *args, **kw):
                 itertools.chain(
                     args,
                     kw.values())))))
-    return f(*args, **kw)
+
+    try:
+        return f(*args, **kw)
+    except:
+        log.exception('Exception in {}'.format(f.__name__))
+        raise
