@@ -52,6 +52,7 @@ class RopeInterface:
         '''
 
         path = self._to_relative_path(path)
+
         children = self.proj.get_resource(path).get_children()
         return [(child.path, child.is_folder()) for child in children]
 
@@ -156,8 +157,9 @@ class RopeInterface:
 
         try:
             self.proj.do(extractor.get_changes(name))
-        except Exception as e:
+        except Exception:
             log.exception('_extract failed')
+            raise
 
     @trace
     def extract_method(self, name, path, start_offset, end_offset):
@@ -218,7 +220,12 @@ class RopeInterface:
             self.proj,
             self.proj.get_resource(path),
             offset)
-        self.proj.do(renamer.get_changes(new_name))
+
+        try:
+            self.proj.do(renamer.get_changes(new_name))
+        except Exception:
+            log.exception('rename failed')
+            raise
 
     @trace
     def code_assist(self, code, offset, path):
