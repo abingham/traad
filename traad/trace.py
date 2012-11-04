@@ -1,5 +1,9 @@
-import decorator, itertools, logging
+import itertools
+import logging
+import sys
+import traceback
 
+import decorator
 
 log = logging.getLogger('traad.trace')
 
@@ -25,5 +29,8 @@ def trace(f, *args, **kw):
     try:
         return f(*args, **kw)
     except:
-        log.exception('Exception in {}'.format(f.__name__))
-        raise
+        einfo = sys.exc_info()
+        log.error('Exception in {}: {}'.format(
+            f.__name__,
+            ''.join(traceback.format_exception(einfo[0], einfo[1], einfo[2]))))
+        return repr(einfo[1])
