@@ -88,6 +88,11 @@ after successful refactorings."
   :type '(boolean)
   :group 'traad)
 
+(defcustom traad-use-async t
+  "Whether traad should use asynchrounous XMLRPC calls when possible."
+  :type '(boolean)
+  :group 'traad)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close 
 
@@ -352,15 +357,22 @@ lists: ((name, documentation, scope, type), . . .)."
 
 (defun traad-call-async (fun funargs callback &optional cbargs)
   "Make an asynchronous XMLRPC call to FUN with FUNARGS on the traad server."
-  (apply
-   #'xml-rpc-method-call-async
-   (lexical-let ((callback callback)
-   		 (cbargs cbargs))
-     (lambda (result) (traad-async-handler result callback cbargs)))
-   (concat
-    "http://" traad-host ":"
-    (number-to-string traad-port))
-   fun funargs))
+  (if traad-use-async
+      
+      ; If async is enabled, use it
+      (apply
+       #'xml-rpc-method-call-async
+       (lexical-let ((callback callback)
+		     (cbargs cbargs))
+	 (lambda (result) (traad-async-handler result callback cbargs)))
+       (concat
+	"http://" traad-host ":"
+	(number-to-string traad-port))
+       fun funargs)
+    
+    ; otherwise, use a synchronous call
+    (let ((rslt (apply 'traad-call fun funargs)))
+      (apply callback rslt cbargs))))
 
 (defun traad-shorten-string (x)
   (let* ((s (if (stringp x) 
