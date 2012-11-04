@@ -77,6 +77,11 @@
   :type '(string)
   :group 'traad)
 
+(defcustom traad-server-args (list "-V" "2")
+  "Parameters passed to the traad server before the directory name."
+  :type '(list)
+  :group 'traad)
+
 (defcustom traad-auto-revert nil
   "Whether proximal buffers should be automatically reverted \
 after successful refactorings."
@@ -102,12 +107,12 @@ after successful refactorings."
    (list
     (read-directory-name "Directory: ")))
   (traad-close)
-  (let ((program+args
-         (append (if (listp traad-server-program)
-                     traad-server-program
-                   (list traad-server-program))
-                 (list "-V" "1" directory)))
-        (default-directory "~/"))
+  (let* ((program (if (listp traad-server-program) 
+		      traad-server-program 
+		    (list traad-server-program)))
+	 (args (append traad-server-args (list directory)))
+	 (program+args (append program args))
+	 (default-directory "~/"))
     (apply #'start-process "traad-server" "*traad-server*" program+args)))
 
 (defun traad-close ()
