@@ -317,7 +317,7 @@ lists: ((name, documentation, scope, type), . . .)."
   "Make an XMLRPC call to FUNC with ARGS on the traad server."
   (let* ((tbegin (time-to-seconds))
 	 (rslt 
-	  (condition-case nil
+	  (condition-case err
 	      (apply
 	       #'xml-rpc-method-call
 	       (concat
@@ -325,7 +325,7 @@ lists: ((name, documentation, scope, type), . . .)."
 		(number-to-string traad-port))
 	       func args)
 	    (error 
-	     (error "Unable to contact traad server. Is it running?"))))
+	     (error (error-message-string err)))))
 	 (_ (traad-trace tbegin func args)))
     rslt))
 
@@ -351,11 +351,11 @@ lists: ((name, documentation, scope, type), . . .)."
   (apply callback (append (list rslt) cbargs)))
 
 (defun traad-call-async (fun funargs callback &optional cbargs)
-  "Make an asynchronous XMLRPC call to FUNC with ARGS on the traad server."
+  "Make an asynchronous XMLRPC call to FUN with FUNARGS on the traad server."
   (apply
    #'xml-rpc-method-call-async
    (lexical-let ((callback callback)
-		 (cbargs cbargs))
+   		 (cbargs cbargs))
      (lambda (result) (traad-async-handler result callback cbargs)))
    (concat
     "http://" traad-host ":"
