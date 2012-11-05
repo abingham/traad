@@ -149,13 +149,8 @@ undone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call-async
-   'undo (list idx)
-   (lambda (_ buff) 
-     (progn
-       (traad-maybe-revert buff)
-       (traad-update-history-buffer)))
-   (list (current-buffer))))
+  (traad-call-async-standard
+   'undo (list idx)))
 
 (defun traad-redo (idx)
   "Redo the IDXth change from the history. \
@@ -165,13 +160,8 @@ redone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call-async
-   'redo (list idx)
-   (lambda (_ buff) 
-     (progn 
-       (traad-maybe-revert buff)
-       (traad-update-history-buffer)))
-   (list (current-buffer))))
+  (traad-call-async-standard
+   'redo (list idx)))
 
 (defun traad-update-history-buffer ()
   "Update the contents of the history buffer, creating it if \
@@ -249,13 +239,10 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-string "New name: ")))
-  (traad-call-async
-   'rename (list new-name buffer-file-name (traad-adjust-point (point)))
-   (lambda (_ buff) 
-     (progn
-       (traad-maybe-revert buff)
-       (traad-update-history-buffer)))
-   (list (current-buffer))))
+  (traad-call-async-standard
+   'rename 
+   (list new-name buffer-file-name 
+	 (traad-adjust-point (point)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
@@ -264,12 +251,7 @@ necessary. Return the history buffer."
   (traad-call-async
    type (list name (buffer-file-name) 
 	      (traad-adjust-point begin)
-	      (traad-adjust-point end))
-   (lambda (_ buff) 
-     (progn
-       (traad-maybe-revert buff)
-       (traad-update-history-buffer)))
-   (list (current-buffer))))
+	      (traad-adjust-point end))))
 
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
@@ -285,16 +267,12 @@ necessary. Return the history buffer."
 ;; importutils support
 
 (defun traad-organize-imports (filename)
+  "Organize the import statements in FILENAME."
   (interactive
    (list
     (read-file-name "Filename: ")))
   (traad-call-async
-   'organize_imports (list filename)
-   (lambda (_ buff)
-     (progn
-       (traad-maybe-revert buff)
-       (traad-update-history-buffer)))
-   (list (current-buffer))))
+   'organize_imports (list filename)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
@@ -401,6 +379,16 @@ lists: ((name, documentation, scope, type), . . .)."
     ; otherwise, use a synchronous call
     (let ((rslt (apply 'traad-call fun funargs)))
       (apply callback rslt cbargs))))
+
+(defun traad-call-async-standard (fun funargs)
+  "A version of traad-call-async which calls a standard callback function."
+  (traad-call-async
+   fun funargs
+   (lambda (_ buff)
+     (progn
+       (traad-maybe-revert buff)
+       (traad-update-history-buffer)))
+   (list (current-buffer))))
 
 (defun traad-shorten-string (x)
   (let* ((s (if (stringp x) 
