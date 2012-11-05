@@ -250,7 +250,7 @@ necessary. Return the history buffer."
    (list
     (read-string "New name: ")))
   (traad-call-async
-   'rename (list new-name buffer-file-name (point))
+   'rename (list new-name buffer-file-name (traad-adjust-point (point)))
    (lambda (_ buff) 
      (progn
        (traad-maybe-revert buff)
@@ -262,7 +262,9 @@ necessary. Return the history buffer."
 
 (defun traad-extract-core (type name begin end)
   (traad-call-async
-   type (list name (buffer-file-name) begin end)
+   type (list name (buffer-file-name) 
+	      (traad-adjust-point begin)
+	      (traad-adjust-point end))
    (lambda (_ buff) 
      (progn
        (traad-maybe-revert buff)
@@ -287,7 +289,9 @@ necessary. Return the history buffer."
 lists: ((name, documentation, scope, type), . . .)."
   (interactive "d")
   (traad-call 'code_assist
-	      (buffer-substring-no-properties (point-min) (point-max))
+	      (buffer-substring-no-properties 
+	       (traad-adjust-point (point-min)) 
+	       (traad-adjust-point (point-max)))
 	      pos
 	      (buffer-file-name)))
   
@@ -296,7 +300,9 @@ lists: ((name, documentation, scope, type), . . .)."
   (interactive "d")
   (let ((cbuff (current-buffer))
 	(doc (or (traad-call 'get_doc
-			     (buffer-substring-no-properties (point-min) (point-max))
+			     (buffer-substring-no-properties 
+			      (traad-adjust-point (point-min)) 
+			      (traad-adjust-point (point-max)))
 			     pos
 			     (buffer-file-name))
 		 "<no docs available>"))
@@ -311,7 +317,9 @@ lists: ((name, documentation, scope, type), . . .)."
   "Go to definition of the object at POS."
   (interactive "d")
   (let* ((loc (traad-call 'get_definition_location
-			  (buffer-substring-no-properties (point-min) (point-max))
+			  (buffer-substring-no-properties 
+			   (traad-adjust-point (point-min)) 
+			   (traad-adjust-point (point-max)))
 			  pos
 			  (buffer-file-name)))
 	 (path (elt loc 0))
@@ -421,6 +429,10 @@ lists: ((name, documentation, scope, type), . . .)."
 
 (defun traad-enumerate (l)
   (map 'list 'cons (traad-range (length l)) l))
+
+(defun traad-adjust-point (p)
+  "rope uses 0-based indexing, but emacs points are 1-based. This adjusts."
+  (- point 1))
 
 ; TODO: invalidation support?
 
