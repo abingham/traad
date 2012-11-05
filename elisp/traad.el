@@ -432,7 +432,7 @@ lists: ((name, documentation, scope, type), . . .)."
 
 (defun traad-adjust-point (p)
   "rope uses 0-based indexing, but emacs points are 1-based. This adjusts."
-  (- point 1))
+  (- p 1))
 
 ; TODO: invalidation support?
 
