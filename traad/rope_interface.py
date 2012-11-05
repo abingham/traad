@@ -304,6 +304,11 @@ class RopeInterface:
 
     @trace
     def organize_imports(self, path):
+        """Organize the import statements in a python source file.
+
+        Args:
+          path: The path of the file to reorganize.
+        """
         path = self._to_relative_path(path)
         iorg = rope.refactor.importutils.ImportOrganizer(self.proj)
         self.proj.do(
