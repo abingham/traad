@@ -266,13 +266,47 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; importutils support
 
+;; TODO: refactor these importutils using a macro?
+
 (defun traad-organize-imports (filename)
   "Organize the import statements in FILENAME."
   (interactive
    (list
     (read-file-name "Filename: ")))
-  (traad-call-async
+  (traad-call-async-standard
    'organize_imports (list filename)))
+
+(defun traad-expand-star-imports (filename)
+  "Expand * import statements in FILENAME."
+  (interactive
+   (list
+    (read-file-name "Filename: ")))
+  (traad-call-async-standard
+   'expand_star_imports (list filename)))
+
+(defun traad-froms-to-imports (filename)
+  "Convert 'from' imports to normal imports in FILENAME."
+  (interactive
+   (list
+    (read-file-name "Filename: ")))
+  (traad-call-async-standard
+   'froms_to_imports (list filename)))
+
+(defun traad-relatives-to-absolutes (filename)
+  "Convert relative imports to absolute in FILENAME."
+  (interactive
+   (list
+    (read-file-name "Filename: ")))
+  (traad-call-async-standard
+   'relatives_to_absolutes (list filename)))
+
+(defun traad-handle-long-imports (filename)
+  "Clean up long import statements in FILENAME."
+  (interactive
+   (list
+    (read-file-name "Filename: ")))
+  (traad-call-async-standard
+   'handle_long_imports (list filename)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist

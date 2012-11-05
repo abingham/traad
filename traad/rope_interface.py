@@ -6,7 +6,7 @@ import rope.refactor.extract
 import rope.refactor.importutils
 import rope.refactor.rename
 
-from .trace import trace
+import traad.trace
 
 
 log = logging.getLogger(__file__)
@@ -37,7 +37,7 @@ class RopeInterface:
                  project_dir):
         self.proj = rope.base.project.Project(project_dir)
 
-    @trace
+    @traad.trace.trace
     def get_children(self, path):
         '''Get a list of all child resources of a given path.
 
@@ -57,7 +57,7 @@ class RopeInterface:
         children = self.proj.get_resource(path).get_children()
         return [(child.path, child.is_folder()) for child in children]
 
-    @trace
+    @traad.trace.trace
     def get_all_resources(self):
         '''Get a list of all resources in the project.
 
@@ -66,21 +66,21 @@ class RopeInterface:
         '''
         return list(get_all_resources(self.proj))
 
-    @trace
+    @traad.trace.trace
     def undo(self, idx=0):
         '''Undo the last operation.
         '''
         self.proj.history.undo(
             self.proj.history.undo_list[idx])
 
-    @trace
+    @traad.trace.trace
     def redo(self, idx=0):
         '''Redo the last undone operation.
         '''
         self.proj.history.redo(
             self.proj.history.redo_list[idx])
 
-    @trace
+    @traad.trace.trace
     def undo_history(self):
         '''Get a list of undo-able changes.
 
@@ -89,7 +89,7 @@ class RopeInterface:
         '''
         return [cs.description for cs in self.proj.history.undo_list]
 
-    @trace
+    @traad.trace.trace
     def undo_info(self, idx):
         '''Get information about a single undoable operation.
 
@@ -104,7 +104,7 @@ class RopeInterface:
         '''
         return self._history_info(self.proj.history.undo_list, idx)
 
-    @trace
+    @traad.trace.trace
     def redo_history(self):
         '''Get a list of redo-able changes.
 
@@ -113,7 +113,7 @@ class RopeInterface:
         '''
         return [cs.description for cs in self.proj.history.redo_list]
 
-    @trace
+    @traad.trace.trace
     def redo_info(self, idx):
         '''Get information about a single redoable operation.
 
@@ -158,7 +158,7 @@ class RopeInterface:
 
         self.proj.do(extractor.get_changes(name))
 
-    @trace
+    @traad.trace.trace
     def extract_method(self, name, path, start_offset, end_offset):
         '''Extract a method.
 
@@ -179,7 +179,7 @@ class RopeInterface:
                       end_offset,
                       rope.refactor.extract.ExtractMethod)
 
-    @trace
+    @traad.trace.trace
     def extract_variable(self, name, path, start_offset, end_offset):
         '''Extract a variable.
 
@@ -200,7 +200,7 @@ class RopeInterface:
                       end_offset,
                       rope.refactor.extract.ExtractVariable)
 
-    @trace
+    @traad.trace.trace
     def rename(self, new_name, path, offset=None):
         '''Rename a resource.
 
@@ -220,7 +220,7 @@ class RopeInterface:
 
         self.proj.do(renamer.get_changes(new_name))
 
-    @trace
+    @traad.trace.trace
     def code_assist(self, code, offset, path):
         '''Get code-assist completions for a point in a file.
 
@@ -248,7 +248,7 @@ class RopeInterface:
             self.proj.get_resource(path))
         return [(r.name, r.get_doc(), r.scope, r.type) for r in results]
 
-    @trace
+    @traad.trace.trace
     def get_doc(self, code, offset, path):
         '''Get docstring for an object.
 
@@ -271,7 +271,7 @@ class RopeInterface:
             offset,
             self.proj.get_resource(path))
 
-    @trace
+    @traad.trace.trace
     def get_definition_location(self, code, offset, path):
         '''Get docstring for an object.
 
@@ -302,18 +302,57 @@ class RopeInterface:
 
         return (rslt[0].real_path, rslt[1])
 
-    @trace
+    def _importutil_func(self, path, funcname):
+        path = self._to_relative_path(path)
+        iorg = rope.refactor.importutils.ImportOrganizer(self.proj)
+        changes = getattr(iorg, funcname)(self.proj.get_resource(path))
+        if changes:
+            self.proj.do(changes)
+
+    @traad.trace.trace
     def organize_imports(self, path):
         """Organize the import statements in a python source file.
 
         Args:
           path: The path of the file to reorganize.
         """
-        path = self._to_relative_path(path)
-        iorg = rope.refactor.importutils.ImportOrganizer(self.proj)
-        self.proj.do(
-            iorg.organize_imports(
-                self.proj.get_resource(path)))
+        return self._importutil_func(path, "organize_imports")
+
+    @traad.trace.trace
+    def expand_star_imports(self, path):
+        """Expand "star" import statements in a python source file.
+
+        Args:
+          path: The path of the file to reorganize.
+        """
+        return self._importutil_func(path, "expand_star_imports")
+
+    @traad.trace.trace
+    def froms_to_imports(self, path):
+        """Convert "from" imports to normal imports.
+
+        Args:
+          path: The path of the file to reorganize.
+        """
+        return self._importutil_func(path, "froms_to_imports")
+
+    @traad.trace.trace
+    def relatives_to_absolutes(self, path):
+        """Convert relative imports to absolute.
+
+        Args:
+          path: The path of the file to reorganize.
+        """
+        return self._importutil_func(path, "relatives_to_absolutes")
+
+    @traad.trace.trace
+    def handle_long_imports(self, path):
+        """Clean up long import statements.
+
+        Args:
+          path: The path of the file to reorganize.
+        """
+        return self._importutil_func(path, "handle_long_imports")
 
     def _to_relative_path(self, path):
         '''Get a version of a path relative to the project root.
