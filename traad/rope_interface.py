@@ -1,12 +1,13 @@
-import logging
-import os
+import logging, os
 
 import rope.base.project
 import rope.contrib.codeassist
 import rope.refactor.extract
+import rope.refactor.importutils
 import rope.refactor.rename
 
 from .trace import trace
+
 
 log = logging.getLogger(__file__)
 
@@ -300,6 +301,14 @@ class RopeInterface:
             return (path, rslt[1])
 
         return (rslt[0].real_path, rslt[1])
+
+    @trace
+    def organize_imports(self, path):
+        path = self._to_relative_path(path)
+        iorg = rope.refactor.importutils.ImportOrganizer(self.proj)
+        self.proj.do(
+            iorg.organize_imports(
+                self.proj.get_resource(path)))
 
     def _to_relative_path(self, path):
         '''Get a version of a path relative to the project root.

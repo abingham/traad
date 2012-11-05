@@ -282,6 +282,21 @@ necessary. Return the history buffer."
   (traad-extract-core 'extract_variable name begin end))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; importutils support
+
+(defun traad-organize-imports (filename)
+  (interactive
+   (list
+    (read-file-name "Filename: ")))
+  (traad-call-async
+   'organize_imports (list filename)
+   (lambda (_ buff)
+     (progn
+       (traad-maybe-revert buff)
+       (traad-update-history-buffer)))
+   (list (current-buffer))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
 (defun traad-code-assist (pos)
