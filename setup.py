@@ -12,7 +12,7 @@ script_name, rope_lib = {
 
 setup(
     name = 'traad',
-    version = '0.1',
+    version = '0.2',
     packages = find_packages(),
 
     # metadata for upload to PyPI
