@@ -26,7 +26,8 @@ One of the best options available is the *rope* Python refactoring
 library. Rope is very powerful and does all of the things I'd
 like. Unfortunately, I could never find a satisfactory way of
 integrating it into emacs. The pymacs-based approaches never quite
-worked for me, and in any case they struck me as somehow incorrect.
+worked for me, and in any case that approach struck me as somehow
+incorrect.
 
 So, in the spirit of open-source development, I decided to try my own
 approach. I wanted a way to access rope functionality without having
