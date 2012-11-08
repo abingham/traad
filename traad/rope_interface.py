@@ -1,5 +1,6 @@
 import logging, os
 
+import decorator
 import rope.base.project
 import rope.contrib.codeassist
 import rope.refactor.extract
@@ -9,7 +10,7 @@ import rope.refactor.rename
 import traad.trace
 
 
-log = logging.getLogger(__file__)
+log = logging.getLogger('rope_interface')
 
 def get_all_resources(proj):
     '''Generate a sequence of (path, is_folder) tuples for all
@@ -31,6 +32,12 @@ def get_all_resources(proj):
         if res.is_folder():
             todo.extend((child.path for child in res.get_children()))
 
+@decorator.decorator
+def validate(f, self, *args, **kwargs):
+    "Call self.proj.validate() before running the function."
+    log.info('Validating')
+    self.proj.validate()
+    return f(self, *args, **kwargs)
 
 class RopeInterface:
     def __init__(self,
@@ -38,6 +45,7 @@ class RopeInterface:
         self.proj = rope.base.project.Project(project_dir)
 
     @traad.trace.trace
+    @validate
     def get_children(self, path):
         '''Get a list of all child resources of a given path.
 
@@ -67,6 +75,7 @@ class RopeInterface:
         return list(get_all_resources(self.proj))
 
     @traad.trace.trace
+    @validate
     def undo(self, idx=0):
         '''Undo the last operation.
         '''
@@ -74,6 +83,7 @@ class RopeInterface:
             self.proj.history.undo_list[idx])
 
     @traad.trace.trace
+    @validate
     def redo(self, idx=0):
         '''Redo the last undone operation.
         '''
@@ -143,6 +153,7 @@ class RopeInterface:
             'changes': [contents(x) for x in c.changes],
             }
 
+    @validate
     def _extract(self, path, name, start_offset, end_offset, cls):
         '''Core extract-* method, parameterized on the class of
         the extraction.
@@ -201,6 +212,7 @@ class RopeInterface:
                       rope.refactor.extract.ExtractVariable)
 
     @traad.trace.trace
+    @validate
     def rename(self, new_name, path, offset=None):
         '''Rename a resource.
 
@@ -221,6 +233,7 @@ class RopeInterface:
         self.proj.do(renamer.get_changes(new_name))
 
     @traad.trace.trace
+    @validate
     def code_assist(self, code, offset, path):
         '''Get code-assist completions for a point in a file.
 
@@ -249,6 +262,7 @@ class RopeInterface:
         return [(r.name, r.get_doc(), r.scope, r.type) for r in results]
 
     @traad.trace.trace
+    @validate
     def get_doc(self, code, offset, path):
         '''Get docstring for an object.
 
@@ -272,6 +286,7 @@ class RopeInterface:
             self.proj.get_resource(path))
 
     @traad.trace.trace
+    @validate
     def get_definition_location(self, code, offset, path):
         '''Get docstring for an object.
 
@@ -302,6 +317,7 @@ class RopeInterface:
 
         return (rslt[0].real_path, rslt[1])
 
+    @validate
     def _importutil_func(self, path, funcname):
         path = self._to_relative_path(path)
         iorg = rope.refactor.importutils.ImportOrganizer(self.proj)
