@@ -67,11 +67,6 @@
   :type '(string)
   :group 'traad)
 
-(defcustom traad-port 6942
-  "The port on which the traad server is listening."
-  :type '(integer)
-  :group 'traad)
-
 (defcustom traad-server-program "traad"
   "The name of the traad server program. This may be a string or a list. For python3 projects this commonly needs to be set to 'traad3'."
   :type '(string)
@@ -107,13 +102,29 @@ after successful refactorings."
    (list
     (read-directory-name "Directory: ")))
   (traad-close)
-  (let* ((program (if (listp traad-server-program) 
-		      traad-server-program 
-		    (list traad-server-program)))
-	 (args (append traad-server-args (list directory)))
-	 (program+args (append program args))
-	 (default-directory "~/"))
-    (apply #'start-process "traad-server" "*traad-server*" program+args)))
+  (let ((proc-buff (get-buffer-create "*traad-server*")))
+    (switch-to-buffer proc-buff)
+    (erase-buffer)
+    (let* ((program (if (listp traad-server-program) 
+			traad-server-program 
+		      (list traad-server-program)))
+	   (args (append traad-server-args (list directory)))
+	   (program+args (append program args))
+	   (default-directory "~/")
+	   (proc (apply #'start-process "traada-server" proc-buff program+args))
+	   (cont 1))
+      (while cont
+	(accept-process-output proc 0 100 t)
+	(let ((port-str (with-current-buffer proc-buff
+			  (buffer-string))))
+	  (cond
+	   ((string-match "^[0-9]+$" port-str)
+	    (setq traad-port (string-to-number port-str)
+		  cont nil))
+	   (t
+	    (incf cont)
+	    (when (< 30 cont) ; timeout after 3 seconds
+	      (error "Server timeout.")))))))))
 
 (defun traad-close ()
   "Close the current traad project, if any."

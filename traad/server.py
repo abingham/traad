@@ -6,14 +6,18 @@ from .xmlrpc import SimpleXMLRPCServer
 log = logging.getLogger(__name__)
 
 def run_server(port, project):
-    log.info(
-        'Running traad server for project "{}" on port {}'.format(
-            project, port))
-
     server = SimpleXMLRPCServer(
         ('127.0.0.1', port),
         logRequests=True,
         allow_none=True)
+
+    print(server.server_address[1])
+
+    log.info(
+        'Running traad server for project "{}" at {}:{}'.format(
+            project,
+            server.server_address[0],
+            server.server_address[1]))
 
     server.register_instance(
         RopeInterface(project))
@@ -28,8 +32,8 @@ def main():
 
     parser.add_argument(
         '-p, --port', metavar='N', type=int,
-        dest='port', default=6942,
-        help='the port on which the server will listen')
+        dest='port', default=0,
+        help='the port on which the server will listen. (0 selects an unused port.)')
 
     parser.add_argument(
         '-V, --verbosity', metavar='N', type=int,
