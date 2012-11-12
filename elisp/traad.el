@@ -111,7 +111,7 @@ after successful refactorings."
 	   (args (append traad-server-args (list directory)))
 	   (program+args (append program args))
 	   (default-directory "~/")
-	   (proc (apply #'start-process "traada-server" proc-buff program+args))
+	   (proc (apply #'start-process "traad-server" proc-buff program+args))
 	   (cont 1))
       (while cont
 	(accept-process-output proc 0 100 t)

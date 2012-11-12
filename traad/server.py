@@ -1,6 +1,6 @@
 import logging
 
-from .rope_interface import RopeInterface
+from .rope_interface.rope_interface import RopeInterface
 from .xmlrpc import SimpleXMLRPCServer
 
 log = logging.getLogger(__name__)
