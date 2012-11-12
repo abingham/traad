@@ -2,7 +2,7 @@ import logging
 
 import decorator
 
-from traad.rope_interface.log import log
+from traad.rope.log import log
 
 @decorator.decorator
 def validate(f, self, *args, **kwargs):

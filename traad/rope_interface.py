@@ -1,1 +1,0 @@
-from traad.rope_interface.rope_interface import RopeInterface

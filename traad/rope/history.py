@@ -1,5 +1,5 @@
 import traad.trace
-from traad.rope_interface.validate import validate
+from traad.rope.validate import validate
 
 
 class HistoryFunctions:

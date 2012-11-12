@@ -8,9 +8,9 @@ import rope.refactor.importutils
 import rope.refactor.rename
 
 import traad.trace
-from traad.rope_interface.history import HistoryFunctions
-from traad.rope_interface.log import log
-from traad.rope_interface.validate import validate
+from traad.rope.history import HistoryFunctions
+from traad.rope.log import log
+from traad.rope.validate import validate
 
 
 def get_all_resources(proj):
