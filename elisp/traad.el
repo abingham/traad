@@ -259,7 +259,7 @@ necessary. Return the history buffer."
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
-  (traad-call-async
+  (traad-call-async-standard
    type (list name (buffer-file-name) 
 	      (traad-adjust-point begin)
 	      (traad-adjust-point end))))
