@@ -3,7 +3,7 @@ from traad.rope.validate import validate
 
 
 class HistoryFunctions:
-    """This history related functions of the rope interface.
+    """The history related functions of the rope interface.
 
     A base for RopeInterface.
 

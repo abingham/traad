@@ -4,11 +4,11 @@ import rope.base.project
 import rope.contrib.codeassist
 import rope.refactor.change_signature
 import rope.refactor.importutils
-import rope.refactor.rename
 
 import traad.trace
 from traad.rope.extract import ExtractFunctions
 from traad.rope.history import HistoryFunctions
+from traad.rope.rename import RenameFunctions
 from traad.rope.log import log
 from traad.rope.validate import validate
 
@@ -34,7 +34,8 @@ def get_all_resources(proj):
             todo.extend((child.path for child in res.get_children()))
 
 class RopeInterface(ExtractFunctions,
-                    HistoryFunctions):
+                    HistoryFunctions,
+                    RenameFunctions):
     def __init__(self,
                  project_dir):
         self.proj = rope.base.project.Project(project_dir)
@@ -68,27 +69,6 @@ class RopeInterface(ExtractFunctions,
             is_folder).
         '''
         return list(get_all_resources(self.proj))
-
-    @traad.trace.trace
-    @validate
-    def rename(self, new_name, path, offset=None):
-        '''Rename a resource.
-
-        ``path`` may be absolute or relative. If ``path`` is relative,
-        then it must to be relative to the root of the project.
-
-        Args:
-          path: The path of the file/directory to query.
-        '''
-
-        path = self._to_relative_path(path)
-
-        renamer = rope.refactor.rename.Rename(
-            self.proj,
-            self.proj.get_resource(path),
-            offset)
-
-        self.proj.do(renamer.get_changes(new_name))
 
     @traad.trace.trace
     @validate

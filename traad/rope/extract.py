@@ -4,7 +4,7 @@ import traad.trace
 from traad.rope.validate import validate
 
 class ExtractFunctions:
-    """This extract related functions of the rope interface.
+    """The extract related functions of the rope interface.
 
     A base for RopeInterface.
 
