@@ -256,6 +256,21 @@ necessary. Return the history buffer."
 	 (traad-adjust-point (point)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Change signature support
+
+(defun traad-remove-argument (index)
+  "Remove the INDEXth argument from the signature at point."
+  (interactive
+   (list
+    (read-number "Index: ")))
+  (traad-call-async-standard
+   'remove_argument 
+   (list 
+    index 
+    buffer-file-name 
+    (traad-adjust-point (point)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
 
 (defun traad-extract-core (type name begin end)
