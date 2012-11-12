@@ -5,6 +5,12 @@ from traad.rope.validate import validate
 
 
 class CodeAssistFunctions:
+    """The codeassist related functions of the rope interface.
+
+    A base for RopeInterface.
+
+    """
+
     @traad.trace.trace
     @validate
     def code_assist(self, code, offset, path):

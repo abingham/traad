@@ -10,6 +10,7 @@ class RenameFunctions:
     A base for RopeInterface.
 
     """
+
     @traad.trace.trace
     @validate
     def rename(self, new_name, path, offset=None):
