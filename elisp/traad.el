@@ -258,6 +258,15 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
 
+(defun traad-normalize-arguments ()
+  "Normalize the arguments for the method at point."
+  (interactive)
+    (traad-call-async-standard
+   'normalize_arguments
+   (list 
+    buffer-file-name 
+    (traad-adjust-point (point)))))
+
 (defun traad-remove-argument (index)
   "Remove the INDEXth argument from the signature at point."
   (interactive
