@@ -37,7 +37,10 @@ class ChangeSignatureFunctions:
 
     @traad.trace.trace
     @validate
-    def remove_argument(self, arg_index, path, offset):
+    def remove_argument(self,   arg_index,
+                         path,
+
+                        offset):
         """Remove an argument from a method.
 
         ``path`` may be absolute or relative. If ``path`` is relative,

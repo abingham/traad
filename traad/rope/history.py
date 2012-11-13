@@ -1,7 +1,6 @@
 import traad.trace
 from traad.rope.validate import validate
 
-
 class HistoryFunctions:
     """The history related functions of the rope interface.
 
