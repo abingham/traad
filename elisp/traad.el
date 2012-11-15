@@ -356,42 +356,48 @@ lists: ((name, documentation, scope, type), . . .)."
 	       (traad-adjust-point (point-max)))
 	      pos
 	      (buffer-file-name)))
+
+(defun traad-display-in-buffer (msg buffer)
+  (let ((cbuff (current-buffer))
+	(buff (get-buffer-create buffer))
+	(inhibit-read-only 't))
+    (pop-to-buffer buff)
+    (erase-buffer)
+    (insert msg)
+    (pop-to-buffer cbuff)))
   
 (defun traad-get-calltip (pos)
+  "Get the calltip for an object."
+  (or (traad-call 'get_calltip
+		  (buffer-substring-no-properties
+		   (point-min)
+		   (point-max))
+		  (traad-adjust-point pos)
+		  (buffer-file-name))))
+
+(defun traad-display-calltip (pos)
   "Display calltip for an object."
   (interactive "d")
-  (let ((cbuff (current-buffer))
-	(calltip (or (traad-call 'get_calltip
-				 (buffer-substring-no-properties
-				  (point-min)
-				  (point-max))
-				 (traad-adjust-point pos)
-				 (buffer-file-name))
-		 "<no docs available>"))
-	(buff (get-buffer-create "*traad-calltip*"))
-	(inhibit-read-only 't))
-    (pop-to-buffer buff)
-    (erase-buffer)
-    (insert calltip)
-    (pop-to-buffer cbuff)))
+  (traad-display-in-buffer
+   (traad-get-calltip pos)
+   "*traad-calltip*"))
 
 (defun traad-get-doc (pos)
+  "Get docstring for an object."
+  (or (traad-call 'get_doc
+		  (buffer-substring-no-properties 
+		   (point-min)
+		   (point-max))
+		  (traad-adjust-point pos)
+		  (buffer-file-name))
+      "<no docs available>"))
+
+(defun traad-display-doc (pos)
   "Display docstring for an object."
   (interactive "d")
-  (let ((cbuff (current-buffer))
-	(doc (or (traad-call 'get_doc
-			     (buffer-substring-no-properties 
-			      (point-min)
-			      (point-max))
-			     (traad-adjust-point pos)
-			     (buffer-file-name))
-		 "<no docs available>"))
-	(buff (get-buffer-create "*traad-doc*"))
-	(inhibit-read-only 't))
-    (pop-to-buffer buff)
-    (erase-buffer)
-    (insert doc))
-    (pop-to-buffer cbuff))
+  (traad-display-in-buffer 
+   (traad-get-doc pos)
+   "*traad-doc*"))
 
 (defun traad-get-definition (pos)
   "Go to definition of the object at POS."
