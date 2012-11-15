@@ -67,7 +67,7 @@ class CodeAssistFunctions:
     @traad.trace.trace
     @validate
     def get_definition_location(self, code, offset, path):
-        '''Get docstring for an object.
+        '''Get location of definition for a symbol.
 
         ``path`` may be absolute or relative. If ``path`` is relative,
         then it must to be relative to the root of the project.

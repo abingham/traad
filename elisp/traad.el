@@ -380,9 +380,9 @@ lists: ((name, documentation, scope, type), . . .)."
   (interactive "d")
   (let* ((loc (traad-call 'get_definition_location
 			  (buffer-substring-no-properties 
-			   (traad-adjust-point (point-min)) 
-			   (traad-adjust-point (point-max)))
-			  pos
+			   (point-min)
+			   (point-max))
+			  (traad-adjust-point pos)
 			  (buffer-file-name)))
 	 (path (elt loc 0))
 	 (lineno (elt loc 1)))
