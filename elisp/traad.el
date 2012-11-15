@@ -357,6 +357,24 @@ lists: ((name, documentation, scope, type), . . .)."
 	      pos
 	      (buffer-file-name)))
   
+(defun traad-get-calltip (pos)
+  "Display calltip for an object."
+  (interactive "d")
+  (let ((cbuff (current-buffer))
+	(calltip (or (traad-call 'get_calltip
+				 (buffer-substring-no-properties
+				  (point-min)
+				  (point-max))
+				 (traad-adjust-point pos)
+				 (buffer-file-name))
+		 "<no docs available>"))
+	(buff (get-buffer-create "*traad-calltip*"))
+	(inhibit-read-only 't))
+    (pop-to-buffer buff)
+    (erase-buffer)
+    (insert calltip)
+    (pop-to-buffer cbuff)))
+
 (defun traad-get-doc (pos)
   "Display docstring for an object."
   (interactive "d")
