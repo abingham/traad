@@ -363,9 +363,9 @@ lists: ((name, documentation, scope, type), . . .)."
   (let ((cbuff (current-buffer))
 	(doc (or (traad-call 'get_doc
 			     (buffer-substring-no-properties 
-			      (traad-adjust-point (point-min)) 
-			      (traad-adjust-point (point-max)))
-			     pos
+			      (point-min)
+			      (point-max))
+			     (traad-adjust-point pos)
 			     (buffer-file-name))
 		 "<no docs available>"))
 	(buff (get-buffer-create "*traad-doc*"))
