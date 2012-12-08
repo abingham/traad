@@ -417,6 +417,21 @@ current buffer."
      lineno
      (find-file-other-window abspath))))
 
+(defun traad-findit (type)
+  "Run a findit function at the current point."
+  (interactive
+   (list
+    (completing-read 
+     "Type: "
+     (list "occurrences" "implementations" "definition"))))
+  (cond
+    ((equal type "occurrences")
+     (traad-display-occurrences (point)))
+    ((equal type "implementations")
+     (traad-display-implementations (point)))
+    ((equal type "definition")
+      (traad-goto-definition (point)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
