@@ -36,6 +36,12 @@ class Tests(unittest.TestCase):
             'basic/foo.py')
         self.assertEqual(len(occ), 3)
 
+    def test_find_implementations(self):
+        impls = self.ri.find_implementations(
+            33,
+            'basic/overrides.py')
+        self.assertEqual(len(impls), 1)
+
     def test_get_all_resources(self):
         self.assertEqual(
             sorted(self.ri.get_all_resources()),
@@ -43,14 +49,16 @@ class Tests(unittest.TestCase):
              ('basic', True),
              ('basic/__init__.py', False),
              ('basic/bar.py', False),
-             ('basic/foo.py', False)])
+             ('basic/foo.py', False),
+             ('basic/overrides.py', False)])
 
     def test_get_children(self):
         self.assertEqual(
             sorted(self.ri.get_children('basic')),
             [('basic/__init__.py', False),
              ('basic/bar.py', False),
-             ('basic/foo.py', False)])
+             ('basic/foo.py', False),
+             ('basic/overrides.py', False)])
 
     def test_undo_exceptions(self):
         self.assertRaises(
