@@ -6,11 +6,11 @@ from traad.rope.validate import validate
 
 
 def location_to_tuple(location):
-    return (location.resource,
+    return (location.resource.path,
             location.region,
             location.offset,
             location.unsure,
-            location.linenoe)
+            location.lineno)
 
 class FinditFunctions:
     """The findit related functions of the rope interface.
@@ -32,13 +32,13 @@ class FinditFunctions:
           path: The path to the resource containing the symbol to
             search for.
 
-        Returns: A sequence of tuples of the form (path, region,
+        Returns: A sequence of tuples of the form (path, (region-start, region-stop),
           offset, unsure, lineno).
         '''
 
         path = self._to_relative_path(path)
         results = rope.contrib.findit.find_occurrences(
             self.proj,
-            self.get_resource(path),
+            self.proj.get_resource(path),
             offset)
         return emap(location_to_tuple, results)

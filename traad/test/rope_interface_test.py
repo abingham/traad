@@ -29,6 +29,13 @@ class Tests(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(ACTIVE_DIR)
 
+    def test_find_occurences(self):
+        # Find occurrences of the Foo class
+        occ = self.ri.find_occurrences(
+            8,
+            'basic/foo.py')
+        self.assertEqual(len(occ), 3)
+
     def test_get_all_resources(self):
         self.assertEqual(
             sorted(self.ri.get_all_resources()),
