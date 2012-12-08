@@ -4,7 +4,7 @@ import shutil
 import time
 import unittest
 
-from ..rope_interface import RopeInterface
+from ..rope.interface import RopeInterface
 
 THIS_DIR = os.path.split(__file__)[0]
 ACTIVE_DIR = os.path.join(THIS_DIR, 'active')

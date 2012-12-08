@@ -9,5 +9,6 @@ def run():
     unittest.TextTestRunner(verbosity=1).run(suite)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig(
+        level=logging.CRITICAL)
     run()

@@ -33,4 +33,4 @@ def trace(f, *args, **kw):
         log.error('Exception in {}: {}'.format(
             f.__name__,
             ''.join(traceback.format_exception(einfo[0], einfo[1], einfo[2]))))
-        return repr(einfo[1])
+        raise
