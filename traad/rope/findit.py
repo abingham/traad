@@ -71,3 +71,29 @@ class FinditFunctions:
         return self._find_locations(
             rope.contrib.findit.find_implementations,
             path, offset)
+
+    @traad.trace.trace
+    @validate
+    def find_definition(self, code, offset, path):
+        """Find the definition location of a symbol.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          code: The source code containing the method symbol.
+          offset: The offset into ``code`` of the symbol.
+          path: The path to the resource containing ``code``.
+
+        Returns: A tuple of the form (path, (region-start,
+          region-stop), offset, unsure, lineno).
+
+        """
+
+        path = self._to_relative_path(path)
+        return location_to_tuple(
+            rope.contrib.findit.find_definition(
+                self.proj,
+                code,
+                offset,
+                self.proj.get_resource(path)))

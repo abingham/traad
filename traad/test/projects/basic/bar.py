@@ -6,3 +6,7 @@ class Bar:
 
     def some_func(self):
         return 1
+
+
+b = Bar()
+b.some_func()

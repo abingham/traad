@@ -42,6 +42,16 @@ class Tests(unittest.TestCase):
             'basic/overrides.py')
         self.assertEqual(len(impls), 1)
 
+    def test_find_definition(self):
+        this_dir = os.path.split(__file__)[0]
+        with open(os.path.join(this_dir, 'projects', 'basic', 'bar.py'), 'r') as f:
+            code = f.read()
+        loc = self.ri.find_definition(code, 142, os.path.join('basic', 'bar.py'))
+        self.assertEqual(
+            loc,
+            (os.path.join('basic', 'bar.py'),
+             (91, 100), 91, False, 7))
+
     def test_get_all_resources(self):
         self.assertEqual(
             sorted(self.ri.get_all_resources()),
