@@ -347,14 +347,24 @@ necessary. Return the history buffer."
 ;; findit
 
 (defun traad-find-occurrences (pos)
-  "List all occurences the use of the symbol as POS in the
+  "Get all occurences the use of the symbol as POS in the
+current buffer."
+  (traad-call 'find_occurrences
+	      (traad-adjust-point pos)
+	      (buffer-file-name)))
+
+(defun traad-display-occurrences (pos)
+  "Display all occurences the use of the symbol as POS in the
 current buffer."
   (interactive "d")
-  (traad-display-in-buffer
-   (traad-call 'find_occurrences
-	       (traad-adjust-point pos)
-	       (buffer-file-name))
-   "*traad-occurences*"))
+  (let ((locs (traad-find-occurrences pos))
+	(buff (get-buffer-create "*traad-occurrences*"))
+	(inhibit-read-only 't))
+    (pop-to-buffer buff)
+    (erase-buffer)
+    (dolist (loc locs)
+      (insert (format "%s:%s: asdf\n" (car loc) (nth 4 loc))))
+    (compilation-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
