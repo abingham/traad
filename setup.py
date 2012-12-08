@@ -31,6 +31,7 @@ setup(
 
     install_requires=[
         'decorator',
+        'eagertools',
         rope_lib,
     ],
 )

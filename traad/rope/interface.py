@@ -6,6 +6,7 @@ import traad.trace
 from traad.rope.change_signature import ChangeSignatureFunctions
 from traad.rope.codeassist import CodeAssistFunctions
 from traad.rope.extract import ExtractFunctions
+from traad.rope.findit import FinditFunctions
 from traad.rope.history import HistoryFunctions
 from traad.rope.importutil import ImportUtilFunctions
 from traad.rope.log import log
@@ -36,6 +37,7 @@ def get_all_resources(proj):
 class RopeInterface(ChangeSignatureFunctions,
                     CodeAssistFunctions,
                     ExtractFunctions,
+                    FinditFunctions,
                     HistoryFunctions,
                     ImportUtilFunctions,
                     RenameFunctions):

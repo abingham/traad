@@ -344,6 +344,19 @@ necessary. Return the history buffer."
    'handle_long_imports (list filename)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; findit
+
+(defun traad-find-occurrences (pos)
+  "List all occurences the use of the symbol as POS in the
+current buffer."
+  (interactive "d")
+  (traad-display-in-buffer
+   (traad-call 'find_occurrences
+	       (traad-adjust-point pos)
+	       (buffer-file-name))
+   "*traad-occurences*"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
 (defun traad-code-assist (pos)
