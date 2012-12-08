@@ -149,6 +149,10 @@ after successful refactorings."
 the project root."
   (traad-call 'get_children path))
 
+(defun traad-get-root ()
+  "Get the project root."
+  (traad-call 'get_root))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
 
@@ -363,8 +367,16 @@ current buffer."
     (pop-to-buffer buff)
     (erase-buffer)
     (dolist (loc locs)
-      (insert (format "%s:%s: asdf\n" (car loc) (nth 4 loc))))
-    (compilation-mode)))
+      (let* ((path (car loc))
+	     (abspath (concat (traad-get-root) "/" path))
+	     (lineno (nth 4 loc))
+	     (code (nth (- lineno 1) (traad-read-lines abspath))))
+	(insert 
+	 (format "%s:%s: %s\n" 
+		 path
+		 lineno
+		 code))))
+    (grep-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
@@ -552,6 +564,12 @@ lists: ((name, documentation, scope, type), . . .)."
 (defun traad-adjust-point (p)
   "rope uses 0-based indexing, but emacs points are 1-based. This adjusts."
   (- p 1))
+
+(defun traad-read-lines (path)
+  "Return a list of lines of a file at PATH."
+  (with-temp-buffer
+    (insert-file-contents path)
+    (split-string (buffer-string) "\n" nil)))
 
 ; TODO: invalidation support?
 
