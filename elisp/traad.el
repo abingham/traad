@@ -411,7 +411,7 @@ current buffer."
   (interactive "d")
   (let* ((loc (traad-find-definition pos))
 	 (path (car loc))
-	 (abspath (concat (traad-get-root) "/" path))
+	 (abspath (if (file-name-absolute-p path) path (concat (traad-get-root) "/" path)))
 	 (lineno (nth 4 loc)))
     (goto-line 
      lineno
