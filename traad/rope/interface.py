@@ -75,6 +75,10 @@ class RopeInterface(ChangeSignatureFunctions,
         '''
         return list(get_all_resources(self.proj))
 
+    @traad.trace.trace
+    def get_root(self):
+        return self.proj.root.real_path
+
     def _to_relative_path(self, path):
         '''Get a version of a path relative to the project root.
 
