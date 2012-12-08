@@ -363,6 +363,15 @@ current buffer."
 	      (traad-adjust-point pos)
 	      (buffer-file-name)))
 
+(defun traad-find-definition (pos)
+  "Get location of a function definition."
+  (traad-call 'find_definition
+	      (buffer-substring-no-properties
+	       (point-min)
+	       (point-max))
+	      (traad-adjust-point pos)
+	      (buffer-file-name)))
+
 (defun traad-display-findit (pos func buff-name)
   "Common display routine for occurrences and implementations."
   (let ((locs (apply func (list pos)))
@@ -397,6 +406,17 @@ current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-implementations "*traad-implementations*"))
 
+(defun traad-goto-definition (pos)
+  "Go to the definition of the function as POS."
+  (interactive "d")
+  (let* ((loc (traad-find-definition pos))
+	 (path (car loc))
+	 (abspath (concat (traad-get-root) "/" path))
+	 (lineno (nth 4 loc)))
+    (goto-line 
+     lineno
+     (find-file-other-window abspath))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
@@ -422,6 +442,8 @@ lists: ((name, documentation, scope, type), . . .)."
   
 (defun traad-get-calltip (pos)
   "Get the calltip for an object."
+  ; TODO: Why do I have this "or" here? Get rid of it when you have a
+  ; chance.
   (or (traad-call 'get_calltip
 		  (buffer-substring-no-properties
 		   (point-min)
