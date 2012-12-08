@@ -368,16 +368,18 @@ current buffer."
     (erase-buffer)
     (dolist (loc locs)
       (lexical-let* ((path (car loc))
-	     (abspath (concat (traad-get-root) "/" path))
-	     (lineno (nth 4 loc))
-	     (code (nth (- lineno 1) (traad-read-lines abspath))))
+		     (abspath (concat (traad-get-root) "/" path))
+		     (lineno (nth 4 loc))
+		     (code (nth (- lineno 1) (traad-read-lines abspath))))
 	(insert-button
 	 (format "%s:%s: %s\n" 
 		 path
 		 lineno
 		 code)
 	 'action (lambda (x) 
-		   (goto-line lineno (find-file abspath))))))))
+		   (goto-line 
+		    lineno 
+		    (find-file-other-window abspath))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
