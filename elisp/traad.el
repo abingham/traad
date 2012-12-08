@@ -357,12 +357,16 @@ current buffer."
 	      (traad-adjust-point pos)
 	      (buffer-file-name)))
 
-(defun traad-display-occurrences (pos)
-  "Display all occurences the use of the symbol as POS in the
-current buffer."
-  (interactive "d")
-  (let ((locs (traad-find-occurrences pos))
-	(buff (get-buffer-create "*traad-occurrences*"))
+(defun traad-find-implementations (pos)
+  "Find all places a given method is overridden."
+  (traad-call 'find_implementations
+	      (traad-adjust-point pos)
+	      (buffer-file-name)))
+
+(defun traad-display-findit (pos func buff-name)
+  "Common display routine for occurrences and implementations."
+  (let ((locs (apply func (list pos)))
+	(buff (get-buffer-create buff-name))
 	(inhibit-read-only 't))
     (pop-to-buffer buff)
     (erase-buffer)
@@ -380,6 +384,18 @@ current buffer."
 		   (goto-line 
 		    lineno 
 		    (find-file-other-window abspath))))))))
+
+(defun traad-display-occurrences (pos)
+  "Display all occurences the use of the symbol as POS in the
+current buffer."
+  (interactive "d")
+  (traad-display-findit pos 'traad-find-occurrences "*traad-occurrences*"))
+
+(defun traad-display-implementations (pos)
+  "Display all occurences the use of the symbol as POS in the
+current buffer."
+  (interactive "d")
+  (traad-display-findit pos 'traad-find-implementations "*traad-implementations*"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
