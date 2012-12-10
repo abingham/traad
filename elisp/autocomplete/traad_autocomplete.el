@@ -3,13 +3,21 @@
 
 (require 'auto-complete)
 
+(defvar ac-traad-cache nil
+  "Hold the results of the last traad-code-assist.")
+
 (defun ac-traad-candidates ()
   "Get the list of completions at point."
-  (mapcar 'car (traad-code-assist (point))))
+  (if (traad-running?)
+      (progn
+	(setq ac-traad-cache (traad-code-assist (point)))
+	(mapcar 'car ac-traad-cache))
+    (setq ac-traad-cache nil)))
 
 (defun ac-traad-documentation (sym)
   "Look up symbol documentation in the cache."
-  (traad-get-doc (point)))
+    (let ((entry (assoc sym ac-traad-cache)))
+      (if entry (cadr entry))))
 
 ;; The autocomplete source for traad
 (ac-define-source traad
@@ -26,3 +34,4 @@
 
 ;; Insert the traad source in python mode.
 (add-hook 'python-mode-hook 'ac-traad-setup)
+
