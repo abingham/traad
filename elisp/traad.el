@@ -441,8 +441,8 @@ lists: ((name, documentation, scope, type), . . .)."
   (interactive "d")
   (traad-call 'code_assist
 	      (buffer-substring-no-properties 
-	       (traad-adjust-point (point-min)) 
-	       (traad-adjust-point (point-max)))
+	       (point-min) 
+	       (point-max))
 	      pos
 	      (buffer-file-name)))
 
