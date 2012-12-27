@@ -126,6 +126,22 @@ after successful refactorings."
 	    (when (< 30 cont) ; timeout after 3 seconds
 	      (error "Server timeout.")))))))))
 
+(defun traad-add-cross-project (directory)
+  "Add a cross-project to the traad instance."
+  (interactive
+   (list
+    (read-directory-name "Directory:")))
+  (traad-call 'add_cross_project directory))
+
+(defun traad-remove-cross-project (directory)
+  "Remove a cross-project from the traad instance."
+  (interactive
+   (list
+    (completing-read
+     "Directory: "
+     (traad-call 'cross_projects))))
+  (traad-call 'remove_cross_project directory))
+
 (defun traad-close ()
   "Close the current traad project, if any."
   (interactive)
