@@ -11,12 +11,14 @@ class ChangeSignatureFunctions:
 
     """
 
-    def change_sig(self, path, offset):
-        return rope.refactor.change_signature.ChangeSignature(
+    def change_sig(self, path, offset, operation):
+        self.multi_project_refactoring(
+            rope.refactor.change_signature.ChangeSignature,
             self.proj,
             self.proj.get_resource(
                self._to_relative_path(path)),
-            offset)
+            offset).perform(
+                [operation])
 
     @traad.trace.trace
     @validate
@@ -31,15 +33,15 @@ class ChangeSignatureFunctions:
           offset: The offset in the resource of the method signature.
         """
 
-        self.proj.do(
-            self.change_sig(path, offset).get_changes(
-                [rope.refactor.change_signature.ArgumentNormalizer()]))
+        self.change_sig(
+            path, offset,
+            rope.refactor.change_signature.ArgumentNormalizer())
 
     @traad.trace.trace
     @validate
-    def remove_argument(self,   arg_index,
-                         path,
-
+    def remove_argument(self,
+                        arg_index,
+                        path,
                         offset):
         """Remove an argument from a method.
 
@@ -51,7 +53,6 @@ class ChangeSignatureFunctions:
           path: The path of the file/directory to query.
           offset: The offset in the resource of the method signature.
         """
-
-        self.proj.do(
-            self.change_sig(path, offset).get_changes(
-                [rope.refactor.change_signature.ArgumentRemover(arg_index)]))
+        self.change_sig(
+            path, offset,
+            rope.refactor.change_signature.ArgumentRemover(arg_index))
