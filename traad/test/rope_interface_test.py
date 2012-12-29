@@ -20,11 +20,11 @@ class Tests(unittest.TestCase):
         os.mkdir(ACTIVE_DIR)
 
         shutil.copytree(
-            os.path.join(PROJECT_DIR, 'basic'),
-            os.path.join(ACTIVE_DIR, 'basic'))
+            os.path.join(PROJECT_DIR, 'main'),
+            os.path.join(ACTIVE_DIR, 'main'))
 
         self.ri = RopeInterface(
-            os.path.join(ACTIVE_DIR))
+            os.path.join(ACTIVE_DIR, 'main'))
 
     def tearDown(self):
         shutil.rmtree(ACTIVE_DIR)
@@ -44,7 +44,7 @@ class Tests(unittest.TestCase):
 
     def test_find_definition(self):
         this_dir = os.path.split(__file__)[0]
-        with open(os.path.join(this_dir, 'projects', 'basic', 'bar.py'), 'r') as f:
+        with open(os.path.join(this_dir, 'projects', 'main', 'basic', 'bar.py'), 'r') as f:
             code = f.read()
         loc = self.ri.find_definition(code, 142, os.path.join('basic', 'bar.py'))
         self.assertEqual(
@@ -192,6 +192,30 @@ class Tests(unittest.TestCase):
             IndexError,
             self.ri.redo_info,
             1)
+
+# class CrossTests(unittest.TestCase):
+#     def setUp(self):
+#         try:
+#             shutil.rmtree(ACTIVE_DIR)
+#         except OSError:
+#             pass
+
+#         os.mkdir(ACTIVE_DIR)
+
+#         for dirname in ['basic', 'cross']:
+#             shutil.copytree(
+#                 os.path.join(PROJECT_DIR, dirname),
+#                 os.path.join(ACTIVE_DIR, dirname))
+
+#         self.ri = RopeInterface(
+#             os.path.join(ACTIVE_DIR))
+#         self.ri.add_cross_project(
+
+#     def tearDown(self):
+#         shutil.rmtree(ACTIVE_DIR)
+
+#     def cross_rename(self):
+
 
 if __name__ == '__main__':
     unittest.main()

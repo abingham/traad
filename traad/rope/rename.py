@@ -27,9 +27,9 @@ class RenameFunctions:
 
         CrossRename = multiproject.MultiProjectRefactoring(
             rename.Rename,
-            self.other_projs)
+            self.cross_projects)
 
-        rename = CrossRename(
+        renamer = CrossRename(
             self.proj,
             self.proj.get_resource(path),
             offset)
