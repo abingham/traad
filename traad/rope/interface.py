@@ -49,40 +49,7 @@ class RopeInterface(ChangeSignatureFunctions,
 
         cross_dirs = set(cross_project_dirs)
         cross_dirs.discard(project_dir)
-        self._cross_projects = {d: rope.base.project.Project(d) for d in cross_dirs}
-
-    @property
-    def cross_projects(self):
-        '''The collection of cross-project directories.'''
-        return list(self._cross_projects.keys())
-
-    def add_cross_project(self, dirname):
-        """Add a new cross-project for multi-project refactorings.
-
-        If ``dirname`` matches an existing cross-project then this
-        function does nothing. If ``dirname`` matches the main
-        project, this function also does nothing.
-
-        Args:
-          dirname: The root directory of the cross-project.
-
-        """
-        if dirname == self.proj.address or dirname in self._cross_projects:
-            return
-        self._cross_projects[dirname] = rope.base.project.Project(dirname)
-
-    def remove_cross_project(self, dirname):
-        """Remove a cross-project from multi-project refactorings.
-
-        If ``dirname`` does not match an existing cross-project, then
-        this does nothing.
-
-        """
-
-        try:
-            del self._cross_projects[dirname]
-        except KeyError:
-            pass
+        self.cross_projects = {d: rope.base.project.Project(d) for d in cross_dirs}
 
     @traad.trace.trace
     @validate
