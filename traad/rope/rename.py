@@ -1,4 +1,4 @@
-from rope.refactor import multiproject, rename
+from rope.refactor import rename
 
 import traad.trace
 from traad.rope.validate import validate
@@ -25,14 +25,8 @@ class RenameFunctions:
 
         path = self._to_relative_path(path)
 
-        CrossRename = multiproject.MultiProjectRefactoring(
+        self.multi_project_refactoring(
             rename.Rename,
-            list(self.cross_projects.values()))
-
-        renamer = CrossRename(
             self.proj,
             self.proj.get_resource(path),
-            offset)
-
-        multiproject.perform(
-            renamer.get_all_changes(new_name))
+            offset).perform(new_name)

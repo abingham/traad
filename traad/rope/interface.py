@@ -2,6 +2,7 @@ import os
 
 from eagertools import emap
 import rope.base.project
+from rope.refactor import multiproject
 
 import traad.trace
 from traad.rope.change_signature import ChangeSignatureFunctions
@@ -103,6 +104,20 @@ class RopeInterface(ChangeSignatureFunctions,
                 path,
                 self.proj.root.real_path)
         return path
+
+    def multi_project_refactoring(self, ref, *args):
+        class MPRef:
+            def __init__(self, interface, ref, *args):
+                cross_ref = multiproject.MultiProjectRefactoring(
+                    ref,
+                    list(interface.cross_projects.values()))
+                self.ref = cross_ref(*args)
+
+            def perform(self, *args):
+                multiproject.perform(
+                    self.ref.get_all_changes(*args))
+
+        return MPRef(self, ref, *args)
 
     def __repr__(self):
         return 'RopeInterface("{}")'.format(
