@@ -139,8 +139,13 @@ after successful refactorings."
    (list
     (completing-read
      "Directory: "
-     (traad-call 'cross_projects))))
+     (traad-call 'cross_project_directories))))
   (traad-call 'remove_cross_project directory))
+
+(defun traad-get-cross-project-directories ()
+  "Get a list of root directories for cross projects."
+  (interactive)
+  (traad-call 'cross_project_directories))
 
 (defun traad-close ()
   "Close the current traad project, if any."

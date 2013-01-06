@@ -48,9 +48,23 @@ class RopeInterface(ChangeSignatureFunctions,
                  cross_project_dirs=[]):
         self.proj = rope.base.project.Project(project_dir)
 
+        self.cross_projects = dict()
+
         cross_dirs = set(cross_project_dirs)
         cross_dirs.discard(project_dir)
-        self.cross_projects = {d: rope.base.project.Project(d) for d in cross_dirs}
+        emap(self.add_cross_project, cross_dirs)
+
+    def add_cross_project(self, directory):
+        """Add a cross project rooted at `directory`."""
+        self.cross_projects[directory] = rope.base.project.Project(directory)
+
+    def remove_cross_project(self, directory):
+        """Remove the cross project rooted at `directory`."""
+        del self.cross_projects[directory]
+
+    def cross_project_directories(self):
+        """Get a list of root directories for all cross projects."""
+        return list(self.cross_projects.keys())
 
     @traad.trace.trace
     @validate
