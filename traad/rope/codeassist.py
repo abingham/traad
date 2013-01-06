@@ -120,5 +120,3 @@ class CodeAssistFunctions:
             return (path, rslt[1])
 
         return (rslt[0].real_path, rslt[1])
-
-    # TODO: calltip, definition location, occurences/findit
