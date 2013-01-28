@@ -60,9 +60,9 @@ emacs load-path and call ``(require 'traad)`` somewhere in your emacs
 startup. You can get more details in the documentation in ``traad.el``
 itself.
 
-Note that the emacs component uses ``xml-rpc.el`` to talk XMLRPC to
-the server. You may already have this installed. If not, a version is
-included with traad, so install that as well if necessary.
+You will also need to install ``xml-rpc.el``, which you can get `here
+<http://emacswiki.org/emacs/xml-rpc.el>_`. ``traad`` was last tested
+with version 1.6.8.
 
 Usage
 =====
