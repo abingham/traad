@@ -61,7 +61,7 @@ startup. You can get more details in the documentation in ``traad.el``
 itself.
 
 You will also need to install ``xml-rpc.el``, which you can get `here
-<http://emacswiki.org/emacs/xml-rpc.el>_`. ``traad`` was last tested
+<http://emacswiki.org/emacs/xml-rpc.el>`_. ``traad`` was last tested
 with version 1.6.8.
 
 Usage
