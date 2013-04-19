@@ -25,8 +25,15 @@ class RenameFunctions:
 
         path = self._to_relative_path(path)
 
-        self.multi_project_refactoring(
+        ref = self.multi_project_refactoring(
             rename.Rename,
             self.proj,
             self.proj.get_resource(path),
-            offset).perform(new_name)
+            offset)
+
+        # We want to return the list of changed files
+        files = [res.real_path for res in ref.ref.get_changes(new_name).get_changed_resources()]
+
+        ref.perform(new_name)
+
+        return { 'files': files }

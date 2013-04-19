@@ -75,10 +75,11 @@ class Tests(unittest.TestCase):
             IndexError,
             self.ri.undo)
 
-        self.ri.rename(
+        rslt = self.ri.rename(
             'Llama',
             'basic/foo.py',
             8)
+        self.assertEqual(len(rslt['files']), 2)
 
         self.ri.undo()
 

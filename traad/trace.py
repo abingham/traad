@@ -12,6 +12,7 @@ def trace(f, *args, **kw):
     '''A simple tracing decorator, mostly to help with debugging.
     '''
 
+    # TODO: Use reprlib
     def short_repr(x, max_length=200):
         r = repr(x)
         if len(r) > max_length:
