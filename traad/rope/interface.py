@@ -36,6 +36,27 @@ def get_all_resources(proj):
         if res.is_folder():
             todo.extend((child.path for child in res.get_children()))
 
+class MultiProjectRefactoring(object):
+    def __init__(self, interface, ref, *args):
+        cross_ref = multiproject.MultiProjectRefactoring(
+            ref,
+            list(interface.cross_projects.values()))
+        self.ref = cross_ref(*args)
+
+    def get_changed_resources(self, *args):
+        """Generate the sequence of Resources that will be changed
+        when *args is applied.
+        """
+        for proj, cset in self.ref.get_all_changes(*args):
+            for res in cset.get_changed_resources():
+                yield res
+
+    def perform(self, *args):
+        """Perform the refactoring with *args.
+        """
+        multiproject.perform(
+            self.ref.get_all_changes(*args))
+
 class RopeInterface(ChangeSignatureFunctions,
                     CodeAssistFunctions,
                     ExtractFunctions,
@@ -119,19 +140,14 @@ class RopeInterface(ChangeSignatureFunctions,
                 self.proj.root.real_path)
         return path
 
+
+
     def multi_project_refactoring(self, ref, *args):
-        class MPRef:
-            def __init__(self, interface, ref, *args):
-                cross_ref = multiproject.MultiProjectRefactoring(
-                    ref,
-                    list(interface.cross_projects.values()))
-                self.ref = cross_ref(*args)
+        """Create a MultiProjectRefactoring object for the refactoring `ref`
+        with the args `*args`.
+        """
 
-            def perform(self, *args):
-                multiproject.perform(
-                    self.ref.get_all_changes(*args))
-
-        return MPRef(self, ref, *args)
+        return MultiProjectRefactoring(self, ref, *args)
 
     def __repr__(self):
         return 'RopeInterface("{}")'.format(

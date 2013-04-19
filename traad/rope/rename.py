@@ -32,7 +32,7 @@ class RenameFunctions:
             offset)
 
         # We want to return the list of changed files
-        files = [res.real_path for res in ref.ref.get_changes(new_name).get_changed_resources()]
+        files = [res.real_path for res in ref.get_changed_resources(new_name)]
 
         ref.perform(new_name)
 
