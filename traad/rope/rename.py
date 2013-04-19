@@ -36,4 +36,4 @@ class RenameFunctions:
 
         ref.perform(new_name)
 
-        return { 'files': files }
+        return {'files': files }
