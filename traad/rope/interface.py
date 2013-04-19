@@ -37,6 +37,8 @@ def get_all_resources(proj):
             todo.extend((child.path for child in res.get_children()))
 
 class MultiProjectRefactoring(object):
+    """Support class for performing with multi-project refactorings.
+    """
     def __init__(self, interface, ref, *args):
         cross_ref = multiproject.MultiProjectRefactoring(
             ref,
@@ -144,7 +146,7 @@ class RopeInterface(ChangeSignatureFunctions,
 
     def multi_project_refactoring(self, ref, *args):
         """Create a MultiProjectRefactoring object for the refactoring `ref`
-        with the args `*args`.
+        with the constructor `*args`.
         """
 
         return MultiProjectRefactoring(self, ref, *args)
