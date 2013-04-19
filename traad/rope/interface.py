@@ -138,7 +138,7 @@ class RopeInterface(ChangeSignatureFunctions,
         '''
         if os.path.isabs(path):
             path = os.path.relpath(
-                path,
+                os.path.realpath(path),
                 self.proj.root.real_path)
         return path
 
