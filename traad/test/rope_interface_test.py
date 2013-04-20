@@ -79,7 +79,6 @@ class Tests(unittest.TestCase):
             'Llama',
             'basic/foo.py',
             8)
-        self.assertEqual(len(rslt['files']), 2)
 
         self.ri.undo()
 
