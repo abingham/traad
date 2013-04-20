@@ -12,13 +12,18 @@ class ChangeSignatureFunctions:
     """
 
     def change_sig(self, path, offset, operation):
-        self.multi_project_refactoring(
+        ref = self.multi_project_refactoring(
             rope.refactor.change_signature.ChangeSignature,
             self.proj,
             self.proj.get_resource(
                self._to_relative_path(path)),
-            offset).perform(
-                [operation])
+            offset)
+
+        ref.perform([operation])
+
+        files = [res.real_path for res in ref.get_changed_resources([operation])]
+        return {'files': files }
+
 
     @traad.trace.trace
     @validate

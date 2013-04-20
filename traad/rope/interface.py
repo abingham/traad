@@ -77,6 +77,9 @@ class RopeInterface(ChangeSignatureFunctions,
         cross_dirs.discard(project_dir)
         emap(self.add_cross_project, cross_dirs)
 
+    def close(self):
+        self.proj.close()
+
     def add_cross_project(self, directory):
         """Add a cross project rooted at `directory`."""
         self.cross_projects[directory] = rope.base.project.Project(directory)
