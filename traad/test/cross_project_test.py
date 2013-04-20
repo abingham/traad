@@ -23,7 +23,7 @@ class CrossTests(unittest.TestCase):
                 os.path.join(ACTIVE_DIR, dirname))
 
         self.ri = RopeInterface(
-            os.path.join(ACTIVE_DIR),
+            os.path.join(ACTIVE_DIR, 'main'),
             cross_project_dirs = [os.path.join(ACTIVE_DIR, 'cross')])
 
     def tearDown(self):
@@ -32,18 +32,18 @@ class CrossTests(unittest.TestCase):
     def test_cross_rename(self):
         self.ri.rename(
             'NotBar',
-            'main/basic/bar.py',
+            'basic/bar.py',
             30)
 
     def test_cross_normalize_arguments(self):
         self.ri.normalize_arguments(
-            'main/basic/bar.py',
+            'basic/bar.py',
             163)
 
     def test_cross_remove_argument(self):
         self.ri.remove_argument(
             1,
-            'main/basic/bar.py',
+            'basic/bar.py',
             163)
 
 if __name__ == '__main__':
