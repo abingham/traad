@@ -1,7 +1,4 @@
-import multiprocessing
 import os
-import shutil
-import time
 import unittest
 
 from traad.rope.interface import RopeInterface

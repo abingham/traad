@@ -1,5 +1,3 @@
-import os
-import shutil
 import unittest
 
 from traad.rope.interface import RopeInterface

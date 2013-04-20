@@ -1,9 +1,8 @@
-import os
-import shutil
 import unittest
 
 from traad.rope.interface import RopeInterface
 from traad.test import common
+
 
 class CrossTests(unittest.TestCase):
     def setUp(self):
