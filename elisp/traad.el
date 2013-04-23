@@ -103,7 +103,7 @@ after successful refactorings."
     (read-directory-name "Directory: ")))
   (traad-close)
   (let ((proc-buff (get-buffer-create "*traad-server*")))
-    (switch-to-buffer proc-buff)
+    (set-buffer proc-buff)
     (erase-buffer)
     (let* ((program (if (listp traad-server-program) 
 			traad-server-program 
@@ -114,6 +114,7 @@ after successful refactorings."
 	   (proc (apply #'start-process "traad-server" proc-buff program+args))
 	   (cont 1))
       (while cont
+    (set-process-query-on-exit-flag proc nil)
 	(accept-process-output proc 0 100 t)
 	(let ((port-str (with-current-buffer proc-buff
 			  (buffer-string))))
