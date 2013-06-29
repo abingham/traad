@@ -118,3 +118,22 @@ for the new name, after which rope will run that refactoring.
 In general, you'll probably want to configure emacs to automatically
 refresh buffers for you. This way the changes caused by the
 refactorings will appear in your buffers.
+
+Using ``virtualenv`` with ``python-environment.el``
+===================================================
+
+If you plan to use traad in a ``virtualenv`` virtual environment, you 
+might look into using Takafumi Arakaki's `python-environment.el
+<https://github.com/tkf/emacs-python-environment>`_. 
+
+Using this package, you can create a new virtual environment like this::
+
+  (python-environment-run (list "pip" "install" <path to traad source>))
+  
+You can then set your ``traad-server-program`` variable using ``python-environment-bin``::
+
+  (setq traad-server-program (python-environment-bin "traad"))
+  
+or if you're using python3::
+
+  (setq traad-server-program (python-environment-bin "traad3"))
