@@ -1,3 +1,5 @@
+`Travis CI <https://travis-ci.org/abingham/traad>`_ |build-status|
+
 =======================================
  Traad: Client-server Rope refactoring
 =======================================
@@ -137,3 +139,10 @@ You can then set your ``traad-server-program`` variable using ``python-environme
 or if you're using python3::
 
   (setq traad-server-program (python-environment-bin "traad3"))
+  
+.. Build status badge
+.. |build-status|
+   image:: https://secure.travis-ci.org/abingham/traad.png
+           ?branch=master
+   :target: http://travis-ci.org/abingham/traad
+   :alt: Build Status
