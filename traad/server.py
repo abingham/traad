@@ -1,28 +1,37 @@
 import logging
 
+from bottle import post, request, run
+
 from .rope.interface import RopeInterface
-from .xmlrpc import SimpleXMLRPCServer
 
 log = logging.getLogger('traad.server')
 
-def run_server(port, project):
-    server = SimpleXMLRPCServer(
-        ('127.0.0.1', port),
-        logRequests=True,
-        allow_none=True)
+# def run_server(port, project):
+#     server = SimpleXMLRPCServer(
+#         ('127.0.0.1', port),
+#         logRequests=True,
+#         allow_none=True)
 
-    print(server.server_address[1])
+#     print(server.server_address[1])
 
-    log.info(
-        'Running traad server for project "{}" at {}:{}'.format(
-            project,
-            server.server_address[0],
-            server.server_address[1]))
+#     log.info(
+#         'Running traad server for project "{}" at {}:{}'.format(
+#             project,
+#             server.server_address[0],
+#             server.server_address[1]))
 
-    server.register_instance(
-        RopeInterface(project))
+#     server.register_instance(
+#         RopeInterface(project))
 
-    server.serve_forever()
+#     server.serve_forever()
+
+project = None
+
+@post('/refactor/rename')
+def rename():
+    jdata = request.json
+    print('recieved:' ,jdata)
+    return {'hello': 42}
 
 def main():
     import argparse
@@ -57,7 +66,9 @@ def main():
         level=level)
 
     try:
-        run_server(args.port, args.project)
+        global project
+        project = RopeInterface(args.project)
+        run(host='localhost', port=args.port)
     except KeyboardInterrupt:
         log.info('Keyboard interrupt')
 

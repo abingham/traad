@@ -29,3 +29,4 @@ pip-log.txt
 # virtualenv
 p3/*
 p2/*
+env3/*
