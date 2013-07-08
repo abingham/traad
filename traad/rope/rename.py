@@ -20,7 +20,9 @@ class RenameFunctions:
         then it must to be relative to the root of the project.
 
         Args:
+          new_name: The new name of the thing being renamed.
           path: The path of the file/directory to query.
+          offset: Offset into the resource at which to do rename.
         '''
 
         path = self._to_relative_path(path)

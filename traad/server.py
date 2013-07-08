@@ -1,3 +1,5 @@
+from concurrent import futures
+import itertools
 import logging
 
 from bottle import post, request, run
@@ -26,12 +28,21 @@ log = logging.getLogger('traad.server')
 #     server.serve_forever()
 
 project = None
+task_ids = itertools.count()
+executor = futures.ThreadPoolExecutor(max_workers=1)
+tasks = {}
 
 @post('/refactor/rename')
 def rename():
-    jdata = request.json
-    print('recieved:' ,jdata)
-    return {'hello': 42}
+    print(request.json)
+    args = request.json
+    task_id = next(task_ids)
+    tasks[task_id] = executor.submit(
+        project.rename,
+        new_name=args['name'],
+        path=args['path'],
+        offset=args.get('offset'))
+    return {'task_id': task_id}
 
 def main():
     import argparse

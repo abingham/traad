@@ -57,7 +57,8 @@
 
 ;;; Code:
 
-(require 'xml-rpc)
+(require 'json)
+(require 'request)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; user variables
@@ -88,6 +89,7 @@ after successful refactorings."
   :type '(boolean)
   :group 'traad)
 
+; TODO: get rid of this when possible.
 (defcustom traad-use-async t
   "Whether traad should use asynchrounous XMLRPC calls when possible."
   :type '(boolean)
@@ -276,10 +278,21 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-string "New name: ")))
-  (traad-call-async-standard
-   'rename 
-   (list new-name buffer-file-name 
-	 (traad-adjust-point (point)))))
+  (let ((data '(("name" . new-name)
+                ("path" . (buffer-file-name))
+                ("offset" . (traad-adjust-point (point))))))
+    (request
+     (concat
+      "http://" traad-host ":" (number-to-string traad-port)
+      "/refactor/rename")
+     :type "POST"
+     :data (json-encode data)
+     :headers '(("Content-Type" . "application/json"))
+     :parser 'json-read
+     :success (function*
+               (lambda (&key data &allow-other-keys)
+                 (let* ((task-id (assoc-default 'task_id data)))
+                   (message "Rename started with task-id %s" task-id)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support

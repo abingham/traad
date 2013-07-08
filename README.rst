@@ -8,7 +8,7 @@ Traad is a client-server approach to using the
 `rope <http://rope.sourceforge.net/>`_ Python refactory library. It
 involves two basic components:
 
- 1. An XMLRPC server exposing the rope API, and
+ 1. A HTTP server exposing the rope API via JSON, and
  2. Client libraries (currently just emacs lisp) for talking to the
     server
 
@@ -62,9 +62,8 @@ emacs load-path and call ``(require 'traad)`` somewhere in your emacs
 startup. You can get more details in the documentation in ``traad.el``
 itself.
 
-You will also need to install ``xml-rpc.el``, which you can get `here
-<http://emacswiki.org/emacs/xml-rpc.el>`_. ``traad`` was last tested
-with version 1.6.8.
+You will also need to install ``request.el``, which you can get `here
+<http://tkf.github.io/emacs-request/>`_.
 
 Usage
 =====
@@ -124,22 +123,22 @@ refactorings will appear in your buffers.
 Using ``virtualenv`` with ``python-environment.el``
 ===================================================
 
-If you plan to use traad in a ``virtualenv`` virtual environment, you 
+If you plan to use traad in a ``virtualenv`` virtual environment, you
 might look into using Takafumi Arakaki's `python-environment.el
-<https://github.com/tkf/emacs-python-environment>`_. 
+<https://github.com/tkf/emacs-python-environment>`_.
 
 Using this package, you can create a new virtual environment like this::
 
   (python-environment-run (list "pip" "install" <path to traad source>))
-  
+
 You can then set your ``traad-server-program`` variable using ``python-environment-bin``::
 
   (setq traad-server-program (python-environment-bin "traad"))
-  
+
 or if you're using python3::
 
   (setq traad-server-program (python-environment-bin "traad3"))
-  
+
 .. Build status badge
 .. |build-status|
    image:: https://secure.travis-ci.org/abingham/traad.png
