@@ -57,8 +57,10 @@
 
 ;;; Code:
 
+(require 'deferred)
 (require 'json)
 (require 'request)
+(require 'request-deferred)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; user variables
@@ -160,6 +162,27 @@ after successful refactorings."
   "Determine if a traad server is running."
   (interactive)
   (if (get-process "traad-server") 't nil))
+
+(defun traad-task-status (task-id)
+  "Get the status of a traad task. Returns a deferred request."
+  (request-deferred
+   (concat
+    "http://" traad-host ":" (number-to-string traad-port)
+    "/task/" (number-to-string task-id))
+   :type "GET"
+   :parser 'json-read))
+
+(defun traad-display-task-status (task-id)
+  "Get the status of a traad task."
+  (interactive
+   (list
+    (read-number "ID: ")))
+  (deferred:$
+    (traad-task-status task-id)
+    (deferred:nextc it
+      (lambda (response)
+        (message "Task status: %s"
+                 (request-response-data response))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; resource access

@@ -2,7 +2,7 @@ from concurrent import futures
 import itertools
 import logging
 
-from bottle import post, request, run
+from bottle import abort, get, post, request, run
 
 from .rope.interface import RopeInterface
 
@@ -28,6 +28,22 @@ def run_server(port, project_path):
     global project
     project = RopeInterface(project_path)
     run(host=host, port=port)
+
+@get('/task/<task_id>')
+def task_status(task_id):
+    try:
+        task = tasks[int(task_id)]
+    except KeyError:
+        abort(404, "No task with that ID")
+
+    if task.cancelled():
+        return {'status': 'CANCELLED'}
+    elif task.running():
+        return {'status': 'RUNNING'}
+    elif task.done():
+        return {'status': 'COMPLETE'}
+    else:
+        return {'status': 'PENDING'}
 
 @post('/refactor/rename')
 def rename():
@@ -78,6 +94,7 @@ def main():
     try:
         run_server(args.port, args.project)
     except KeyboardInterrupt:
+        # TODO: Executor shutdown?
         log.info('Keyboard interrupt')
 
 if __name__ == '__main__':
