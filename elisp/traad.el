@@ -163,6 +163,9 @@ after successful refactorings."
   (interactive)
   (if (get-process "traad-server") 't nil))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; status of tasks running on the server.
+
 (defun traad-task-status (task-id)
   "Get the status of a traad task. Returns a deferred request."
   (request-deferred
