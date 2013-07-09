@@ -10,30 +10,31 @@ log = logging.getLogger('traad.server')
 
 # TODO: Is there a way to attach this to every request rather than
 # using a global?
-the_project = None
-
-
-def run_server(port, project):
-    host = 'localhost'
-
-    log.info(
-        'Running traad server for project "{}" at {}:{}'.format(
-            project,
-            host,
-            port))
-
-    the_project = RopeInterface(project)
-    run(host=host, port=port)
-
 project = None
+
 task_ids = itertools.count()
 executor = futures.ThreadPoolExecutor(max_workers=1)
 tasks = {}
 
+def run_server(port, project_path):
+    host = 'localhost'
+
+    log.info(
+        'Running traad server for project "{}" at {}:{}'.format(
+            project_path,
+            host,
+            port))
+
+    global project
+    project = RopeInterface(project_path)
+    run(host=host, port=port)
+
 @post('/refactor/rename')
 def rename():
-    print(request.json)
     args = request.json
+
+    log.info('rename: {}'.format(args))
+
     task_id = next(task_ids)
     tasks[task_id] = executor.submit(
         project.rename,

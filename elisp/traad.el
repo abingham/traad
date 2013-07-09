@@ -278,9 +278,9 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-string "New name: ")))
-  (let ((data '(("name" . new-name)
-                ("path" . (buffer-file-name))
-                ("offset" . (traad-adjust-point (point))))))
+  (let ((data (list (cons "name" new-name)
+                    (cons "path" (buffer-file-name))
+                    (cons "offset" (traad-adjust-point (point))))))
     (request
      (concat
       "http://" traad-host ":" (number-to-string traad-port)
