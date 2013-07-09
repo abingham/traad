@@ -131,6 +131,7 @@ after successful refactorings."
 	    (when (< 30 cont) ; timeout after 3 seconds
 	      (error "Server timeout.")))))))))
 
+; TODO
 (defun traad-add-cross-project (directory)
   "Add a cross-project to the traad instance."
   (interactive
@@ -138,6 +139,7 @@ after successful refactorings."
     (read-directory-name "Directory:")))
   (traad-call 'add_cross_project directory))
 
+; TODO
 (defun traad-remove-cross-project (directory)
   "Remove a cross-project from the traad instance."
   (interactive
@@ -147,6 +149,7 @@ after successful refactorings."
      (traad-call 'cross_project_directories))))
   (traad-call 'remove_cross_project directory))
 
+; TODO
 (defun traad-get-cross-project-directories ()
   "Get a list of root directories for cross projects."
   (interactive)
@@ -190,15 +193,18 @@ after successful refactorings."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; resource access
 
+; TODO
 (defun traad-get-all-resources ()
   "Get all resources in a project."
   (traad-call 'get_all_resources))
 
+; TODO
 (defun traad-get-children (path)
   "Get all child resources for PATH. PATH may be absolute or relative to
 the project root."
   (traad-call 'get_children path))
 
+; TODO
 (defun traad-get-root ()
   "Get the project root."
   (traad-call 'get_root))
@@ -206,6 +212,7 @@ the project root."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
 
+; TODO
 (defun traad-undo (idx)
   "Undo the IDXth change from the history. \
 IDX is the position of an entry in the undo list (see: \
@@ -217,6 +224,7 @@ undone."
   (traad-call-async-standard
    'undo (list idx)))
 
+; TODO
 (defun traad-redo (idx)
   "Redo the IDXth change from the history. \
 IDX is the position of an entry in the redo list (see: \
@@ -228,6 +236,7 @@ redone."
   (traad-call-async-standard
    'redo (list idx)))
 
+; TODO
 (defun traad-update-history-buffer ()
   "Update the contents of the history buffer, creating it if \
 necessary. Return the history buffer."
@@ -245,11 +254,13 @@ necessary. Return the history buffer."
       buff)
     ))
 
+; TODO
 (defun traad-history ()
   "Display undo and redo history."
   (interactive)
   (switch-to-buffer (traad-update-history-buffer)))
 
+; TODO
 (defun traad-history-info-core (info)
   "Display information on a single undo/redo operation."
   (let ((buff (get-buffer-create "*traad-change*")))
@@ -262,6 +273,7 @@ necessary. Return the history buffer."
 	    (cdr (assoc "full_change" info))
 	    )))
 
+; TODO
 (defun traad-undo-info (i)
   "Get info on the I'th undo history."
   (interactive
@@ -269,6 +281,7 @@ necessary. Return the history buffer."
     (read-number "Undo index: " 0)))
   (traad-history-info-core (traad-call 'undo_info i)))
 
+; TODO
 (defun traad-redo-info (i)
   "Get info on the I'th redo history."
   (interactive
@@ -279,6 +292,7 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
+; TODO
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
   (interactive
@@ -323,6 +337,7 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
 
+; TODO
 (defun traad-normalize-arguments ()
   "Normalize the arguments for the method at point."
   (interactive)
@@ -332,6 +347,7 @@ necessary. Return the history buffer."
     buffer-file-name 
     (traad-adjust-point (point)))))
 
+; TODO
 (defun traad-remove-argument (index)
   "Remove the INDEXth argument from the signature at point."
   (interactive
@@ -353,11 +369,13 @@ necessary. Return the history buffer."
 	      (traad-adjust-point begin)
 	      (traad-adjust-point end))))
 
+; TODO
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
   (interactive "sMethod name: \nr")
   (traad-extract-core 'extract_method name begin end))
 
+; TODO
 (defun traad-extract-variable (name begin end)
   "Extract the currently selected region to a new variable."
   (interactive "sVariable name: \nr")
@@ -368,6 +386,7 @@ necessary. Return the history buffer."
 
 ;; TODO: refactor these importutils using a macro?
 
+; TODO
 (defun traad-organize-imports (filename)
   "Organize the import statements in FILENAME."
   (interactive
@@ -376,6 +395,7 @@ necessary. Return the history buffer."
   (traad-call-async-standard
    'organize_imports (list filename)))
 
+; TODO
 (defun traad-expand-star-imports (filename)
   "Expand * import statements in FILENAME."
   (interactive
@@ -384,6 +404,7 @@ necessary. Return the history buffer."
   (traad-call-async-standard
    'expand_star_imports (list filename)))
 
+; TODO
 (defun traad-froms-to-imports (filename)
   "Convert 'from' imports to normal imports in FILENAME."
   (interactive
@@ -392,6 +413,7 @@ necessary. Return the history buffer."
   (traad-call-async-standard
    'froms_to_imports (list filename)))
 
+; TODO
 (defun traad-relatives-to-absolutes (filename)
   "Convert relative imports to absolute in FILENAME."
   (interactive
@@ -400,6 +422,7 @@ necessary. Return the history buffer."
   (traad-call-async-standard
    'relatives_to_absolutes (list filename)))
 
+; TODO
 (defun traad-handle-long-imports (filename)
   "Clean up long import statements in FILENAME."
   (interactive
@@ -411,6 +434,7 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; findit
 
+; TODO
 (defun traad-find-occurrences (pos)
   "Get all occurences the use of the symbol as POS in the
 current buffer."
@@ -418,12 +442,14 @@ current buffer."
 	      (traad-adjust-point pos)
 	      (buffer-file-name)))
 
+; TODO
 (defun traad-find-implementations (pos)
   "Find all places a given method is overridden."
   (traad-call 'find_implementations
 	      (traad-adjust-point pos)
 	      (buffer-file-name)))
 
+; TODO
 (defun traad-find-definition (pos)
   "Get location of a function definition."
   (traad-call 'find_definition
@@ -433,6 +459,7 @@ current buffer."
 	      (traad-adjust-point pos)
 	      (buffer-file-name)))
 
+; TODO
 (defun traad-display-findit (pos func buff-name)
   "Common display routine for occurrences and implementations."
   (let ((locs (apply func (list pos)))
@@ -455,18 +482,21 @@ current buffer."
 		    lineno 
 		    (find-file-other-window abspath))))))))
 
+; TODO
 (defun traad-display-occurrences (pos)
   "Display all occurences the use of the symbol as POS in the
 current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-occurrences "*traad-occurrences*"))
 
+; TODO
 (defun traad-display-implementations (pos)
   "Display all occurences the use of the symbol as POS in the
 current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-implementations "*traad-implementations*"))
 
+; TODO
 (defun traad-goto-definition (pos)
   "Go to the definition of the function as POS."
   (interactive "d")
@@ -478,6 +508,7 @@ current buffer."
      lineno
      (find-file-other-window abspath))))
 
+; TODO
 (defun traad-findit (type)
   "Run a findit function at the current point."
   (interactive
@@ -496,6 +527,7 @@ current buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
+; TODO
 (defun traad-code-assist (pos)
   "Get possible completions at POS in current buffer. This returns a list of \
 lists: ((name, documentation, scope, type), . . .)."
@@ -507,6 +539,7 @@ lists: ((name, documentation, scope, type), . . .)."
 	      pos
 	      (buffer-file-name)))
 
+; TODO
 (defun traad-display-in-buffer (msg buffer)
   (let ((cbuff (current-buffer))
 	(buff (get-buffer-create buffer))
@@ -515,7 +548,8 @@ lists: ((name, documentation, scope, type), . . .)."
     (erase-buffer)
     (insert msg)
     (pop-to-buffer cbuff)))
-  
+
+; TODO
 (defun traad-get-calltip (pos)
   "Get the calltip for an object."
   ; TODO: Why do I have this "or" here? Get rid of it when you have a
@@ -527,6 +561,7 @@ lists: ((name, documentation, scope, type), . . .)."
 		  (traad-adjust-point pos)
 		  (buffer-file-name))))
 
+; TODO
 (defun traad-display-calltip (pos)
   "Display calltip for an object."
   (interactive "d")
@@ -534,6 +569,7 @@ lists: ((name, documentation, scope, type), . . .)."
    (traad-get-calltip pos)
    "*traad-calltip*"))
 
+; TODO
 (defun traad-get-doc (pos)
   "Get docstring for an object."
   (or (traad-call 'get_doc
@@ -544,6 +580,7 @@ lists: ((name, documentation, scope, type), . . .)."
 		  (buffer-file-name))
       "<no docs available>"))
 
+; TODO
 (defun traad-display-doc (pos)
   "Display docstring for an object."
   (interactive "d")
@@ -551,6 +588,7 @@ lists: ((name, documentation, scope, type), . . .)."
    (traad-get-doc pos)
    "*traad-doc*"))
 
+; TODO
 (defun traad-get-definition (pos)
   "Go to definition of the object at POS."
   (interactive "d")

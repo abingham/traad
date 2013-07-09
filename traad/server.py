@@ -86,6 +86,58 @@ def remove_argument_view():
         offset=args['offset'])
     return {'task_id': task_id}
 
+@get('/code_assist/completion')
+def code_assist_completion_view():
+    args = request.json
+
+    log.info('code assist: {}'.format(args))
+
+    return {
+        'results': project.code_assist(
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
+
+@get('/code_assist/doc')
+def code_assist_doc_view():
+    args = request.json
+
+    log.info('get doc: {}'.format(args))
+
+    return {
+        'results': project.get_doc(
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
+
+@get('/code_assist/calltip')
+def code_assist_calltip_view():
+    args = request.json
+
+    log.info('get calltip: {}'.format(args))
+
+    return {
+        'results': project.get_calltip(
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
+
+@get('/code_assist/definition')
+def code_assist_definition_view():
+    args = request.json
+
+    log.info('get definition: {}'.format(args))
+
+    return {
+        'results': project.get_definition_location(
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
+
 def main():
     import argparse
 
