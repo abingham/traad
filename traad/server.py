@@ -8,24 +8,22 @@ from .rope.interface import RopeInterface
 
 log = logging.getLogger('traad.server')
 
-# def run_server(port, project):
-#     server = SimpleXMLRPCServer(
-#         ('127.0.0.1', port),
-#         logRequests=True,
-#         allow_none=True)
+# TODO: Is there a way to attach this to every request rather than
+# using a global?
+the_project = None
 
-#     print(server.server_address[1])
 
-#     log.info(
-#         'Running traad server for project "{}" at {}:{}'.format(
-#             project,
-#             server.server_address[0],
-#             server.server_address[1]))
+def run_server(port, project):
+    host = 'localhost'
 
-#     server.register_instance(
-#         RopeInterface(project))
+    log.info(
+        'Running traad server for project "{}" at {}:{}'.format(
+            project,
+            host,
+            port))
 
-#     server.serve_forever()
+    the_project = RopeInterface(project)
+    run(host=host, port=port)
 
 project = None
 task_ids = itertools.count()
@@ -77,9 +75,7 @@ def main():
         level=level)
 
     try:
-        global project
-        project = RopeInterface(args.project)
-        run(host='localhost', port=args.port)
+        run_server(args.port, args.project)
     except KeyboardInterrupt:
         log.info('Keyboard interrupt')
 
