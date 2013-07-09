@@ -46,7 +46,7 @@ def task_status(task_id):
         return {'status': 'PENDING'}
 
 @post('/refactor/rename')
-def rename():
+def rename_view():
     args = request.json
 
     log.info('rename: {}'.format(args))
@@ -57,6 +57,33 @@ def rename():
         new_name=args['name'],
         path=args['path'],
         offset=args.get('offset'))
+    return {'task_id': task_id}
+
+@post('/refactor/normalize_arguments')
+def normal_arguments_view():
+    args = request.json
+
+    log.info('normalize arguments: {}'.format(args))
+
+    task_id = next(task_ids)
+    tasks[task_id] = executor.submit(
+        project.normalize_arguments,
+        path=args['path'],
+        offset=args['offset'])
+    return {'task_id': task_id}
+
+@post('/refactor/remove_argument')
+def remove_argument_view():
+    args = request.json
+
+    log.info('remove argument: {}'.format(args))
+
+    task_id = next(task_ids)
+    tasks[task_id] = executor.submit(
+        project.remove_argument,
+        arg_index=args['arg_index'],
+        path=args['path'],
+        offset=args['offset'])
     return {'task_id': task_id}
 
 def main():
