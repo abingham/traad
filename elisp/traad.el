@@ -178,6 +178,15 @@ after successful refactorings."
    :type "GET"
    :parser 'json-read))
 
+(defun traad-full-task-status ()
+  "Get the status of all traad tasks. Returns a deferred request."
+  (request-deferred
+   (concat
+    "http://" traad-host ":" (number-to-string traad-port)
+    "/tasks")
+   :type "GET"
+   :parser 'json-read))
+
 (defun traad-display-task-status (task-id)
   "Get the status of a traad task."
   (interactive
@@ -189,6 +198,18 @@ after successful refactorings."
       (lambda (response)
         (message "Task status: %s"
                  (request-response-data response))))))
+
+(defun traad-display-full-task-status ()
+  (interactive)
+  (deferred:$
+    (traad-full-task-status)
+    (deferred:nextc it
+      (lambda (response)
+        (let ((buff (get-buffer-create "*traad-task-status*")))
+          (switch-to-buffer buff)
+          (erase-buffer)
+          (insert (format "%s"
+                          (request-response-data response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; resource access

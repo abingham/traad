@@ -16,6 +16,7 @@ task_ids = itertools.count()
 executor = futures.ThreadPoolExecutor(max_workers=1)
 tasks = {}
 
+
 def run_server(port, project_path):
     host = 'localhost'
 
@@ -29,12 +30,9 @@ def run_server(port, project_path):
     project = RopeInterface(project_path)
     run(host=host, port=port)
 
-@get('/task/<task_id>')
+
 def task_status(task_id):
-    try:
-        task = tasks[int(task_id)]
-    except KeyError:
-        abort(404, "No task with that ID")
+    task = tasks[int(task_id)]
 
     if task.cancelled():
         return {'status': 'CANCELLED'}
@@ -44,6 +42,20 @@ def task_status(task_id):
         return {'status': 'COMPLETE'}
     else:
         return {'status': 'PENDING'}
+
+
+@get('/task/<task_id>')
+def task_status_view(task_id):
+    try:
+        return task_status(task_id)
+    except KeyError:
+        abort(404, "No task with that ID")
+
+
+@get('/tasks')
+def full_task_status():
+    return {task_id: task_status(task_id) for task_id in tasks}
+
 
 @post('/refactor/rename')
 def rename_view():
@@ -59,6 +71,7 @@ def rename_view():
         offset=args.get('offset'))
     return {'task_id': task_id}
 
+
 @post('/refactor/normalize_arguments')
 def normalize_arguments_view():
     args = request.json
@@ -71,6 +84,7 @@ def normalize_arguments_view():
         path=args['path'],
         offset=args['offset'])
     return {'task_id': task_id}
+
 
 @post('/refactor/remove_argument')
 def remove_argument_view():
@@ -86,6 +100,7 @@ def remove_argument_view():
         offset=args['offset'])
     return {'task_id': task_id}
 
+
 @get('/code_assist/completion')
 def code_assist_completion_view():
     args = request.json
@@ -98,6 +113,7 @@ def code_assist_completion_view():
             offset=args['offset'],
             path=args['path'])
     }
+
 
 @get('/code_assist/doc')
 def code_assist_doc_view():
@@ -112,6 +128,7 @@ def code_assist_doc_view():
             path=args['path'])
     }
 
+
 @get('/code_assist/calltip')
 def code_assist_calltip_view():
     args = request.json
@@ -124,6 +141,7 @@ def code_assist_calltip_view():
             offset=args['offset'],
             path=args['path'])
     }
+
 
 @get('/code_assist/definition')
 def code_assist_definition_view():
@@ -138,6 +156,7 @@ def code_assist_definition_view():
             path=args['path'])
     }
 
+
 def main():
     import argparse
 
@@ -147,7 +166,8 @@ def main():
     parser.add_argument(
         '-p, --port', metavar='N', type=int,
         dest='port', default=0,
-        help='the port on which the server will listen. (0 selects an unused port.)')
+        help='the port on which the server will listen. '
+             '(0 selects an unused port.)')
 
     parser.add_argument(
         '-V, --verbosity', metavar='N', type=int,
