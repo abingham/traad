@@ -60,7 +60,7 @@ def rename_view():
     return {'task_id': task_id}
 
 @post('/refactor/normalize_arguments')
-def normal_arguments_view():
+def normalize_arguments_view():
     args = request.json
 
     log.info('normalize arguments: {}'.format(args))

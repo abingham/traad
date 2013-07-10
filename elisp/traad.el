@@ -337,15 +337,23 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
 
-; TODO
 (defun traad-normalize-arguments ()
   "Normalize the arguments for the method at point."
   (interactive)
-    (traad-call-async-standard
-   'normalize_arguments
-   (list 
-    buffer-file-name 
-    (traad-adjust-point (point)))))
+  (let ((data (list (cons "path" (buffer-file-name))
+                    (cons "offset" (traad-adjust-point (point))))))
+    (request
+     (concat
+      "http://" traad-host ":" (number-to-string traad-port)
+      "/refactor/normalize_arguments")
+     :type "POST"
+     :data (json-encode data)
+     :headers '(("Content-Type" . "application/json"))
+     :parser 'json-read
+     :success (function*
+               (lambda (&key data &allow-other-keys)
+                 (let* ((task-id (assoc-default 'task_id data)))
+                   (message "Normalize-arguments started with task-id %s" task-id)))))))
 
 ; TODO
 (defun traad-remove-argument (index)
