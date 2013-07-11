@@ -342,18 +342,12 @@ necessary. Return the history buffer."
   (let ((data (list (cons "name" new-name)
                     (cons "path" (buffer-file-name))
                     (cons "offset" (traad-adjust-point (point))))))
-    (request
-     (concat
-      "http://" traad-host ":" (number-to-string traad-port)
-      "/refactor/rename")
-     :type "POST"
-     :data (json-encode data)
-     :headers '(("Content-Type" . "application/json"))
-     :parser 'json-read
-     :success (function*
-               (lambda (&key data &allow-other-keys)
-                 (let* ((task-id (assoc-default 'task_id data)))
-                   (message "Rename started with task-id %s" task-id)))))))
+    (traad-request
+     "/refactor/rename"
+     data
+     (lambda (&key data &allow-other-keys)
+       (let* ((task-id (assoc-default 'task_id data)))
+         (message "Rename started with task-id %s" task-id))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
@@ -363,18 +357,12 @@ necessary. Return the history buffer."
   (interactive)
   (let ((data (list (cons "path" (buffer-file-name))
                     (cons "offset" (traad-adjust-point (point))))))
-    (request
-     (concat
-      "http://" traad-host ":" (number-to-string traad-port)
-      "/refactor/normalize_arguments")
-     :type "POST"
-     :data (json-encode data)
-     :headers '(("Content-Type" . "application/json"))
-     :parser 'json-read
-     :success (function*
-               (lambda (&key data &allow-other-keys)
-                 (let* ((task-id (assoc-default 'task_id data)))
-                   (message "Normalize-arguments started with task-id %s" task-id)))))))
+    (traad-request
+     "/refactor/normalize_arguments"
+     data
+     (lambda (&key data &allow-other-keys)
+       (let* ((task-id (assoc-default 'task_id data)))
+         (message "Normalize-arguments started with task-id %s" task-id))))))
 
 ; TODO
 (defun traad-remove-argument (index)
@@ -635,6 +623,18 @@ lists: ((name, documentation, scope, type), . . .)."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
+
+(defun traad-request (location data callback)
+  "Post `data` as JSON to `location` on the server, calling `callback` with the response."
+  (request
+   (concat
+    "http://" traad-host ":" (number-to-string traad-port)
+    location)
+   :type "POST"
+   :data (json-encode data)
+   :headers '(("Content-Type" . "application/json"))
+   :parser 'json-read
+   :success (function* callback)))
 
 (defun traad-call (func &rest args)
   "Make an XMLRPC call to FUNC with ARGS on the traad server."
