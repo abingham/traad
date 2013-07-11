@@ -12,7 +12,6 @@ def trace(f, *args, **kw):
     '''A simple tracing decorator, mostly to help with debugging.
     '''
 
-    # TODO: Use reprlib
     def short_repr(x, max_length=200):
         r = repr(x)
         if len(r) > max_length:
@@ -27,11 +26,18 @@ def trace(f, *args, **kw):
                     args,
                     kw.values())))))
 
-    try:
-        return f(*args, **kw)
-    except:
-        einfo = sys.exc_info()
-        log.error('Exception in {}: {}'.format(
-            f.__name__,
-            ''.join(traceback.format_exception(einfo[0], einfo[1], einfo[2]))))
-        raise
+    return f(*args, **kw)
+
+    # # TODO: Use reprlib
+
+
+
+
+    # try:
+    #     return f(*args, **kw)
+    # except:
+    #     einfo = sys.exc_info()
+    #     log.error('Exception in {}: {}'.format(
+    #         f.__name__,
+    #         ''.join(traceback.format_exception(einfo[0], einfo[1], einfo[2]))))
+    #     raise

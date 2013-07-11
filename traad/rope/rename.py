@@ -1,41 +1,29 @@
-from rope.refactor import rename
+import rope.refactor
 
 import traad.trace
 from traad.rope.validate import validate
 
 
-class RenameFunctions:
-    """The rename related functions of the rope interface.
+#@traad.trace
+@validate
+def rename(project, state, new_name, path, offset=None):
+    path = project.to_relative_path(path)
 
-    A base for RopeInterface.
+    # Construct the refactoring object
+    ref = project.make_refactoring(
+        rope.refactor.rename.Rename,
+        project.get_resource(path),
+        offset)
 
-    """
+    # This gets a change object that knows about the new-name.
+    change = ref.get_change(new_name)
 
-    @traad.trace.trace
-    @validate
-    def rename(self, new_name, path, offset=None):
-        '''Rename a resource.
+    # Update some state. The state is reentrant.
+    # Note that `state` encapsulates the task_id for this
+    # refactoring, so we don't need to deal with it.
+    state.update(
+        {'description': list(change.descriptions),
+         'changed_resources': list(change.resources)})
 
-        ``path`` may be absolute or relative. If ``path`` is relative,
-        then it must to be relative to the root of the project.
-
-        Args:
-          new_name: The new name of the thing being renamed.
-          path: The path of the file/directory to query.
-          offset: Offset into the resource at which to do rename.
-        '''
-
-        path = self._to_relative_path(path)
-
-        ref = self.multi_project_refactoring(
-            rename.Rename,
-            self.proj,
-            self.proj.get_resource(path),
-            offset)
-
-        # We want to return the list of changed files
-        files = [res.real_path for res in ref.get_changed_resources(new_name)]
-
-        ref.perform(new_name)
-
-        return {'files': files }
+    # actually run the refactoring
+    change.perform()

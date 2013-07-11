@@ -1,10 +1,13 @@
-from concurrent import futures
 import itertools
 import logging
+import queue
+import threading
 
 from bottle import abort, get, post, request, run
 
-from .rope.interface import RopeInterface
+from .rope.project import Project
+from .rope.rename import rename
+from .state import State
 
 log = logging.getLogger('traad.server')
 
@@ -12,10 +15,35 @@ log = logging.getLogger('traad.server')
 # using a global?
 project = None
 
-task_ids = itertools.count()
-executor = futures.ThreadPoolExecutor(max_workers=1)
-tasks = {}
+state = State()
 
+task_ids = itertools.count()
+task_queue = queue.Queue()
+
+
+class TaskProcessor(threading.Thread):
+    def __init__(self, q, project, state):
+        super(TaskProcessor, self).__init__()
+        self.task_queue = q
+        self.proj = project
+
+    def run(self):
+        while True:
+            task = self.task_queue.get()
+
+            try:
+                # None means to quit.
+                if task is None:
+                    return
+
+                task_id, func, *args = task
+
+                with self.proj.lock:
+                    func(self.proj,
+                         state[task_id],
+                         *args)
+            finally:
+                self.task_queue.task_done()
 
 def run_server(port, project_path):
     host = 'localhost'
@@ -27,34 +55,41 @@ def run_server(port, project_path):
             port))
 
     global project
-    project = RopeInterface(project_path)
-    run(host=host, port=port)
+    project = Project(project_path)
+    proc = TaskProcessor(task_queue, project, state)
+    proc.start()
 
-
-def task_status(task_id):
-    task = tasks[int(task_id)]
-
-    if task.cancelled():
-        return {'status': 'CANCELLED'}
-    elif task.running():
-        return {'status': 'RUNNING'}
-    elif task.done():
-        return {'status': 'COMPLETE'}
-    else:
-        return {'status': 'PENDING'}
-
-
-@get('/task/<task_id>')
-def task_status_view(task_id):
     try:
-        return task_status(task_id)
-    except KeyError:
-        abort(404, "No task with that ID")
+        run(host=host, port=port)
+    finally:
+        task_queue.put(None)
+        task_queue.join()
 
 
-@get('/tasks')
-def full_task_status():
-    return {task_id: task_status(task_id) for task_id in tasks}
+# def task_status(task_id):
+#     task = tasks[int(task_id)]
+
+#     if task.cancelled():
+#         return {'status': 'CANCELLED'}
+#     elif task.running():
+#         return {'status': 'RUNNING'}
+#     elif task.done():
+#         return {'status': 'COMPLETE'}
+#     else:
+#         return {'status': 'PENDING'}
+
+
+# @get('/task/<task_id>')
+# def task_status_view(task_id):
+#     try:
+#         return task_status(task_id)
+#     except KeyError:
+#         abort(404, "No task with that ID")
+
+
+# @get('/tasks')
+# def full_task_status():
+#     return {task_id: task_status(task_id) for task_id in tasks}
 
 
 @post('/refactor/rename')
@@ -64,97 +99,101 @@ def rename_view():
     log.info('rename: {}'.format(args))
 
     task_id = next(task_ids)
-    tasks[task_id] = executor.submit(
-        project.rename,
-        new_name=args['name'],
-        path=args['path'],
-        offset=args.get('offset'))
+
+    state.create(task_id)
+
+    task_queue.put((task_id,
+                    rename,
+                    args['name'],
+                    args['path'],
+                    args.get('offset')))
+
     return {'task_id': task_id}
 
 
-@post('/refactor/normalize_arguments')
-def normalize_arguments_view():
-    args = request.json
+# @post('/refactor/normalize_arguments')
+# def normalize_arguments_view():
+#     args = request.json
 
-    log.info('normalize arguments: {}'.format(args))
+#     log.info('normalize arguments: {}'.format(args))
 
-    task_id = next(task_ids)
-    tasks[task_id] = executor.submit(
-        project.normalize_arguments,
-        path=args['path'],
-        offset=args['offset'])
-    return {'task_id': task_id}
-
-
-@post('/refactor/remove_argument')
-def remove_argument_view():
-    args = request.json
-
-    log.info('remove argument: {}'.format(args))
-
-    task_id = next(task_ids)
-    tasks[task_id] = executor.submit(
-        project.remove_argument,
-        arg_index=args['arg_index'],
-        path=args['path'],
-        offset=args['offset'])
-    return {'task_id': task_id}
+#     task_id = next(task_ids)
+#     tasks[task_id] = executor.submit(
+#         project.normalize_arguments,
+#         path=args['path'],
+#         offset=args['offset'])
+#     return {'task_id': task_id}
 
 
-@get('/code_assist/completion')
-def code_assist_completion_view():
-    args = request.json
+# @post('/refactor/remove_argument')
+# def remove_argument_view():
+#     args = request.json
 
-    log.info('code assist: {}'.format(args))
+#     log.info('remove argument: {}'.format(args))
 
-    return {
-        'results': project.code_assist(
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
-    }
-
-
-@get('/code_assist/doc')
-def code_assist_doc_view():
-    args = request.json
-
-    log.info('get doc: {}'.format(args))
-
-    return {
-        'results': project.get_doc(
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
-    }
+#     task_id = next(task_ids)
+#     tasks[task_id] = executor.submit(
+#         project.remove_argument,
+#         arg_index=args['arg_index'],
+#         path=args['path'],
+#         offset=args['offset'])
+#     return {'task_id': task_id}
 
 
-@get('/code_assist/calltip')
-def code_assist_calltip_view():
-    args = request.json
+# @get('/code_assist/completion')
+# def code_assist_completion_view():
+#     args = request.json
 
-    log.info('get calltip: {}'.format(args))
+#     log.info('code assist: {}'.format(args))
 
-    return {
-        'results': project.get_calltip(
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
-    }
+#     return {
+#         'results': project.code_assist(
+#             code=args['code'],
+#             offset=args['offset'],
+#             path=args['path'])
+#     }
 
 
-@get('/code_assist/definition')
-def code_assist_definition_view():
-    args = request.json
+# @get('/code_assist/doc')
+# def code_assist_doc_view():
+#     args = request.json
 
-    log.info('get definition: {}'.format(args))
+#     log.info('get doc: {}'.format(args))
 
-    return {
-        'results': project.get_definition_location(
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
-    }
+#     return {
+#         'results': project.get_doc(
+#             code=args['code'],
+#             offset=args['offset'],
+#             path=args['path'])
+#     }
+
+
+# @get('/code_assist/calltip')
+# def code_assist_calltip_view():
+#     args = request.json
+
+#     log.info('get calltip: {}'.format(args))
+
+#     return {
+#         'results': project.get_calltip(
+#             code=args['code'],
+#             offset=args['offset'],
+#             path=args['path'])
+#     }
+
+
+# @get('/code_assist/definition')
+# def code_assist_definition_view():
+#     args = request.json
+
+#     log.info('get definition: {}'.format(args))
+
+#     return {
+#         'results': project.get_definition_location(
+#             code=args['code'],
+#             offset=args['offset'],
+#             path=args['path'])
+#     }
 
 
 def main():

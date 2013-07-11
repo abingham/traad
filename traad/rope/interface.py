@@ -11,8 +11,6 @@ from traad.rope.extract import ExtractFunctions
 from traad.rope.findit import FinditFunctions
 from traad.rope.history import HistoryFunctions
 from traad.rope.importutil import ImportUtilFunctions
-from traad.rope.log import log
-from traad.rope.rename import RenameFunctions
 from traad.rope.validate import validate
 
 
@@ -43,13 +41,19 @@ class MultiProjectRefactoring(object):
         cross_ref = multiproject.MultiProjectRefactoring(
             ref,
             list(interface.cross_projects.values()))
-        self.ref = cross_ref(*args)
+        self.rope_ref = cross_ref(*args)
+
+    @property
+    def descriptions(self):
+        for proj, cset in self.rope_ref.get_all_changes(*args):
+            for desc in cset.get_description():
+                yield desc
 
     def get_changed_resources(self, *args):
         """Generate the sequence of Resources that will be changed
         when *args is applied.
         """
-        for proj, cset in self.ref.get_all_changes(*args):
+        for proj, cset in self.rope_ref.get_all_changes(*args):
             for res in cset.get_changed_resources():
                 yield res
 
@@ -57,15 +61,14 @@ class MultiProjectRefactoring(object):
         """Perform the refactoring with *args.
         """
         multiproject.perform(
-            self.ref.get_all_changes(*args))
+            self.rope_ref.get_all_changes(*args))
 
 class RopeInterface(ChangeSignatureFunctions,
                     CodeAssistFunctions,
                     ExtractFunctions,
                     FinditFunctions,
                     HistoryFunctions,
-                    ImportUtilFunctions,
-                    RenameFunctions):
+                    ImportUtilFunctions):
     def __init__(self,
                  project_dir,
                  cross_project_dirs=[]):
