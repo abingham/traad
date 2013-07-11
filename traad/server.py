@@ -38,9 +38,9 @@ class TaskProcessor(threading.Thread):
 
                 task_id, func, *args = task
 
-                with self.proj.lock:
+                with self.proj.lock():
                     func(self.proj,
-                         state[task_id],
+                         state.get_task_state(task_id),
                          *args)
             finally:
                 self.task_queue.task_done()

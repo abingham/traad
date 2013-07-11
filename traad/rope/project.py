@@ -1,4 +1,5 @@
 import contextlib
+import os
 import threading
 
 from eagertools import emap
@@ -53,7 +54,7 @@ class MultiProjectRefactoring:
         cross_ref = multiproject.MultiProjectRefactoring(
             refactoring_type,
             list(project.cross_projects.values()))
-        self.rope_ref = cross_ref(*args)
+        self.rope_ref = cross_ref(project.proj, *args)
 
     def get_change(self, *args):
         return Change(self.rope_ref, *args)
