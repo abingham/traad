@@ -1,10 +1,10 @@
 import rope.refactor
 
-import traad.trace
 from traad.rope.validate import validate
+import traad.trace
 
 
-#@traad.trace
+@traad.trace.trace
 @validate
 def rename(project, state, new_name, path, offset=None):
     path = project.to_relative_path(path)

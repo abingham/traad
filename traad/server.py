@@ -8,6 +8,7 @@ from bottle import abort, get, post, request, run
 from .rope.project import Project
 from .rope.rename import rename
 from .state import State
+from .task import AsyncTask
 
 log = logging.getLogger('traad.server')
 
@@ -36,12 +37,7 @@ class TaskProcessor(threading.Thread):
                 if task is None:
                     return
 
-                task_id, func, *args = task
-
-                with self.proj.lock():
-                    func(self.proj,
-                         state.get_task_state(task_id),
-                         *args)
+                task()
             finally:
                 self.task_queue.task_done()
 
@@ -99,14 +95,17 @@ def rename_view():
     log.info('rename: {}'.format(args))
 
     task_id = next(task_ids)
-
     state.create(task_id)
 
-    task_queue.put((task_id,
-                    rename,
-                    args['name'],
-                    args['path'],
-                    args.get('offset')))
+    task_queue.put(
+        AsyncTask(
+            project,
+            state,
+            task_id,
+            rename,
+            args['name'],
+            args['path'],
+            args.get('offset')))
 
     return {'task_id': task_id}
 
