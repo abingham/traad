@@ -75,17 +75,37 @@ def run_server(port, project_path):
 #         return {'status': 'PENDING'}
 
 
-# @get('/task/<task_id>')
-# def task_status_view(task_id):
-#     try:
-#         return task_status(task_id)
-#     except KeyError:
-#         abort(404, "No task with that ID")
+@get('/task/<task_id>')
+def task_status_view(task_id):
+    try:
+        return state.get_task_state(int(task_id)).get()
+    except KeyError:
+        abort(404, "No task with that ID")
 
 
 # @get('/tasks')
 # def full_task_status():
 #     return {task_id: task_status(task_id) for task_id in tasks}
+
+@post('/test/long_running')
+def long_running_test():
+    import traad.test.tasks as tasks
+    args = request.json
+
+    log.info('long running test: {}'.format(args))
+
+    task_id = next(task_ids)
+    state.create(task_id)
+
+    task_queue.put(
+        AsyncTask(
+            project,
+            state,
+            task_id,
+            tasks.long_running,
+            args['message']))
+
+    return {'task_id': task_id}
 
 
 @post('/refactor/rename')

@@ -6,3 +6,4 @@ python:
 install: python setup.py install
 
 script:  python -m traad.test.unittests
+script:  python traad/test/acceptance/long_running.py
