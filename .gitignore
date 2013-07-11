@@ -27,6 +27,4 @@ pip-log.txt
 .mr.developer.cfg
 
 # virtualenv
-p3/*
-p2/*
-env3/*
+venv*/*
