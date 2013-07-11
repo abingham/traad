@@ -1,7 +1,8 @@
 import os
 import shutil
 
-from traad.rope.interface import RopeInterface
+from traad.rope.project import Project
+from traad.state import State
 
 THIS_DIR = os.path.split(__file__)[0]
 ACTIVE_DIR = os.path.join(THIS_DIR, 'active')
@@ -25,7 +26,7 @@ def activate(names,
             os.path.join(project_dir, name),
             os.path.join(active_dir, name))
 
-    return RopeInterface(
+    return Project(
         os.path.join(active_dir, names[0]),
         cross_project_dirs = [os.path.join(active_dir, n) for n in names[1:]])
 

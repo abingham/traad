@@ -1,21 +1,23 @@
 import unittest
 
-from traad.rope.interface import RopeInterface
+from traad.rope.rename import rename
+from traad.state import State
 from traad.test import common
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        self.ri = common.activate(['rename'])
+        self.proj = common.activate(['rename'])
 
     def tearDown(self):
         common.deactivate()
 
     def test_simple(self):
-        rslt = self.ri.rename(
-            'Llama',
-            'basic/foo.py',
-            8)
-        self.assertEqual(len(rslt['files']), 2)
+        state = State()
+        state.create(1)
+        task_state = state.get_task_state(1)
+        rename(self.proj, task_state, 'Llama', 'basic/foo.py', 8)
+
+        print(task_state)
 
 if __name__ == '__main__':
     unittest.main()
