@@ -23,7 +23,8 @@ def rename(project, state, new_name, path, offset=None):
     # refactoring, so we don't need to deal with it.
     state.update(
         {'description': list(change.descriptions),
-         'changed_resources': list(change.resources)})
+         'changed_resources': [r.name for r in change.resources],
+         })
 
     # actually run the refactoring
     change.perform()
