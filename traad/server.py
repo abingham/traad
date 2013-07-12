@@ -70,9 +70,12 @@ def task_status_view(task_id):
         abort(404, "No task with that ID")
 
 
-# @get('/tasks')
-# def full_task_status():
-#     return {task_id: task_status(task_id) for task_id in tasks}
+@get('/tasks')
+def full_task_status():
+    status = state.get_full_state()
+    log.info('full status: {}'.format(status))
+    return status
+
 
 @post('/test/long_running')
 def long_running_test():
