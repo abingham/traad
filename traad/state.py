@@ -13,10 +13,13 @@ class State:
         self.data = {}
         self.lock = Lock()
 
-    def create(self, task_id):
+    def create(self, task_id, initial_data=None):
+        if initial_data is None:
+            initial_data = {'status': 'pending'}
+
         with self.lock:
             assert task_id not in self.data
-            self.data[task_id] = {}
+            self.data[task_id] = initial_data
 
     def get_task_state(self, task_id):
         return TaskState(self, task_id)
