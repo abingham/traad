@@ -59,6 +59,26 @@ Threads
 This seems straightforward enough. We just need a queue with a
 consumer thread that takes job after job...easy peasy, right?
 
+State
+=====
+
+State maps task-ids to a dict of information.
+
+Whatever's in State must be json-able since any or all of it may be
+sent to clients via json.
+
+Each task must have the following entries:
+
+  'status': ['pending', 'started', 'success', 'failure']
+
+optionally it can have a 'message' field.
+
+All other fields are up to the various refactorings to fill in as
+desired. Common ones might include:
+
+  'changed_resources': list of resource paths
+  'description': A description of the change
+
 Protocol
 ========
 
