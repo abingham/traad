@@ -29,8 +29,7 @@ class Change:
         refactoring will make.
         """
         for proj, cset in self.changes:
-            for desc in cset.get_description():
-                yield desc
+            yield cset.get_description()
 
     @property
     def resources(self):
