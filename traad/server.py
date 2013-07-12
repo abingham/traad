@@ -101,20 +101,32 @@ def rename_view():
 
     log.info('rename: {}'.format(args))
 
-    task_id = next(task_ids)
-    state.create(task_id)
+    try:
+        task_id = next(task_ids)
+        state.create(task_id)
 
-    task_queue.put(
-        AsyncTask(
-            project,
-            state,
-            task_id,
-            rename,
-            args['name'],
-            args['path'],
-            args.get('offset')))
+        task_queue.put(
+            AsyncTask(
+                project,
+                state,
+                task_id,
+                rename,
+                args['name'],
+                args['path'],
+                args.get('offset')))
 
-    return {'task_id': task_id}
+        log.info('rename success')
+
+        return {
+            'result': 'ok',
+            'task_id': task_id
+        }
+    except Exception as e:
+        log.error('rename error: {}'.format(e))
+        return {
+            'result': 'fail',
+            'message': str(e)
+        }
 
 
 # @post('/refactor/normalize_arguments')

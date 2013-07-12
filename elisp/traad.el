@@ -345,9 +345,10 @@ necessary. Return the history buffer."
     (traad-request
      "/refactor/rename"
      data
-     (lambda (&key data &allow-other-keys)
-       (let* ((task-id (assoc-default 'task_id data)))
-         (message "Rename started with task-id %s" task-id))))))
+     (function*
+      (lambda (&key data &allow-other-keys)
+        (let* ((task-id (assoc-default 'task_id data)))
+          (message "Rename started with task-id %s" task-id)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
@@ -634,7 +635,11 @@ lists: ((name, documentation, scope, type), . . .)."
    :data (json-encode data)
    :headers '(("Content-Type" . "application/json"))
    :parser 'json-read
-   :success (function* callback)))
+   :success callback
+   ; :complete (lambda (&rest _) (message "Finished!"))
+   :error (function*
+           (lambda (&key error-thrown &allow-other-keys&rest _)
+             (message "Error: %S" error-thrown)))))
 
 (defun traad-call (func &rest args)
   "Make an XMLRPC call to FUNC with ARGS on the traad server."

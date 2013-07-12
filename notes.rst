@@ -52,3 +52,31 @@ Gevent/eventlet/etc
 
 None of these seem to work on python3 :\ Maybe concurrence, but I'm
 not sure.
+
+Threads
+~~~~~~~
+
+This seems straightforward enough. We just need a queue with a
+consumer thread that takes job after job...easy peasy, right?
+
+Protocol
+========
+
+What is the basic protocol for async and sync jobs?
+
+Async
+-----
+
+E.g. rename
+REQ: {'name': 'foobar', path='/something', offset=1}
+RSP: {'task_id': 3, 'result': 'ok'}
+RSP: {'result': 'fail', 'message': 'Failed for some reason...'}
+
+So the response includes 'result' indicating 'ok' or 'fail'. This is
+the base information for all async responses.
+
+On success it includes a 'task_id' which can be used for status
+queries.
+
+On failure, it includes a 'message' indicating the reason. This seems
+like enough for now.
