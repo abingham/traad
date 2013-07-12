@@ -1,14 +1,15 @@
 import itertools
 import logging
 import queue
-import threading
 
-from bottle import abort, get, post, request, run
+from bottle import abort, get, hook, post, request, run
 
 from .rope.project import Project
 from .rope.rename import rename
 from .state import State
 from .task import AsyncTask
+from .task_processor import TaskProcessor
+
 
 log = logging.getLogger('traad.server')
 
@@ -21,25 +22,6 @@ state = State()
 task_ids = itertools.count()
 task_queue = queue.Queue()
 
-
-class TaskProcessor(threading.Thread):
-    def __init__(self, q, project, state):
-        super(TaskProcessor, self).__init__()
-        self.task_queue = q
-        self.proj = project
-
-    def run(self):
-        while True:
-            task = self.task_queue.get()
-
-            try:
-                # None means to quit.
-                if task is None:
-                    return
-
-                task()
-            finally:
-                self.task_queue.task_done()
 
 def run_server(port, project_path):
     host = 'localhost'
@@ -73,6 +55,11 @@ def run_server(port, project_path):
 #         return {'status': 'COMPLETE'}
 #     else:
 #         return {'status': 'PENDING'}
+
+
+# @hook('before_request')
+# def before_req():
+#     pass
 
 
 @get('/task/<task_id>')
