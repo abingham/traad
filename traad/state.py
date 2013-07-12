@@ -21,6 +21,10 @@ class State:
     def get_task_state(self, task_id):
         return TaskState(self, task_id)
 
+    def get_full_state(self):
+        with self.lock:
+            return dict(self.data)
+
 
 class TaskState:
     def __init__(self, state, task_id):
