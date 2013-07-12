@@ -1,11 +1,11 @@
 import itertools
 import logging
 import queue
+import sys
 
-from bottle import abort, get, hook, post, request, run
+from bottle import abort, get, post, request, run
 
 from .rope.project import Project
-from .rope.rename import rename
 from .state import State
 from .task import AsyncTask
 from .task_processor import TaskProcessor
@@ -42,24 +42,6 @@ def run_server(port, project_path):
     finally:
         task_queue.put(None)
         task_queue.join()
-
-
-# def task_status(task_id):
-#     task = tasks[int(task_id)]
-
-#     if task.cancelled():
-#         return {'status': 'CANCELLED'}
-#     elif task.running():
-#         return {'status': 'RUNNING'}
-#     elif task.done():
-#         return {'status': 'COMPLETE'}
-#     else:
-#         return {'status': 'PENDING'}
-
-
-# @hook('before_request')
-# def before_req():
-#     pass
 
 
 @get('/task/<task_id>')
@@ -100,6 +82,8 @@ def long_running_test():
 
 @post('/refactor/rename')
 def rename_view():
+    from .rope.rename import rename
+
     args = request.json
 
     log.info('rename: {}'.format(args))
@@ -124,7 +108,8 @@ def rename_view():
             'result': 'ok',
             'task_id': task_id
         }
-    except Exception as e:
+    except:
+        e = sys.exc_info()[1]
         log.error('rename error: {}'.format(e))
         return {
             'result': 'fail',
@@ -132,18 +117,41 @@ def rename_view():
         }
 
 
-# @post('/refactor/normalize_arguments')
-# def normalize_arguments_view():
-#     args = request.json
+@post('/refactor/normalize_arguments')
+def normalize_arguments_view():
+    from .rope.change_signature import normalize_arguments
 
-#     log.info('normalize arguments: {}'.format(args))
+    args = request.json
 
-#     task_id = next(task_ids)
-#     tasks[task_id] = executor.submit(
-#         project.normalize_arguments,
-#         path=args['path'],
-#         offset=args['offset'])
-#     return {'task_id': task_id}
+    log.info('normalize arguments: {}'.format(args))
+
+    try:
+        task_id = next(task_ids)
+        state.create(task_id)
+
+        task_queue.put(
+            AsyncTask(
+                project,
+                state,
+                task_id,
+                normalize_arguments,
+                args['path'],
+                args['offset']))
+
+        log.info('normalize-aguments success')
+
+        return {
+            'result': 'ok',
+            'task_id': task_id
+        }
+
+    except:
+        e = sys.exc_info()[1]
+        log.error('normalize-arguments error: {}'.format(e))
+        return {
+            'result': 'fail',
+            'message': str(e)
+        }
 
 
 # @post('/refactor/remove_argument')

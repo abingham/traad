@@ -1,7 +1,54 @@
+import sys
+
 import rope.refactor.change_signature
 
 import traad.trace
 from traad.rope.validate import validate
+
+
+@traad.trace.trace
+@validate
+def normalize_arguments(project, state, path, offset):
+    """Normalize arguments for a method.
+
+    ``path`` may be absolute or relative. If ``path`` is relative,
+    then it must to be relative to the root of the project.
+
+    Args:
+      path: The path of the file/directory to query.
+      offset: The offset in the resource of the method signature.
+    """
+
+    path = project.to_relative_path(path)
+
+    ref = project.make_refactoring(
+        rope.refactor.change_signature.ChangeSignature,
+        project.get_resource(path),
+        offset)
+
+    try:
+        state.update({'status': 'started'})
+
+        change = ref.get_change(
+            [rope.refactor.change_signature.ArgumentNormalizer()])
+
+        state.update(
+            {'description': list(change.descriptions),
+             'changed_resources': [r.name for r in change.resources],
+             })
+
+        change.perform()
+
+        state.update(
+            {'status': 'success',
+             })
+
+    except:
+        state.update(
+            {'status': 'failure',
+             'message': str(sys.exc_info()[1]),
+             })
+        raise
 
 
 class ChangeSignatureFunctions:
@@ -24,23 +71,6 @@ class ChangeSignatureFunctions:
         files = [res.real_path for res in ref.get_changed_resources([operation])]
         return {'files': files }
 
-
-    @traad.trace.trace
-    @validate
-    def normalize_arguments(self, path, offset):
-        """Normalize arguments for a method.
-
-        ``path`` may be absolute or relative. If ``path`` is relative,
-        then it must to be relative to the root of the project.
-
-        Args:
-          path: The path of the file/directory to query.
-          offset: The offset in the resource of the method signature.
-        """
-
-        self.change_sig(
-            path, offset,
-            rope.refactor.change_signature.ArgumentNormalizer())
 
     @traad.trace.trace
     @validate

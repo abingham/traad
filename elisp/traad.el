@@ -361,9 +361,9 @@ necessary. Return the history buffer."
     (traad-request
      "/refactor/normalize_arguments"
      data
-     (lambda (&key data &allow-other-keys)
-       (let* ((task-id (assoc-default 'task_id data)))
-         (message "Normalize-arguments started with task-id %s" task-id))))))
+     (function* (lambda (&key data &allow-other-keys)
+                  (let* ((task-id (assoc-default 'task_id data)))
+                    (message "Normalize-arguments started with task-id %s" task-id)))))))
 
 ; TODO
 (defun traad-remove-argument (index)
