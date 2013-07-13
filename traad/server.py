@@ -138,7 +138,7 @@ def normalize_arguments_view():
                 args['path'],
                 args['offset']))
 
-        log.info('normalize-aguments success')
+        log.info('normalize-arguments success')
 
         return {
             'result': 'ok',
@@ -154,19 +154,55 @@ def normalize_arguments_view():
         }
 
 
-# @post('/refactor/remove_argument')
-# def remove_argument_view():
-#     args = request.json
+@post('/refactor/remove_argument')
+def remove_argument_view():
+    from .rope.change_signature import remove_argument
 
-#     log.info('remove argument: {}'.format(args))
+    args = request.json
 
-#     task_id = next(task_ids)
-#     tasks[task_id] = executor.submit(
-#         project.remove_argument,
-#         arg_index=args['arg_index'],
-#         path=args['path'],
-#         offset=args['offset'])
-#     return {'task_id': task_id}
+    log.info('remove argument: {}'.format(args))
+
+    try:
+        task_id = next(task_ids)
+        state.create(task_id)
+
+        task_queue.put(
+            AsyncTask(
+                project,
+                state,
+                task_id,
+                remove_argument,
+                args['arg_index'],
+                args['path'],
+                args['offset']))
+
+        log.info('remove-argument success')
+
+        return {
+            'result': 'ok',
+            'task_id': task_id
+        }
+
+    except:
+        e = sys.exc_info()[1]
+        log.error('remove-argument error: {}'.format(e))
+        return {
+            'result': 'fail',
+            'message': str(e)
+        }
+################################################################################
+
+    args = request.json
+
+    log.info('remove argument: {}'.format(args))
+
+    task_id = next(task_ids)
+    tasks[task_id] = executor.submit(
+        project.remove_argument,
+        arg_index=args['arg_index'],
+        path=args['path'],
+        offset=args['offset'])
+    return {'task_id': task_id}
 
 
 # @get('/code_assist/completion')

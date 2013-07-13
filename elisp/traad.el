@@ -365,18 +365,22 @@ necessary. Return the history buffer."
                   (let* ((task-id (assoc-default 'task_id data)))
                     (message "Normalize-arguments started with task-id %s" task-id)))))))
 
-; TODO
 (defun traad-remove-argument (index)
   "Remove the INDEXth argument from the signature at point."
   (interactive
    (list
     (read-number "Index: ")))
-  (traad-call-async-standard
-   'remove_argument 
-   (list 
-    index 
-    buffer-file-name 
-    (traad-adjust-point (point)))))
+  ; TODO: Surely there's a better way to construct these lists...
+  (let ((data (list (cons "arg_index" index)
+                    (cons "path" (buffer-file-name))
+                    (cons "offset" (traad-adjust-point (point))))))
+    (traad-request
+     "/refactor/remove_argument"
+     data
+     (function* (lambda (&key data &allow-other-keys)
+                  (let* ((task-id (assoc-default 'task_id data)))
+                    (message "Remove-argument started with task-id %s" task-id)))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
