@@ -1,6 +1,7 @@
 import unittest
 
-from traad.rope.change_signature import normalize_arguments
+from traad.rope.change_signature import (normalize_arguments,
+                                         remove_argument)
 from traad.state import State
 from traad.test import common
 
@@ -23,9 +24,10 @@ class CrossTests(unittest.TestCase):
             'basic/bar.py',
             163)
 
-    @unittest.skip('reactivate')
     def test_cross_remove_argument(self):
-        self.ri.remove_argument(
+        remove_argument(
+            self.proj,
+            self.task_state,
             1,
             'basic/bar.py',
             163)

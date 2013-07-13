@@ -15,6 +15,8 @@ def normalize_arguments(project, state, path, offset):
     then it must to be relative to the root of the project.
 
     Args:
+      project: The Project on which this operates.
+      state: The TaskState for this refactoring.
       path: The path of the file/directory to query.
       offset: The offset in the resource of the method signature.
     """
@@ -37,43 +39,39 @@ def normalize_arguments(project, state, path, offset):
     change.perform()
 
 
-class ChangeSignatureFunctions:
-    """The change-signature related functions of the rope interface.
+@traad.trace.trace
+@validate
+def remove_argument(project,
+                    state,
+                    arg_index,
+                    path,
+                    offset):
+    """Remove an argument from a method.
 
-    A base for RopeInterface.
+    ``path`` may be absolute or relative. If ``path`` is relative,
+    then it must to be relative to the root of the project.
 
+    Args:
+      project: The Project on which this operates.
+      state: The TaskState for this refactoring.
+      arg_index: The index of the argument to remove.
+      path: The path of the file/directory to query.
+      offset: The offset in the resource of the method signature.
     """
 
-    def change_sig(self, path, offset, operation):
-        ref = self.multi_project_refactoring(
-            rope.refactor.change_signature.ChangeSignature,
-            self.proj,
-            self.proj.get_resource(
-               self._to_relative_path(path)),
-            offset)
+    path = project.to_relative_path(path)
 
-        ref.perform([operation])
+    ref = project.make_refactoring(
+        rope.refactor.change_signature.ChangeSignature,
+        project.get_resource(path),
+        offset)
 
-        files = [res.real_path for res in ref.get_changed_resources([operation])]
-        return {'files': files }
+    change = ref.get_change(
+        [rope.refactor.change_signature.ArgumentRemover(arg_index)])
 
+    state.update(
+        {'description': list(change.descriptions),
+         'changed_resources': [r.name for r in change.resources],
+         })
 
-    @traad.trace.trace
-    @validate
-    def remove_argument(self,
-                        arg_index,
-                        path,
-                        offset):
-        """Remove an argument from a method.
-
-        ``path`` may be absolute or relative. If ``path`` is relative,
-        then it must to be relative to the root of the project.
-
-        Args:
-          arg_index: The index of the argument to remove.
-          path: The path of the file/directory to query.
-          offset: The offset in the resource of the method signature.
-        """
-        self.change_sig(
-            path, offset,
-            rope.refactor.change_signature.ArgumentRemover(arg_index))
+    change.perform()
