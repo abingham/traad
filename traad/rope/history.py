@@ -1,6 +1,13 @@
 import traad.trace
 from traad.rope.validate import validate
 
+
+@traad.trace.trace
+@validate
+def undo(project, index):
+    project.proj.history.undo(
+        project.proj.history.undo_list[index])
+
 class HistoryFunctions:
     """The history related functions of the rope interface.
 

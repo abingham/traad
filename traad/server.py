@@ -59,6 +59,14 @@ def full_task_status():
     return status
 
 
+@post('/history/undo')
+def undo_view():
+    from traad.rope.history import undo
+
+    args = request.json
+    undo(project, args['index'])
+
+
 @post('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks
