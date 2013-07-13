@@ -190,19 +190,6 @@ def remove_argument_view():
             'result': 'fail',
             'message': str(e)
         }
-################################################################################
-
-    args = request.json
-
-    log.info('remove argument: {}'.format(args))
-
-    task_id = next(task_ids)
-    tasks[task_id] = executor.submit(
-        project.remove_argument,
-        arg_index=args['arg_index'],
-        path=args['path'],
-        offset=args['offset'])
-    return {'task_id': task_id}
 
 
 # @get('/code_assist/completion')
