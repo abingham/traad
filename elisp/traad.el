@@ -391,11 +391,19 @@ necessary. Return the history buffer."
 	      (traad-adjust-point begin)
 	      (traad-adjust-point end))))
 
-; TODO
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
   (interactive "sMethod name: \nr")
-  (traad-extract-core 'extract_method name begin end))
+  (let ((data (list (cons "path" (buffer-file-name))
+                    (cons "start-offset" (traad-adjust-point begin))
+                    (cons "end-offset" (traad-adjust-point end))
+                    (cons "name" name))))
+    (traad-request
+     "/refactor/extract_method"
+     data
+     (function* (lambda (&key data &allow-other-keys)
+                  (let* ((task-id (assoc-default 'task_id data)))
+                    (message "Extract-method started with task-id %s" task-id)))))))
 
 ; TODO
 (defun traad-extract-variable (name begin end)
