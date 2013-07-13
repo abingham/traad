@@ -26,29 +26,15 @@ def normalize_arguments(project, state, path, offset):
         project.get_resource(path),
         offset)
 
-    try:
-        state.update({'status': 'started'})
+    change = ref.get_change(
+        [rope.refactor.change_signature.ArgumentNormalizer()])
 
-        change = ref.get_change(
-            [rope.refactor.change_signature.ArgumentNormalizer()])
+    state.update(
+        {'description': list(change.descriptions),
+         'changed_resources': [r.name for r in change.resources],
+         })
 
-        state.update(
-            {'description': list(change.descriptions),
-             'changed_resources': [r.name for r in change.resources],
-             })
-
-        change.perform()
-
-        state.update(
-            {'status': 'success',
-             })
-
-    except:
-        state.update(
-            {'status': 'failure',
-             'message': str(sys.exc_info()[1]),
-             })
-        raise
+    change.perform()
 
 
 class ChangeSignatureFunctions:

@@ -7,8 +7,22 @@ class AsyncTask:
         self.args = args
 
     def __call__(self):
-        task_state = self.state.get_task_state(self.task_id)
-        with self.proj.lock():
-            self.func(self.proj,
-                      task_state,
-                      *self.args)
+        try:
+            task_state = self.state.get_task_state(self.task_id)
+
+            task_state.update({'status': 'started'})
+
+            with self.proj.lock():
+                self.func(self.proj,
+                          task_state,
+                          *self.args)
+
+            task_state.update({
+                'status': 'success',
+            })
+        except:
+            task_state.update({
+                'status': 'failure',
+                'message': str(sys.exc_info()[1]),
+            })
+            raise
