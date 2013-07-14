@@ -57,6 +57,7 @@
 
 ;;; Code:
 
+(require 'cl)
 (require 'deferred)
 (require 'json)
 (require 'request)
@@ -562,17 +563,26 @@ current buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
-; TODO
 (defun traad-code-assist (pos)
-  "Get possible completions at POS in current buffer. This returns a list of \
-lists: ((name, documentation, scope, type), . . .)."
+  "Get possible completions at POS in current buffer.
+
+This returns an alist like ((completions . [[name documentation scope type]]) (result . \"success\"))"
   (interactive "d")
-  (traad-call 'code_assist
-	      (buffer-substring-no-properties 
-	       (point-min) 
-	       (point-max))
-	      pos
-	      (buffer-file-name)))
+  (let ((data (list (cons "code" (buffer-substring-no-properties 
+                                  (point-min) 
+                                  (point-max)))
+                    (cons "offset" (traad-adjust-point pos))
+                    (cons "path" (buffer-file-name)))))
+    (request-response-data
+     (request
+      (concat "http://" traad-host ":" (number-to-string traad-port)
+              "/code_assist/completions")
+      :type "GET"
+      :headers '(("Content-Type" . "application/json"))
+      :data (json-encode data)
+      :sync t
+      :parser 'json-read
+      :data (json-encode data)))))
 
 ; TODO
 (defun traad-display-in-buffer (msg buffer)
@@ -642,13 +652,13 @@ lists: ((name, documentation, scope, type), . . .)."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
-(defun traad-request (location data callback)
+(defun* traad-request (location data callback &key (type "POST"))
   "Post `data` as JSON to `location` on the server, calling `callback` with the response."
   (request
    (concat
     "http://" traad-host ":" (number-to-string traad-port)
     location)
-   :type "POST"
+   :type type
    :data (json-encode data)
    :headers '(("Content-Type" . "application/json"))
    :parser 'json-read

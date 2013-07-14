@@ -4,6 +4,37 @@ import traad.trace
 from traad.rope.validate import validate
 
 
+@traad.trace.trace
+@validate
+def code_assist(project, code, offset, path):
+    '''Get code-assist completions for a point in a file.
+
+    ``path`` may be absolute or relative. If ``path`` is relative,
+    then it must to be relative to the root of the project.
+
+    Args:
+      code: The source code in which the completion should
+        happen. Note that this may differ from the contents of the
+        resource at ``path``.
+      offset: The offset into ``code`` where the completion should
+        happen.
+      path: The path to the resource in which the completion is
+        being done.
+
+    Returns: A list of tuples of the form (name, documentation,
+      scope, type) for each possible completion.
+    '''
+
+    path = project.to_relative_path(path)
+    results = rope.contrib.codeassist.code_assist(
+        project.proj,
+        code,
+        offset,
+        project.get_resource(path))
+    rslt = [(r.name, r.get_doc(), r.scope, r.type) for r in results]
+    return rslt
+
+
 class CodeAssistFunctions:
     """The codeassist related functions of the rope interface.
 
@@ -11,34 +42,6 @@ class CodeAssistFunctions:
 
     """
 
-    @traad.trace.trace
-    @validate
-    def code_assist(self, code, offset, path):
-        '''Get code-assist completions for a point in a file.
-
-        ``path`` may be absolute or relative. If ``path`` is relative,
-        then it must to be relative to the root of the project.
-
-        Args:
-          code: The source code in which the completion should
-            happen. Note that this may differ from the contents of the
-            resource at ``path``.
-          offset: The offset into ``code`` where the completion should
-            happen.
-          path: The path to the resource in which the completion is
-            being done.
-
-        Returns: A list of tuples of the form (name, documentation,
-          scope, type) for each possible completion.
-        '''
-
-        path = self._to_relative_path(path)
-        results = rope.contrib.codeassist.code_assist(
-            self.proj,
-            code,
-            offset,
-            self.proj.get_resource(path))
-        return [(r.name, r.get_doc(), r.scope, r.type) for r in results]
 
     @traad.trace.trace
     @validate

@@ -10,7 +10,8 @@
   "Get the list of completions at point."
   (if (traad-running?)
       (progn
-	(setq ac-traad-cache (traad-code-assist (point)))
+	(setq ac-traad-cache (assoc-default 'completions (traad-code-assist (point))))
+        (message "traad-cache: %S" ac-traad-cache)
 	(mapcar 'car ac-traad-cache))
     (setq ac-traad-cache nil)))
 

@@ -66,6 +66,8 @@ def undo_view():
     args = request.json
     undo(project, args['index'])
 
+    # TODO: What if it actually fails?
+    return {'result': 'success'}
 
 @post('/test/long_running')
 def long_running_test():
@@ -237,18 +239,20 @@ def remove_argument_view():
         }
 
 
-# @get('/code_assist/completion')
-# def code_assist_completion_view():
-#     args = request.json
+@get('/code_assist/completions')
+def code_assist_completion_view():
+    from traad.rope.codeassist import code_assist
 
-#     log.info('code assist: {}'.format(args))
+    args = request.json
+    results = code_assist(project,
+                          args['code'],
+                          args['offset'],
+                          args['path'])
 
-#     return {
-#         'results': project.code_assist(
-#             code=args['code'],
-#             offset=args['offset'],
-#             path=args['path'])
-#     }
+    # TODO: What if it fails?
+    return {'result': 'success',
+            'completions': results,
+        }
 
 
 # @get('/code_assist/doc')
