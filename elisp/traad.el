@@ -78,7 +78,7 @@
 
 (defcustom traad-server-args (list "-V" "2")
   "Parameters passed to the traad server before the directory name."
-  :type '(list)
+  :type '()
   :group 'traad)
 
 (defcustom traad-auto-revert nil

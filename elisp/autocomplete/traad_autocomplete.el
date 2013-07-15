@@ -11,8 +11,7 @@
   (if (traad-running?)
       (progn
 	(setq ac-traad-cache (assoc-default 'completions (traad-code-assist (point))))
-        (message "traad-cache: %S" ac-traad-cache)
-	(mapcar 'car ac-traad-cache))
+	(mapcar (lambda (v) (elt v 0)) ac-traad-cache))
     (setq ac-traad-cache nil)))
 
 (defun ac-traad-documentation (sym)
