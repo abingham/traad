@@ -509,20 +509,36 @@ current buffer."
   "Common display routine for occurrences and implementations."
   (lexical-let ((buff-name buff-name))
     (deferred:$
+      ; Fetch in parallel...
       (deferred:parallel
+        
+        ; ...the occurrence data...
         (deferred:$
           (apply func (list pos))
           (deferred:nextc it
-            'request-response-data))
-        (traad-get-root))
+            'request-response-data)
+          (deferred:nextc it
+            (lambda (x) (assoc-default 'data x))))
+        
+        ; ...and the project root.
+        (deferred:$
+          (traad-get-root)
+          (deferred:nextc it
+            'request-response-data)
+          (deferred:nextc it
+            (lambda (x) (assoc-default 'root x)))))
+      
       (deferred:nextc it
         (lambda (input)
-          (let ((locs (assoc-default 'data (elt input 0)))
-                (root (assoc-default 'root (request-response-data (elt input 1))))
+          (let ((locs (elt input 0)) ; the location vector
+                (root (elt input 1)) ; the project root
                 (buff (get-buffer-create buff-name))
                 (inhibit-read-only 't))
             (pop-to-buffer buff)
             (erase-buffer)
+
+            ; For each location, add a line to the buffer.
+            ; TODO: Is there a "dovector" we can use? This is a bit fugly.
             (mapcar
              (lambda (loc) (lexical-let* ((path (elt loc 0))
                                      (abspath (concat root "/" path))
