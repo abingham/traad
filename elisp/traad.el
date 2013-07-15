@@ -225,10 +225,14 @@ after successful refactorings."
 the project root."
   (traad-call 'get_children path))
 
-; TODO
 (defun traad-get-root ()
   "Get the project root."
-  (traad-call 'get_root))
+  (request-deferred
+   (concat
+    "http://" traad-host ":" (number-to-string traad-server-port)
+    "/root")
+   :type "GET"
+   :parser 'json-read))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
@@ -504,18 +508,23 @@ current buffer."
   "Common display routine for occurrences and implementations."
   (lexical-let ((buff-name buff-name))
     (deferred:$
-      (apply func (list pos))
+      (deferred:parallel
+        (deferred:$
+          (apply func (list pos))
+          (deferred:nextc it
+            'request-response-data))
+        (traad-get-root))
       (deferred:nextc it
-        'request-response-data)
-      (deferred:nextc it
-        (lambda (locs)
-          (let ((buff (get-buffer-create buff-name))
+        (lambda (input)
+          (let ((locs (elt input 0))
+                (root (elt input 1))
+                (buff (get-buffer-create buff-name))
                 (inhibit-read-only 't))
             (pop-to-buffer buff)
             (erase-buffer)
             (dolist (loc locs)
               (lexical-let* ((path (car loc))
-                             (abspath (concat (traad-get-root) "/" path))
+                             (abspath (concat root "/" path))
                              (lineno (nth 4 loc))
                              (code (nth (- lineno 1) (traad-read-lines abspath))))
                 (insert-button

@@ -44,6 +44,14 @@ def run_server(port, project_path):
         task_queue.join()
 
 
+@get('/root')
+def project_root_view():
+    return {
+        'result': 'success'.
+        'root': project.proj.root.real_path
+    }
+
+
 @get('/task/<task_id>')
 def task_status_view(task_id):
     try:
