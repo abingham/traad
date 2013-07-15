@@ -476,8 +476,9 @@ necessary. Return the history buffer."
 (defun traad-find-occurrences (pos)
   "Get all occurences the use of the symbol as POS in the
 current buffer."
-  (let ((data (list (cons "offset" (traad-adjust-point pos))
-                    (cons "path" (buffer-file-name)))))
+  (lexical-let ((json-array-type 'list
+                                 ) (data (list (cons "offset" (traad-adjust-point pos))
+                               (cons "path" (buffer-file-name)))))
     (request-deferred
      (concat "http://" traad-host
              ":" (number-to-string traad-server-port)
@@ -516,26 +517,27 @@ current buffer."
         (traad-get-root))
       (deferred:nextc it
         (lambda (input)
-          (let ((locs (elt input 0))
-                (root (elt input 1))
+          (let ((locs (assoc-default 'data (elt input 0)))
+                (root (assoc-default 'root (request-response-data (elt input 1))))
                 (buff (get-buffer-create buff-name))
                 (inhibit-read-only 't))
             (pop-to-buffer buff)
             (erase-buffer)
-            (dolist (loc locs)
-              (lexical-let* ((path (car loc))
-                             (abspath (concat root "/" path))
-                             (lineno (nth 4 loc))
-                             (code (nth (- lineno 1) (traad-read-lines abspath))))
-                (insert-button
-                 (format "%s:%s: %s\n" 
-                         path
-                         lineno
-                         code)
-                 'action (lambda (x) 
-                           (goto-line 
-                            lineno 
-                            (find-file-other-window abspath))))))))))))
+            (mapcar
+             (lambda (loc) (lexical-let* ((path (elt loc 0))
+                                     (abspath (concat root "/" path))
+                                     (lineno (elt loc 4))
+                                     (code (nth (- lineno 1) (traad-read-lines abspath))))
+                        (insert-button
+                         (format "%s:%s: %s\n" 
+                                 path
+                                 lineno
+                                 code)
+                         'action (lambda (x) 
+                                   (goto-line 
+                                    lineno 
+                                    (find-file-other-window abspath))))))
+             locs)))))))
 
 (defun traad-display-occurrences (pos)
   "Display all occurences the use of the symbol as POS in the
