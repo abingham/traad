@@ -1,4 +1,4 @@
-;;; traad.el --- emacs interface to the traad xmlrpc refactoring server.
+;;; traad.el --- emacs interface to the traad refactoring server.
 ;;
 ;; Author: Austin Bingham <austin.bingham@gmail.com>
 ;; Version: 0.1
@@ -12,7 +12,7 @@
 ;;
 ;; Description:
 ;;
-;; traad is an xmlrpc server built around the rope refactoring library. This
+;; traad is a JSON+HTTP server built around the rope refactoring library. This
 ;; file provides an API for talking to that server - and thus to rope - from
 ;; emacs lisp. Or, put another way, it's another way to use rope from emacs.
 ;;
@@ -21,9 +21,13 @@
 ;;
 ;; Installation:
 ;;
-;; Make sure xml-rpc.el is in your load path. Check the emacswiki for more info:
+;; traad depends on the following packages:
 ;;
-;;    http://www.emacswiki.org/emacs/XmlRpc
+;;   cl
+;;   deferred
+;;   json
+;;   request
+;;   request-deferred
 ;;
 ;; Copy traad.el to some location in your emacs load path. Then add
 ;; "(require 'traad)" to your emacs initialization (.emacs,
@@ -465,13 +469,19 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; findit
 
-; TODO
 (defun traad-find-occurrences (pos)
   "Get all occurences the use of the symbol as POS in the
 current buffer."
-  (traad-call 'find_occurrences
-	      (traad-adjust-point pos)
-	      (buffer-file-name)))
+  (let ((data (list (cons "offset" (traad-adjust-point pos))
+                    (cons "path" (buffer-file-name)))))
+    (request-deferred
+     (concat "http://" traad-host
+             ":" (number-to-string traad-server-port)
+             "/findit/occurrences")
+     :type "GET"
+     :headers '(("Content-Type" . "application/json"))
+     :data (json-encode data)
+     :parser 'json-read)))
 
 ; TODO
 (defun traad-find-implementations (pos)
@@ -490,30 +500,34 @@ current buffer."
 	      (traad-adjust-point pos)
 	      (buffer-file-name)))
 
-; TODO
 (defun traad-display-findit (pos func buff-name)
   "Common display routine for occurrences and implementations."
-  (let ((locs (apply func (list pos)))
-	(buff (get-buffer-create buff-name))
-	(inhibit-read-only 't))
-    (pop-to-buffer buff)
-    (erase-buffer)
-    (dolist (loc locs)
-      (lexical-let* ((path (car loc))
-		     (abspath (concat (traad-get-root) "/" path))
-		     (lineno (nth 4 loc))
-		     (code (nth (- lineno 1) (traad-read-lines abspath))))
-	(insert-button
-	 (format "%s:%s: %s\n" 
-		 path
-		 lineno
-		 code)
-	 'action (lambda (x) 
-		   (goto-line 
-		    lineno 
-		    (find-file-other-window abspath))))))))
+  (lexical-let ((buff-name buff-name))
+    (deferred:$
+      (apply func (list pos))
+      (deferred:nextc it
+        'request-response-data)
+      (deferred:nextc it
+        (lambda (locs)
+          (let ((buff (get-buffer-create buff-name))
+                (inhibit-read-only 't))
+            (pop-to-buffer buff)
+            (erase-buffer)
+            (dolist (loc locs)
+              (lexical-let* ((path (car loc))
+                             (abspath (concat (traad-get-root) "/" path))
+                             (lineno (nth 4 loc))
+                             (code (nth (- lineno 1) (traad-read-lines abspath))))
+                (insert-button
+                 (format "%s:%s: %s\n" 
+                         path
+                         lineno
+                         code)
+                 'action (lambda (x) 
+                           (goto-line 
+                            lineno 
+                            (find-file-other-window abspath))))))))))))
 
-; TODO
 (defun traad-display-occurrences (pos)
   "Display all occurences the use of the symbol as POS in the
 current buffer."

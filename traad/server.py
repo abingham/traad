@@ -250,9 +250,10 @@ def code_assist_completion_view():
                           args['path'])
 
     # TODO: What if it fails?
-    return {'result': 'success',
-            'completions': results,
-        }
+    return {
+        'result': 'success',
+        'completions': results,
+    }
 
 
 # @get('/code_assist/doc')
@@ -296,6 +297,20 @@ def code_assist_completion_view():
 #             path=args['path'])
 #     }
 
+@get('/findit/occurrences')
+def findit_occurences_view():
+    from traad.rope.findit import find_occurrences
+
+    args = request.json
+    print(request)
+    print(request.json)
+    data = find_occurrences(project, args['offset'], args['path'])
+
+    # TODO: What if it actually fails?
+    return {
+        'result': 'success',
+        'data': data,
+    }
 
 def main():
     import argparse
