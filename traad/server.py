@@ -47,8 +47,8 @@ def run_server(port, project_path):
 @get('/root')
 def project_root_view():
     return {
-        'result': 'success'.
-        'root': project.proj.root.real_path
+        'result': 'success',
+        'root': project.proj.root.real_path,
     }
 
 
