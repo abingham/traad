@@ -76,6 +76,11 @@
   :type '(string)
   :group 'traad)
 
+(defcustom traad-server-port 9752
+  "Port on which the traad server will listen."
+  :type '(number)
+  :group 'traad)
+
 (defcustom traad-server-args (list "-V" "2")
   "Parameters passed to the traad server before the directory name."
   :type '()
@@ -113,24 +118,14 @@ after successful refactorings."
     (let* ((program (if (listp traad-server-program) 
 			traad-server-program 
 		      (list traad-server-program)))
-	   (args (append traad-server-args (list directory)))
+	   (args (append traad-server-args
+                         (list "-p" (number-to-string traad-server-port))
+                         (list directory)))
 	   (program+args (append program args))
-	   (default-directory "~/")
-	   (proc (apply #'start-process "traad-server" proc-buff program+args))
-	   (cont 1))
-      (while cont
-        (set-process-query-on-exit-flag proc nil)
-	(accept-process-output proc 0 100 t)
-	(let ((port-str (with-current-buffer proc-buff
-			  (buffer-string))))
-	  (cond
-	   ((string-match "^[0-9]+$" port-str)
-	    (setq traad-port (string-to-number port-str)
-		  cont nil))
-	   (t
-	    (incf cont)
-	    (when (< 30 cont) ; timeout after 3 seconds
-	      (error "Server timeout.")))))))))
+	   (default-directory "~/"))
+      (apply #'start-process "traad-server" proc-buff program+args))))
+
+
 
 ; TODO
 (defun traad-add-cross-project (directory)
@@ -174,7 +169,7 @@ after successful refactorings."
   "Get the status of a traad task. Returns a deferred request."
   (request-deferred
    (concat
-    "http://" traad-host ":" (number-to-string traad-port)
+    "http://" traad-host ":" (number-to-string traad-server-port)
     "/task/" (number-to-string task-id))
    :type "GET"
    :parser 'json-read))
@@ -183,7 +178,7 @@ after successful refactorings."
   "Get the status of all traad tasks. Returns a deferred request."
   (request-deferred
    (concat
-    "http://" traad-host ":" (number-to-string traad-port)
+    "http://" traad-host ":" (number-to-string traad-server-port)
     "/tasks")
    :type "GET"
    :parser 'json-read))
@@ -575,7 +570,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
                     (cons "path" (buffer-file-name)))))
     (request-response-data
      (request
-      (concat "http://" traad-host ":" (number-to-string traad-port)
+      (concat "http://" traad-host ":" (number-to-string traad-server-port)
               "/code_assist/completions")
       :type "GET"
       :headers '(("Content-Type" . "application/json"))
@@ -656,7 +651,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
   "Post `data` as JSON to `location` on the server, calling `callback` with the response."
   (request
    (concat
-    "http://" traad-host ":" (number-to-string traad-port)
+    "http://" traad-host ":" (number-to-string traad-server-port)
     location)
    :type type
    :data (json-encode data)
@@ -677,7 +672,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 	       #'xml-rpc-method-call
 	       (concat
 		"http://" traad-host ":"
-		(number-to-string traad-port))
+		(number-to-string traad-server-port))
 	       func args)
 	    (error 
 	     (error (error-message-string err)))))
@@ -717,7 +712,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 	 (lambda (result) (traad-async-handler result callback cbargs)))
        (concat
 	"http://" traad-host ":"
-	(number-to-string traad-port))
+	(number-to-string traad-server-port))
        fun funargs)
     
     ; otherwise, use a synchronous call
