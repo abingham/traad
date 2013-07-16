@@ -78,13 +78,14 @@ def find_implementations(project, offset, path):
 
 @traad.trace.trace
 @validate
-def find_definition(self, code, offset, path):
+def find_definition(project, code, offset, path):
     """Find the definition location of a symbol.
 
     ``path`` may be absolute or relative. If ``path`` is relative,
     then it must to be relative to the root of the project.
 
     Args:
+      project: The traad Project object.
       code: The source code containing the method symbol.
       offset: The offset into ``code`` of the symbol.
       path: The path to the resource containing ``code``.
@@ -94,10 +95,10 @@ def find_definition(self, code, offset, path):
 
     """
 
-    path = self._to_relative_path(path)
+    path = project.to_relative_path(path)
     return location_to_tuple(
         rope.contrib.findit.find_definition(
-            self.proj,
+            project.proj,
             code,
             offset,
-            self.proj.get_resource(path)))
+            project.get_resource(path)))

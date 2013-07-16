@@ -502,15 +502,23 @@ current buffer.
      :type "GET"
      :data data)))
 
-; TODO
 (defun traad-find-definition (pos)
-  "Get location of a function definition."
-  (traad-call 'find_definition
-	      (buffer-substring-no-properties
-	       (point-min)
-	       (point-max))
-	      (traad-adjust-point pos)
-	      (buffer-file-name)))
+  "Get location of a function definition.
+
+  Returns a deferred request. The 'data' key in the JSON hold the location in
+  the form:
+
+    [path, [region-start, region-stop], offset, unsure, lineno]
+  "
+  (lexical-let ((data (list (cons "code" (buffer-substring-no-properties
+                                          (point-min)
+                                          (point-max)))
+                            (cons "offset" (traad-adjust-point pos))
+                            (cons "path" (buffer-file-name)))))
+    (traad-deferred-request
+     "/findit/definition"
+     :type "GET"
+     :data data)))
 
 (defun traad-display-findit (pos func buff-name)
   "Common display routine for occurrences and implementations.
@@ -577,17 +585,34 @@ current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-implementations "*traad-implementations*"))
 
-; TODO
 (defun traad-goto-definition (pos)
   "Go to the definition of the function as POS."
   (interactive "d")
-  (let* ((loc (traad-find-definition pos))
-	 (path (car loc))
-	 (abspath (if (file-name-absolute-p path) path (concat (traad-get-root) "/" path)))
-	 (lineno (nth 4 loc)))
-    (goto-line 
-     lineno
-     (find-file-other-window abspath))))
+  (deferred:$
+    (deferred:parallel
+      (deferred:$
+        (traad-find-definition pos)
+        (deferred:nextc it
+          'request-response-data)
+        (deferred:nextc it
+          (lambda (x) (assoc-default 'data x))))
+      (deferred:$
+        (traad-get-root)
+        (deferred:nextc it
+          'request-response-data)
+        (deferred:nextc it
+          (lambda (x) (assoc-default 'root x)))))
+    
+    (deferred:nextc it
+      (lambda (input)
+        (letrec ((loc (elt input 0))
+                 (path (elt loc 0))
+                 (root (elt input 1))
+                 (abspath (if (file-name-absolute-p path) path (concat root "/" path)))
+                 (lineno (elt loc 4)))
+          (goto-line 
+           lineno
+           (find-file-other-window abspath)))))))
 
 (defun traad-findit (type)
   "Run a findit function at the current point."

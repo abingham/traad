@@ -331,6 +331,22 @@ def findit_implementations_view():
         'data': data,
     }
 
+@get('/findit/definition')
+def findit_definitions_view():
+    from traad.rope.findit import find_definition
+
+    args = request.json
+    data = find_definition(project,
+                           args['code'],
+                           args['offset'],
+                           args['path'])
+
+    # TODO: What if it actually fails?
+    return {
+        'result': 'success',
+        'data': data,
+    }
+
 def main():
     import argparse
 
