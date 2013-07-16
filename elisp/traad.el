@@ -654,7 +654,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
       :parser 'json-read
       :data (json-encode data)))))
 
-; TODO
 (defun traad-display-in-buffer (msg buffer)
   (let ((cbuff (current-buffer))
 	(buff (get-buffer-create buffer))
@@ -664,25 +663,37 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
     (insert msg)
     (pop-to-buffer cbuff)))
 
-; TODO
 (defun traad-get-calltip (pos)
-  "Get the calltip for an object."
-  ; TODO: Why do I have this "or" here? Get rid of it when you have a
-  ; chance.
-  (or (traad-call 'get_calltip
-		  (buffer-substring-no-properties
-		   (point-min)
-		   (point-max))
-		  (traad-adjust-point pos)
-		  (buffer-file-name))))
+  "Get the calltip for an object.
 
-; TODO
+  Returns a deferred which produces the calltip string.
+  "
+  (lexical-let ((data (list (cons "code"(buffer-substring-no-properties
+                                         (point-min)
+                                         (point-max)))
+                            (cons "offset" (traad-adjust-point pos))
+                            (cons "path" (buffer-file-name)))))
+    (deferred:$
+      (traad-deferred-request
+       "/code_assist/calltip"
+       :type "GET"
+       :data data)
+      (deferred:nextc it
+        (lambda (req)
+          (assoc-default
+           'calltip
+           (request-response-data req)))))))
+
 (defun traad-display-calltip (pos)
   "Display calltip for an object."
   (interactive "d")
-  (traad-display-in-buffer
-   (traad-get-calltip pos)
-   "*traad-calltip*"))
+  (deferred:$
+    (traad-get-calltip pos)
+    (deferred:nextc it
+      (lambda (calltip)
+        (traad-display-in-buffer
+         calltip
+         "*traad-calltip*")))))
 
 ; TODO
 (defun traad-get-doc (pos)

@@ -252,6 +252,9 @@ def code_assist_completion_view():
     from traad.rope.codeassist import code_assist
 
     args = request.json
+
+    log.info('get completion: {}'.format(args))
+
     results = code_assist(project,
                           args['code'],
                           args['offset'],
@@ -278,18 +281,22 @@ def code_assist_completion_view():
 #     }
 
 
-# @get('/code_assist/calltip')
-# def code_assist_calltip_view():
-#     args = request.json
+@get('/code_assist/calltip')
+def code_assist_calltip_view():
+    from traad.rope.codeassist import get_calltip
 
-#     log.info('get calltip: {}'.format(args))
+    args = request.json
 
-#     return {
-#         'results': project.get_calltip(
-#             code=args['code'],
-#             offset=args['offset'],
-#             path=args['path'])
-#     }
+    log.info('get calltip: {}'.format(args))
+
+    return {
+        'result': 'success',
+        'calltip': get_calltip(
+            project,
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
 
 
 # @get('/code_assist/definition')

@@ -13,6 +13,7 @@ def code_assist(project, code, offset, path):
     then it must to be relative to the root of the project.
 
     Args:
+      project: The Project to use.
       code: The source code in which the completion should
         happen. Note that this may differ from the contents of the
         resource at ``path``.
@@ -34,6 +35,32 @@ def code_assist(project, code, offset, path):
     rslt = [(r.name, r.get_doc(), r.scope, r.type) for r in results]
     return rslt
 
+
+@traad.trace.trace
+@validate
+def get_calltip(project, code, offset, path):
+    """Get the calltip of a function.
+
+    ``path`` may be absolute or relative. If ``path`` is relative,
+    then it must be relative to the root of the project.
+
+    Args:
+      project: The Project to use.
+      code: The source code.
+      offset: An offset into ``code`` of the object to query.
+      path: The path to the resource in which the search is
+        being done.
+
+    Returns: A calltip string.
+
+    """
+
+    path = project.to_relative_path(path)
+    return rope.contrib.codeassist.get_calltip(
+        project.proj,
+        code,
+        offset,
+        project.get_resource(path))
 
 class CodeAssistFunctions:
     """The codeassist related functions of the rope interface.
@@ -62,31 +89,6 @@ class CodeAssistFunctions:
 
         path = self._to_relative_path(path)
         return rope.contrib.codeassist.get_doc(
-            self.proj,
-            code,
-            offset,
-            self.proj.get_resource(path))
-
-    @traad.trace.trace
-    @validate
-    def get_calltip(self, code, offset, path):
-        """Get the calltip of a function.
-
-        ``path`` may be absolute or relative. If ``path`` is relative,
-        then it must be relative to the root of the project.
-
-        Args:
-          code: The source code.
-          offset: An offset into ``code`` of the object to query.
-          path: The path to the resource in which the search is
-            being done.
-
-        Returns: A calltip string.
-
-        """
-
-        path = self._to_relative_path(path)
-        return rope.contrib.codeassist.get_calltip(
             self.proj,
             code,
             offset,
