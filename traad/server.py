@@ -310,9 +310,20 @@ def findit_occurences_view():
     from traad.rope.findit import find_occurrences
 
     args = request.json
-    print(request)
-    print(request.json)
     data = find_occurrences(project, args['offset'], args['path'])
+
+    # TODO: What if it actually fails?
+    return {
+        'result': 'success',
+        'data': data,
+    }
+
+@get('/findit/implementations')
+def findit_implementations_view():
+    from traad.rope.findit import find_implementations
+
+    args = request.json
+    data = find_implementations(project, args['offset'], args['path'])
 
     # TODO: What if it actually fails?
     return {

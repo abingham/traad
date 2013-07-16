@@ -472,10 +472,25 @@ necessary. Return the history buffer."
 ;; findit
 
 (defun traad-find-occurrences (pos)
-  "Get all occurences the use of the symbol as POS in the
+  "Get all occurences the use of the symbol at POS in the
 current buffer.
 
-  Returns a deferred request. THe 'data' key in the JSON hold the
+  Returns a deferred request. The 'data' key in the JSON hold the
+  location data in the form:
+
+    [[path, [region-start, region-stop], offset, unsure, lineno], . . .]
+  "
+   (lexical-let ((data (list (cons "offset" (traad-adjust-point pos))
+                            (cons "path" (buffer-file-name)))))
+    (traad-deferred-request
+     "/findit/occurrences"
+     :type "GET"
+     :data data)))
+
+(defun traad-find-implementations (pos)
+  "Get the implementations of the symbol at POS in the current buffer.
+
+  Returns a deferred request. The 'data' key in the JSON hold the
   location data in the form:
 
     [[path, [region-start, region-stop], offset, unsure, lineno], . . .]
@@ -483,16 +498,9 @@ current buffer.
   (lexical-let ((data (list (cons "offset" (traad-adjust-point pos))
                             (cons "path" (buffer-file-name)))))
     (traad-deferred-request
-     "/findit/occurrences"
+     "/findit/implementations"
      :type "GET"
      :data data)))
-
-; TODO
-(defun traad-find-implementations (pos)
-  "Find all places a given method is overridden."
-  (traad-call 'find_implementations
-	      (traad-adjust-point pos)
-	      (buffer-file-name)))
 
 ; TODO
 (defun traad-find-definition (pos)
@@ -563,7 +571,6 @@ current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-occurrences "*traad-occurrences*"))
 
-; TODO
 (defun traad-display-implementations (pos)
   "Display all occurences the use of the symbol as POS in the
 current buffer."

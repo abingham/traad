@@ -53,13 +53,14 @@ def find_occurrences(project, offset, path):
 
 @traad.trace.trace
 @validate
-def find_implementations(self, offset, path):
+def find_implementations(project, offset, path):
     """Find the places a given method is overridden.
 
     ``path`` may be absolute or relative. If ``path`` is relative,
     then it must to be relative to the root of the project.
 
     Args:
+      project: The traad Project object.
       offset: The offset into ``path`` of the method name.
       path: The path to the resource containing the method name to
         search for.
@@ -67,9 +68,12 @@ def find_implementations(self, offset, path):
     Returns: A sequence of tuples of the form (path, (region-start,
       region-stop), offset, unsure, lineno).
     """
-    return self._find_locations(
+
+    return _find_locations(
+        project,
         rope.contrib.findit.find_implementations,
-        path, offset)
+        path,
+        offset)
 
 
 @traad.trace.trace
