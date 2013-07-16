@@ -689,6 +689,10 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 ;; low-level support
 
 (defun traad-construct-url (location)
+  "Construct a URL to a specific location on the traad server.
+
+  In short: http://server_host:server_port<location>
+  "
   (concat
    "http://" traad-host
    ":" (number-to-string traad-server-port)
