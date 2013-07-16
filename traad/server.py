@@ -77,6 +77,7 @@ def undo_view():
     # TODO: What if it actually fails?
     return {'result': 'success'}
 
+
 @post('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks
@@ -133,6 +134,7 @@ def rename_view():
             'result': 'fail',
             'message': str(e)
         }
+
 
 @post('/refactor/extract_method')
 def extract_method_view():
@@ -316,6 +318,7 @@ def code_assist_calltip_view():
 #             path=args['path'])
 #     }
 
+
 @get('/findit/occurrences')
 def findit_occurences_view():
     from traad.rope.findit import find_occurrences
@@ -329,6 +332,7 @@ def findit_occurences_view():
         'data': data,
     }
 
+
 @get('/findit/implementations')
 def findit_implementations_view():
     from traad.rope.findit import find_implementations
@@ -341,6 +345,7 @@ def findit_implementations_view():
         'result': 'success',
         'data': data,
     }
+
 
 @get('/findit/definition')
 def findit_definitions_view():
@@ -357,6 +362,7 @@ def findit_definitions_view():
         'result': 'success',
         'data': data,
     }
+
 
 def main():
     import argparse
