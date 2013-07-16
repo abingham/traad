@@ -505,7 +505,9 @@ current buffer.
 	      (buffer-file-name)))
 
 (defun traad-display-findit (pos func buff-name)
-  "Common display routine for occurrences and implementations."
+  "Common display routine for occurrences and implementations.
+
+  Call FUNC with POS and fill up the buffer BUFF-NAME with the results."
   (lexical-let ((buff-name buff-name))
     (deferred:$
       ; Fetch in parallel...
@@ -556,7 +558,7 @@ current buffer.
              locs)))))))
 
 (defun traad-display-occurrences (pos)
-  "Display all occurences the use of the symbol as POS in the
+  "Display all occurences the use of the symbol at POS in the
 current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-occurrences "*traad-occurrences*"))
@@ -580,7 +582,6 @@ current buffer."
      lineno
      (find-file-other-window abspath))))
 
-; TODO
 (defun traad-findit (type)
   "Run a findit function at the current point."
   (interactive
