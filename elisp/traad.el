@@ -226,7 +226,14 @@ the project root."
   (traad-call 'get_children path))
 
 (defun traad-get-root ()
-  "Get the project root."
+  "Get the project root.
+
+  Returns a deferred request object. The root information is in
+  the 'data' key of the JSON data.
+  "
+  ; TODO: Can we cache this value? That works if we assume that the
+  ; server doesn't change roots or get restarted on a different
+  ; root. Hmm...
   (request-deferred
    (concat
     "http://" traad-host ":" (number-to-string traad-server-port)
