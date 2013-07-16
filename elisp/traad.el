@@ -695,24 +695,39 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
          calltip
          "*traad-calltip*")))))
 
-; TODO
 (defun traad-get-doc (pos)
-  "Get docstring for an object."
-  (or (traad-call 'get_doc
-		  (buffer-substring-no-properties 
-		   (point-min)
-		   (point-max))
-		  (traad-adjust-point pos)
-		  (buffer-file-name))
-      "<no docs available>"))
+  "Get docstring for an object.
 
-; TODO
+  Returns a deferred which produces the doc string.
+  "
+  (lexical-let ((data (list (cons "code" (buffer-substring-no-properties 
+                                          (point-min)
+                                          (point-max)))
+                            (cons "offset" (traad-adjust-point pos))
+                            (cons "path" (buffer-file-name)))))
+    (deferred:$
+      
+      (traad-deferred-request
+       "/code_assist/doc"
+       :type "GET"
+       :data data)
+      
+      (deferred:nextc it
+        (lambda (req)
+          (assoc-default
+           'doc
+           (request-response-data req)))))))
+
 (defun traad-display-doc (pos)
   "Display docstring for an object."
   (interactive "d")
-  (traad-display-in-buffer 
-   (traad-get-doc pos)
-   "*traad-doc*"))
+  (deferred:$
+    (traad-get-doc pos)
+    (deferred:nextc it
+      (lambda (doc)
+        (traad-display-in-buffer
+         doc
+         "*traad-doc*")))))
 
 ; TODO
 (defun traad-get-definition (pos)

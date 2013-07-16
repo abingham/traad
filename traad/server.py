@@ -267,18 +267,22 @@ def code_assist_completion_view():
     }
 
 
-# @get('/code_assist/doc')
-# def code_assist_doc_view():
-#     args = request.json
+@get('/code_assist/doc')
+def code_assist_doc_view():
+    from traad.rope.codeassist import get_doc
 
-#     log.info('get doc: {}'.format(args))
+    args = request.json
 
-#     return {
-#         'results': project.get_doc(
-#             code=args['code'],
-#             offset=args['offset'],
-#             path=args['path'])
-#     }
+    log.info('get doc: {}'.format(args))
+
+    return {
+        'result': 'success',
+        'doc': get_doc(
+            project,
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
 
 
 @get('/code_assist/calltip')
