@@ -194,6 +194,7 @@ after successful refactorings."
                  (request-response-data response))))))
 
 (defun traad-display-full-task-status ()
+  ; TODO: Improve the display of this data.
   (interactive)
   (deferred:$
     (traad-full-task-status)
