@@ -171,21 +171,15 @@ after successful refactorings."
 
 (defun traad-task-status (task-id)
   "Get the status of a traad task. Returns a deferred request."
-  (request-deferred
-   (concat
-    "http://" traad-host ":" (number-to-string traad-server-port)
-    "/task/" (number-to-string task-id))
-   :type "GET"
-   :parser 'json-read))
+  (traad-deferred-request
+   "/task/" (number-to-string task-id)
+   :type "GET"))
 
 (defun traad-full-task-status ()
   "Get the status of all traad tasks. Returns a deferred request."
-  (request-deferred
-   (concat
-    "http://" traad-host ":" (number-to-string traad-server-port)
-    "/tasks")
-   :type "GET"
-   :parser 'json-read))
+  (traad-deferred-request
+   "/tasks"
+   :type "GET"))
 
 (defun traad-display-task-status (task-id)
   "Get the status of a traad task."
@@ -234,12 +228,9 @@ the project root."
   ; TODO: Can we cache this value? That works if we assume that the
   ; server doesn't change roots or get restarted on a different
   ; root. Hmm...
-  (request-deferred
-   (concat
-    "http://" traad-host ":" (number-to-string traad-server-port)
-    "/root")
-   :type "GET"
-   :parser 'json-read))
+  (traad-deferred-request
+   "/root"
+   :type "GET"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
@@ -482,18 +473,19 @@ necessary. Return the history buffer."
 
 (defun traad-find-occurrences (pos)
   "Get all occurences the use of the symbol as POS in the
-current buffer."
-  (lexical-let ((json-array-type 'list
-                                 ) (data (list (cons "offset" (traad-adjust-point pos))
-                               (cons "path" (buffer-file-name)))))
-    (request-deferred
-     (concat "http://" traad-host
-             ":" (number-to-string traad-server-port)
-             "/findit/occurrences")
+current buffer.
+
+  Returns a deferred request. THe 'data' key in the JSON hold the
+  location data in the form:
+
+    [[path, [region-start, region-stop], offset, unsure, lineno], . . .]
+  "
+  (lexical-let ((data (list (cons "offset" (traad-adjust-point pos))
+                            (cons "path" (buffer-file-name)))))
+    (traad-deferred-request
+     "/findit/occurrences"
      :type "GET"
-     :headers '(("Content-Type" . "application/json"))
-     :data (json-encode data)
-     :parser 'json-read)))
+     :data data)))
 
 ; TODO
 (defun traad-find-implementations (pos)
@@ -547,19 +539,20 @@ current buffer."
             ; For each location, add a line to the buffer.
             ; TODO: Is there a "dovector" we can use? This is a bit fugly.
             (mapcar
-             (lambda (loc) (lexical-let* ((path (elt loc 0))
-                                     (abspath (concat root "/" path))
-                                     (lineno (elt loc 4))
-                                     (code (nth (- lineno 1) (traad-read-lines abspath))))
-                        (insert-button
-                         (format "%s:%s: %s\n" 
-                                 path
-                                 lineno
-                                 code)
-                         'action (lambda (x) 
-                                   (goto-line 
-                                    lineno 
-                                    (find-file-other-window abspath))))))
+             (lambda (loc)
+               (lexical-let* ((path (elt loc 0))
+                              (abspath (concat root "/" path))
+                              (lineno (elt loc 4))
+                              (code (nth (- lineno 1) (traad-read-lines abspath))))
+                 (insert-button
+                  (format "%s:%s: %s\n" 
+                          path
+                          lineno
+                          code)
+                  'action (lambda (x) 
+                            (goto-line 
+                             lineno 
+                             (find-file-other-window abspath))))))
              locs)))))))
 
 (defun traad-display-occurrences (pos)
@@ -695,12 +688,19 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
+(defun traad-construct-url (location)
+  (concat
+   "http://" traad-host
+   ":" (number-to-string traad-server-port)
+   location))
+
 (defun* traad-request (location data callback &key (type "POST"))
   "Post `data` as JSON to `location` on the server, calling `callback` with the response."
+
+  ; TODO: Should we just switch to deferred requests here?
+  
   (request
-   (concat
-    "http://" traad-host ":" (number-to-string traad-server-port)
-    location)
+   (traad-construct-url location)
    :type type
    :data (json-encode data)
    :headers '(("Content-Type" . "application/json"))
@@ -710,6 +710,14 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
    :error (function*
            (lambda (&key error-thrown &allow-other-keys&rest _)
              (message "Error: %S" error-thrown)))))
+
+(defun* traad-deferred-request (location &key (type "POST") (data '()))
+  (request-deferred
+   (traad-construct-url location)
+   :type type
+   :parser 'json-read
+   :headers '(("Content-Type" . "application/json"))
+   :data (json-encode data)))
 
 (defun traad-call (func &rest args)
   "Make an XMLRPC call to FUNC with ARGS on the traad server."
