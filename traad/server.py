@@ -408,6 +408,44 @@ def findit_definitions_view():
     }
 
 
+@post("/imports/organize")
+def organize_imports_view():
+    # TODO: This patterns of async-tasks is repeated several times.
+    # Refactor it.
+
+    from traad.rope.importutil import organize_imports
+
+    args = request.json
+
+    log.info('organize imports: {}'.format(args))
+
+    try:
+        task_id = next(task_ids)
+        state.create(task_id)
+
+        task_queue.put(
+            AsyncTask(
+                project,
+                state,
+                task_id,
+                organize_imports,
+                args['path']))
+
+        log.info('organize-imports success')
+
+        return {
+            'result': 'ok',
+            'task_id': task_id
+        }
+    except:
+        e = sys.exc_info()[1]
+        log.error('organize-imports error: {}'.format(e))
+        return {
+            'result': 'fail',
+            'message': str(e)
+        }
+
+
 def main():
     import argparse
 

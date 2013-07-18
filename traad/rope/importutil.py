@@ -4,6 +4,28 @@ from traad.rope.validate import validate
 import rope.refactor.importutils
 
 
+@validate
+def _importutil_func(project, state, path, funcname):
+    # TODO: Update state in some useful way.
+    path = project.to_relative_path(path)
+    iorg = rope.refactor.importutils.ImportOrganizer(project.proj)
+    changes = getattr(iorg, funcname)(project.proj.get_resource(path))
+    if changes:
+        project.proj.do(changes)
+
+@traad.trace.trace
+def organize_imports(project, state, path):
+    """Organize the import statements in a python source file.
+
+    Args:
+      path: The path of the file to reorganize.
+    """
+
+    # TODO: This takes more arguments.
+
+    return _importutil_func(project, state, path, "organize_imports")
+
+
 class ImportUtilFunctions:
     """The import related functions of the rope interface.
 
@@ -11,25 +33,7 @@ class ImportUtilFunctions:
 
     """
 
-    @validate
-    def _importutil_func(self, path, funcname):
-        path = self._to_relative_path(path)
-        iorg = rope.refactor.importutils.ImportOrganizer(self.proj)
-        changes = getattr(iorg, funcname)(self.proj.get_resource(path))
-        if changes:
-            self.proj.do(changes)
 
-    @traad.trace.trace
-    def organize_imports(self, path):
-        """Organize the import statements in a python source file.
-
-        Args:
-          path: The path of the file to reorganize.
-        """
-
-        # TODO: This takes more arguments.
-
-        return self._importutil_func(path, "organize_imports")
 
     @traad.trace.trace
     def expand_star_imports(self, path):
