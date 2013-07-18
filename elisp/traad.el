@@ -24,10 +24,10 @@
 ;; traad depends on the following packages:
 ;;
 ;;   cl
-;;   deferred
+;;   deferred - https://github.com/kiwanami/emacs-deferred
 ;;   json
-;;   request
-;;   request-deferred
+;;   request - https://github.com/tkf/emacs-request
+;;   request-deferred - (same as request)
 ;;
 ;; Copy traad.el to some location in your emacs load path. Then add
 ;; "(require 'traad)" to your emacs initialization (.emacs,
