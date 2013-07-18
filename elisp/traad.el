@@ -442,8 +442,6 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; importutils support
 
-;; TODO: refactor these importutils using a macro?
-
 (defun traad-imports-core (filename location)
   (lexical-let ((location location))
     (deferred:$
