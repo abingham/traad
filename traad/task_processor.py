@@ -22,5 +22,8 @@ class TaskProcessor(threading.Thread):
                 task()
             except Exception:
                 log.exception('Exception while processing {}'.format(task))
+            except:
+                log.exception('Exception terminating '
+                              'TaskProcessor: {}'.format(task))
             finally:
                 self.task_queue.task_done()
