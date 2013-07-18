@@ -419,11 +419,25 @@ necessary. Return the history buffer."
            (assoc-default 'task_id
                           (request-response-data rsp))))))))
 
-; TODO
 (defun traad-extract-variable (name begin end)
   "Extract the currently selected region to a new variable."
   (interactive "sVariable name: \nr")
-  (traad-extract-core 'extract_variable name begin end))
+  (lexical-let ((data (list (cons "path" (buffer-file-name))
+                            (cons "start-offset" (traad-adjust-point begin))
+                            (cons "end-offset" (traad-adjust-point end))
+                            (cons "name" name))))
+    (deferred:$
+      
+      (traad-deferred-request
+       "/refactor/extract_variable"
+       :data data)
+      
+      (deferred:nextc it
+        (lambda (rsp)
+          (message
+           "Extract-variable started with task-id %s"
+           (assoc-default 'task_id
+                          (request-response-data rsp))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; importutils support

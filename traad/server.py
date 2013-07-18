@@ -174,6 +174,45 @@ def extract_method_view():
         }
 
 
+# TODO: This and extract-method can be refactored into a common core.
+@post('/refactor/extract_variable')
+def extract_variable_view():
+    from .rope.extract import extract_variable
+
+    args = request.json
+
+    log.info('extract-variable: {}'.format(args))
+
+    try:
+        task_id = next(task_ids)
+        state.create(task_id)
+
+        task_queue.put(
+            AsyncTask(
+                project,
+                state,
+                task_id,
+                extract_variable,
+                args['name'],
+                args['path'],
+                args['start-offset'],
+                args['end-offset']))
+
+        log.info('extract-variable success')
+
+        return {
+            'result': 'ok',
+            'task_id': task_id
+        }
+    except:
+        e = sys.exc_info()[1]
+        log.error('extract-variable error: {}'.format(e))
+        return {
+            'result': 'fail',
+            'message': str(e)
+        }
+
+
 @post('/refactor/normalize_arguments')
 def normalize_arguments_view():
     from .rope.change_signature import normalize_arguments
