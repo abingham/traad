@@ -89,6 +89,24 @@ def redo_view():
     return {'result': 'success'}
 
 
+@get('/history/undo')
+def undo_history_view():
+    from traad.rope.history import undo_history
+    return {
+        'result': 'success',
+        'history': undo_history(project)
+    }
+
+
+@get('/history/redo')
+def redo_history_view():
+    from traad.rope.history import redo_history
+    return {
+        'result': 'success',
+        'history': redo_history(project)
+    }
+
+
 @post('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks

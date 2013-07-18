@@ -269,29 +269,41 @@ redone."
       (lambda (&key data &allow-other-keys)
         (message "Redo"))))))
 
-; TODO
 (defun traad-update-history-buffer ()
   "Update the contents of the history buffer, creating it if \
 necessary. Return the history buffer."
-  (save-excursion
-    (let ((undo (traad-call 'undo_history))
-	  (redo (traad-call 'redo_history))
-	  (buff (get-buffer-create "*traad-history*")))
-      (set-buffer buff)
-      (erase-buffer)
-      (insert "== UNDO HISTORY ==\n")
-      (if undo (insert (pp-to-string (traad-enumerate undo))))
-      (insert "\n")
-      (insert "== REDO HISTORY ==\n")
-      (if redo (insert (pp-to-string (traad-enumerate redo))))
-      buff)
-    ))
+  (deferred:$
 
-; TODO
-(defun traad-history ()
+    (deferred:parallel
+      (traad-deferred-request
+       "/history/undo"
+       :type "GET")
+      (traad-deferred-request
+       "/history/redo"
+       :type "GET"))
+
+    (deferred:nextc it
+      (lambda (inputs)
+        (let* ((undo (assoc-default 'history (request-response-data (elt inputs 0))))
+               (redo (assoc-default 'history (request-response-data (elt inputs 1))))
+               (buff (get-buffer-create "*traad-history*")))
+          (set-buffer buff)
+          (erase-buffer)
+          (insert "== UNDO HISTORY ==\n")
+          (if undo (insert (pp-to-string (traad-enumerate undo))))
+          (insert "\n")
+          (insert "== REDO HISTORY ==\n")
+          (if redo (insert (pp-to-string (traad-enumerate redo))))
+          buff)))))
+
+(defun traad-display-history ()
   "Display undo and redo history."
   (interactive)
-  (switch-to-buffer (traad-update-history-buffer)))
+  (deferred:$
+    (traad-update-history-buffer)
+    (deferred:nextc it
+      (lambda (buffer)
+        (switch-to-buffer buffer)))))
 
 ; TODO
 (defun traad-history-info-core (info)

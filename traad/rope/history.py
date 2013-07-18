@@ -8,6 +8,7 @@ def undo(project, index):
     project.proj.history.undo(
         project.proj.history.undo_list[index])
 
+
 @traad.trace.trace
 @validate
 def redo(project, idx=0):
@@ -15,6 +16,27 @@ def redo(project, idx=0):
     '''
     project.proj.history.redo(
         project.proj.history.redo_list[idx])
+
+
+@traad.trace.trace
+def undo_history(project):
+    '''Get a list of undo-able changes.
+
+    Returns:
+      A list of descriptions of undoable changes/refactorings.
+    '''
+    return [cs.description for cs in project.proj.history.undo_list]
+
+
+@traad.trace.trace
+def redo_history(project):
+    '''Get a list of redo-able changes.
+
+    Returns:
+      A list of descriptions of redoable changes/refactorings.
+    '''
+    return [cs.description for cs in project.proj.history.redo_list]
+
 
 class HistoryFunctions:
     """The history related functions of the rope interface.
@@ -32,16 +54,6 @@ class HistoryFunctions:
             self.proj.history.undo_list[idx])
 
 
-
-    @traad.trace.trace
-    def undo_history(self):
-        '''Get a list of undo-able changes.
-
-        Returns:
-          A list of descriptions of undoable changes/refactorings.
-        '''
-        return [cs.description for cs in self.proj.history.undo_list]
-
     @traad.trace.trace
     def undo_info(self, idx):
         '''Get information about a single undoable operation.
@@ -57,14 +69,6 @@ class HistoryFunctions:
         '''
         return self._history_info(self.proj.history.undo_list, idx)
 
-    @traad.trace.trace
-    def redo_history(self):
-        '''Get a list of redo-able changes.
-
-        Returns:
-          A list of descriptions of redoable changes/refactorings.
-        '''
-        return [cs.description for cs in self.proj.history.redo_list]
 
     @traad.trace.trace
     def redo_info(self, idx):
