@@ -253,7 +253,6 @@ undone."
        (message "Undo"))))))
 
 
-; TODO
 (defun traad-redo (idx)
   "Redo the IDXth change from the history. \
 IDX is the position of an entry in the redo list (see: \
@@ -262,8 +261,13 @@ redone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (traad-call-async-standard
-   'redo (list idx)))
+  (let ((data (list (cons "index" idx))))
+    (traad-request
+     "/history/redo"
+     data
+     (function*
+      (lambda (&key data &allow-other-keys)
+        (message "Redo"))))))
 
 ; TODO
 (defun traad-update-history-buffer ()

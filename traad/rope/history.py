@@ -8,6 +8,14 @@ def undo(project, index):
     project.proj.history.undo(
         project.proj.history.undo_list[index])
 
+@traad.trace.trace
+@validate
+def redo(project, idx=0):
+    '''Redo the last undone operation.
+    '''
+    project.proj.history.redo(
+        project.proj.history.redo_list[idx])
+
 class HistoryFunctions:
     """The history related functions of the rope interface.
 
@@ -23,13 +31,7 @@ class HistoryFunctions:
         self.proj.history.undo(
             self.proj.history.undo_list[idx])
 
-    @traad.trace.trace
-    @validate
-    def redo(self, idx=0):
-        '''Redo the last undone operation.
-        '''
-        self.proj.history.redo(
-            self.proj.history.redo_list[idx])
+
 
     @traad.trace.trace
     def undo_history(self):

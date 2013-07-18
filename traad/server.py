@@ -78,6 +78,17 @@ def undo_view():
     return {'result': 'success'}
 
 
+@post('/history/redo')
+def redo_view():
+    from traad.rope.history import redo
+
+    args = request.json
+    redo(project, args['index'])
+
+    # TODO: What if it actually fails?
+    return {'result': 'success'}
+
+
 @post('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks
