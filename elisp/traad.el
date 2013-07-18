@@ -473,32 +473,26 @@ necessary. Return the history buffer."
     (read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/expand_star"))
 
-; TODO
 (defun traad-froms-to-imports (filename)
   "Convert 'from' imports to normal imports in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: ")))
-  (traad-call-async-standard
-   'froms_to_imports (list filename)))
+    (read-file-name "Filename: " "." (buffer-file-name))))
+  (traad-imports-core filename "/imports/from_to_imports"))
 
-; TODO
 (defun traad-relatives-to-absolutes (filename)
   "Convert relative imports to absolute in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: ")))
-  (traad-call-async-standard
-   'relatives_to_absolutes (list filename)))
+    (read-file-name "Filename: " "." (buffer-file-name))))
+  (traad-imports-core filename "/imports/relatives_to_absolutes"))
 
-; TODO
 (defun traad-handle-long-imports (filename)
   "Clean up long import statements in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: ")))
-  (traad-call-async-standard
-   'handle_long_imports (list filename)))
+    (read-file-name "Filename: " "." (buffer-file-name))))
+  (traad-imports-core filename "/imports/handle_long_imports"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; findit
