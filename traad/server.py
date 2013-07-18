@@ -112,57 +112,18 @@ def long_running_test():
     import traad.test.tasks as tasks
     args = request.json
 
-    log.info('long running test: {}'.format(args))
-
-    task_id = next(task_ids)
-    state.create(task_id)
-
-    task_queue.put(
-        AsyncTask(
-            project,
-            state,
-            task_id,
-            tasks.long_running,
-            args['message']))
-
-    return {'task_id': task_id}
+    return standard_async_task(tasks.long_running,
+                               args['message'])
 
 
 @post('/refactor/rename')
 def rename_view():
     from .rope.rename import rename
-
     args = request.json
-
-    log.info('rename: {}'.format(args))
-
-    try:
-        task_id = next(task_ids)
-        state.create(task_id)
-
-        task_queue.put(
-            AsyncTask(
-                project,
-                state,
-                task_id,
-                rename,
-                args['name'],
-                args['path'],
-                args.get('offset')))
-
-        log.info('rename success')
-
-        return {
-            'result': 'ok',
-            'task_id': task_id
-        }
-    except:
-        e = sys.exc_info()[1]
-        log.error('rename error: {}'.format(e))
-        return {
-            'result': 'fail',
-            'message': str(e)
-        }
+    return standard_async_task(rename,
+                               args['name'],
+                               args['path'],
+                               args.get('offset'))
 
 
 def extract_core(method, request):
@@ -173,37 +134,11 @@ def extract_core(method, request):
       request: The bottle request for the refactoring.
     """
     args = request.json
-
-    log.info('{}: {}'.format(method, args))
-
-    try:
-        task_id = next(task_ids)
-        state.create(task_id)
-
-        task_queue.put(
-            AsyncTask(
-                project,
-                state,
-                task_id,
-                method,
-                args['name'],
-                args['path'],
-                args['start-offset'],
-                args['end-offset']))
-
-        log.info('{} success'.format(method))
-
-        return {
-            'result': 'ok',
-            'task_id': task_id
-        }
-    except:
-        e = sys.exc_info()[1]
-        log.error('{} error: {}'.format(method, e))
-        return {
-            'result': 'fail',
-            'message': str(e)
-        }
+    return standard_async_task(method,
+                               args['name'],
+                               args['path'],
+                               args['start-offset'],
+                               args['end-offset'])
 
 
 @post('/refactor/extract_method')
@@ -221,76 +156,20 @@ def extract_variable_view():
 @post('/refactor/normalize_arguments')
 def normalize_arguments_view():
     from .rope.change_signature import normalize_arguments
-
     args = request.json
-
-    log.info('normalize arguments: {}'.format(args))
-
-    try:
-        task_id = next(task_ids)
-        state.create(task_id)
-
-        task_queue.put(
-            AsyncTask(
-                project,
-                state,
-                task_id,
-                normalize_arguments,
-                args['path'],
-                args['offset']))
-
-        log.info('normalize-arguments success')
-
-        return {
-            'result': 'ok',
-            'task_id': task_id
-        }
-
-    except:
-        e = sys.exc_info()[1]
-        log.error('normalize-arguments error: {}'.format(e))
-        return {
-            'result': 'fail',
-            'message': str(e)
-        }
+    return standard_async_task(normalize_arguments,
+                               args['path'],
+                               args['offset'])
 
 
 @post('/refactor/remove_argument')
 def remove_argument_view():
     from .rope.change_signature import remove_argument
-
     args = request.json
-
-    log.info('remove argument: {}'.format(args))
-
-    try:
-        task_id = next(task_ids)
-        state.create(task_id)
-
-        task_queue.put(
-            AsyncTask(
-                project,
-                state,
-                task_id,
-                remove_argument,
-                args['arg_index'],
-                args['path'],
-                args['offset']))
-
-        log.info('remove-argument success')
-
-        return {
-            'result': 'ok',
-            'task_id': task_id
-        }
-
-    except:
-        e = sys.exc_info()[1]
-        log.error('remove-argument error: {}'.format(e))
-        return {
-            'result': 'fail',
-            'message': str(e)
-        }
+    return standard_async_task(remove_argument,
+                               args['arg_index'],
+                               args['path'],
+                               args['offset'])
 
 
 @get('/code_assist/completions')
@@ -413,34 +292,9 @@ def _importutil_core(request, method):
     # Refactor it.
 
     args = request.json
-
-    log.info('{}: {}'.format(method, args))
-
-    try:
-        task_id = next(task_ids)
-        state.create(task_id)
-
-        task_queue.put(
-            AsyncTask(
-                project,
-                state,
-                task_id,
-                method,
-                args['path']))
-
-        log.info('{}: success'.format(method))
-
-        return {
-            'result': 'ok',
-            'task_id': task_id
-        }
-    except:
-        e = sys.exc_info()[1]
-        log.error('{} error: {}'.format(method, e))
-        return {
-            'result': 'fail',
-            'message': str(e)
-        }
+    return standard_async_task(
+        method,
+        args['path'])
 
 
 @post("/imports/organize")
@@ -471,6 +325,47 @@ def relatives_to_absolutes_view():
 def handle_long_imports_view():
     from traad.rope.importutil import handle_long_imports
     return _importutil_core(request, handle_long_imports)
+
+
+def standard_async_task(method, *args):
+    """Launch a typical async task.
+
+    This runs ``method`` in an ``AsyncTask``, returning a dict with
+    the task-id. Information about the progress is logged. Errors are
+    detected, logged, and a proper result is returned.
+
+    Args:
+      method: The callable to execute in the ``AsyncTask``.
+      args: The arguments to pass to ``method``.
+
+    """
+    log.info('{}: {}'.format(method, args))
+
+    try:
+        task_id = next(task_ids)
+        state.create(task_id)
+
+        task_queue.put(
+            AsyncTask(
+                project,
+                state,
+                task_id,
+                method,
+                *args))
+
+        log.info('{}: success'.format(method))
+
+        return {
+            'result': 'ok',
+            'task_id': task_id
+        }
+    except:
+        e = sys.exc_info()[1]
+        log.error('{} error: {}'.format(method, e))
+        return {
+            'result': 'fail',
+            'message': str(e)
+        }
 
 
 def main():
