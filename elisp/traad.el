@@ -393,51 +393,35 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
 
-(defun traad-extract-core (type name begin end)
-  (traad-call-async-standard
-   type (list name (buffer-file-name) 
-	      (traad-adjust-point begin)
-	      (traad-adjust-point end))))
+(defun traad-extract-core (location name begin end)
+  (lexical-let ((location location)
+                (data (list (cons "path" (buffer-file-name))
+                            (cons "start-offset" (traad-adjust-point begin))
+                            (cons "end-offset" (traad-adjust-point end))
+                            (cons "name" name))))
+    (deferred:$
+      
+      (traad-deferred-request
+       location
+       :data data)
+      
+      (deferred:nextc it
+        (lambda (rsp)
+          (message
+           "%s started with task-id %s"
+           location
+           (assoc-default 'task_id
+                          (request-response-data rsp))))))))
 
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
   (interactive "sMethod name: \nr")
-  (lexical-let ((data (list (cons "path" (buffer-file-name))
-                            (cons "start-offset" (traad-adjust-point begin))
-                            (cons "end-offset" (traad-adjust-point end))
-                            (cons "name" name))))
-    (deferred:$
-      
-      (traad-deferred-request
-       "/refactor/extract_method"
-       :data data)
-      
-      (deferred:nextc it
-        (lambda (rsp)
-          (message
-           "Extract-method started with task-id %s"
-           (assoc-default 'task_id
-                          (request-response-data rsp))))))))
+  (traad-extract-core "/refactor/extract_method" name begin end))
 
 (defun traad-extract-variable (name begin end)
   "Extract the currently selected region to a new variable."
   (interactive "sVariable name: \nr")
-  (lexical-let ((data (list (cons "path" (buffer-file-name))
-                            (cons "start-offset" (traad-adjust-point begin))
-                            (cons "end-offset" (traad-adjust-point end))
-                            (cons "name" name))))
-    (deferred:$
-      
-      (traad-deferred-request
-       "/refactor/extract_variable"
-       :data data)
-      
-      (deferred:nextc it
-        (lambda (rsp)
-          (message
-           "Extract-variable started with task-id %s"
-           (assoc-default 'task_id
-                          (request-response-data rsp))))))))
+  (traad-extract-core "/refactor/extract_variable" name begin end))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; importutils support
