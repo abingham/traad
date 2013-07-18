@@ -444,32 +444,34 @@ necessary. Return the history buffer."
 
 ;; TODO: refactor these importutils using a macro?
 
-(defun traad-organize-imports (filename)
-  "Organize the import statements in FILENAME."
-  (interactive
-   (list
-    (read-file-name "Filename: " "." (buffer-file-name))))
+(defun traad-imports-core (filename location)
   (deferred:$
     
     (traad-deferred-request
-     "/imports/organize"
+     location
      :data (list (cons "path" filename)))
     
     (deferred:nextc it
       (lambda (rsp)
         (message
-         "organize-imports task started with task-id %s"
+         "%s task started with task-id %s"
+         location
          (assoc-default 'task_id
                         (request-response-data rsp)))))))
 
-; TODO
+(defun traad-organize-imports (filename)
+  "Organize the import statements in FILENAME."
+  (interactive
+   (list
+    (read-file-name "Filename: " "." (buffer-file-name))))
+  (traad-imports-core filename "/imports/organize"))
+
 (defun traad-expand-star-imports (filename)
   "Expand * import statements in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: ")))
-  (traad-call-async-standard
-   'expand_star_imports (list filename)))
+    (read-file-name "Filename: " "." (buffer-file-name))))
+  (traad-imports-core filename "/imports/expand_star"))
 
 ; TODO
 (defun traad-froms-to-imports (filename)
