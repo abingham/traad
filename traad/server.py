@@ -446,31 +446,31 @@ def _importutil_core(request, method):
 @post("/imports/organize")
 def organize_imports_view():
     from traad.rope.importutil import organize_imports
-    _importutil_core(request, organize_imports)
+    return _importutil_core(request, organize_imports)
 
 
 @post("/imports/expand_star")
 def expand_star_imports_view():
     from traad.rope.importutil import expand_star_imports
-    _importutil_core(request, expand_star_imports)
+    return _importutil_core(request, expand_star_imports)
 
 
 @post("/imports/froms_to_imports")
 def from_to_imports_view():
     from traad.rope.importutil import froms_to_imports
-    _importutil_core(request, froms_to_imports)
+    return _importutil_core(request, froms_to_imports)
 
 
 @post("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view():
     from traad.rope.importutil import relatives_to_absolutes
-    _importutil_core(request, relatives_to_absolutes)
+    return _importutil_core(request, relatives_to_absolutes)
 
 
 @post("/imports/handle_long_imports")
 def handle_long_imports_view():
     from traad.rope.importutil import handle_long_imports
-    _importutil_core(request, handle_long_imports)
+    return _importutil_core(request, handle_long_imports)
 
 
 def main():

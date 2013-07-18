@@ -445,19 +445,20 @@ necessary. Return the history buffer."
 ;; TODO: refactor these importutils using a macro?
 
 (defun traad-imports-core (filename location)
-  (deferred:$
-    
-    (traad-deferred-request
-     location
-     :data (list (cons "path" filename)))
-    
-    (deferred:nextc it
-      (lambda (rsp)
-        (message
-         "%s task started with task-id %s"
-         location
-         (assoc-default 'task_id
-                        (request-response-data rsp)))))))
+  (lexical-let ((location location))
+    (deferred:$
+      
+      (traad-deferred-request
+       location
+       :data (list (cons "path" filename)))
+      
+      (deferred:nextc it
+        (lambda (rsp)
+          (message
+           "%s task started with task-id %s"
+           location
+           (assoc-default 'task_id
+                          (request-response-data rsp))))))))
 
 (defun traad-organize-imports (filename)
   "Organize the import statements in FILENAME."
@@ -478,7 +479,7 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-file-name "Filename: " "." (buffer-file-name))))
-  (traad-imports-core filename "/imports/from_to_imports"))
+  (traad-imports-core filename "/imports/froms_to_imports"))
 
 (defun traad-relatives-to-absolutes (filename)
   "Convert relative imports to absolute in FILENAME."
@@ -493,6 +494,18 @@ necessary. Return the history buffer."
    (list
     (read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/handle_long_imports"))
+
+(defun traad-imports-super-smackdown (filename)
+  (interactive
+   (list
+    (read-file-name "Filename: " "." (buffer-file-name))))
+  (mapcar (lambda (f) (funcall f filename))
+          (list
+           'traad-expand-star-imports
+           'traad-relatives-to-absolutes
+           'traad-froms-to-imports
+           'traad-handle-long-imports
+           'traad-organize-imports)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; findit
