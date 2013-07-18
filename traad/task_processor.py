@@ -1,4 +1,7 @@
+import logging
 import threading
+
+log = logging.getLogger(__name__)
 
 
 class TaskProcessor(threading.Thread):
@@ -17,5 +20,7 @@ class TaskProcessor(threading.Thread):
                     return
 
                 task()
+            except Exception:
+                log.exception('Exception while processing {}'.format(task))
             finally:
                 self.task_queue.task_done()
