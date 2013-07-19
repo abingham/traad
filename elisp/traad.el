@@ -207,18 +207,7 @@ after successful refactorings."
                           (request-response-data response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; resource access
-
-; TODO
-(defun traad-get-all-resources ()
-  "Get all resources in a project."
-  (traad-call 'get_all_resources))
-
-; TODO
-(defun traad-get-children (path)
-  "Get all child resources for PATH. PATH may be absolute or relative to
-the project root."
-  (traad-call 'get_children path))
+;; server info stuff.
 
 (defun traad-get-root ()
   "Get the project root.
@@ -305,34 +294,42 @@ necessary. Return the history buffer."
       (lambda (buffer)
         (switch-to-buffer buffer)))))
 
-; TODO
-(defun traad-history-info-core (info)
+(defun traad-history-info-core (location)
   "Display information on a single undo/redo operation."
-  (let ((buff (get-buffer-create "*traad-change*")))
-    (switch-to-buffer buff)
-    (diff-mode)
-    (erase-buffer)
-    (insert "Description: " (cdr (assoc "description" info)) "\n"
-	    "Time: " (number-to-string (cdr (assoc "time" info))) "\n"
-	    "Change:\n"
-	    (cdr (assoc "full_change" info))
-	    )))
 
-; TODO
+  (deferred:$
+    
+    (traad-deferred-request
+     location
+     :type "GET")
+    
+    (deferred:nextc it
+      (lambda (rsp)
+        (let ((buff (get-buffer-create "*traad-change*"))
+              (info (assoc-default 'info (request-response-data rsp))))
+          (switch-to-buffer buff)
+          (diff-mode)
+          (erase-buffer)
+          (insert "Description: " (cdr (assoc 'description info)) "\n"
+                  "Time: " (number-to-string (cdr (assoc 'time info))) "\n"
+                  "Change:\n"
+                  (cdr (assoc 'full_change info))))))))
+
 (defun traad-undo-info (i)
   "Get info on the I'th undo history."
   (interactive
    (list
     (read-number "Undo index: " 0)))
-  (traad-history-info-core (traad-call 'undo_info i)))
+  (traad-history-info-core
+   (concat "/history/undo_info/" (number-to-string i))))
 
-; TODO
 (defun traad-redo-info (i)
   "Get info on the I'th redo history."
   (interactive
    (list
     (read-number "Redo index: " 0)))
-  (traad-history-info-core (traad-call 'redo_info i)))
+  (traad-history-info-core
+   (concat "/history/redo_info/" (number-to-string i))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
