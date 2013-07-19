@@ -101,12 +101,6 @@ after successful refactorings."
   :type '(boolean)
   :group 'traad)
 
-; TODO: get rid of this when possible.
-(defcustom traad-use-async t
-  "Whether traad should use asynchrounous XMLRPC calls when possible."
-  :type '(boolean)
-  :group 'traad)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close 
 
@@ -132,28 +126,28 @@ after successful refactorings."
 
 
 ; TODO
-(defun traad-add-cross-project (directory)
-  "Add a cross-project to the traad instance."
-  (interactive
-   (list
-    (read-directory-name "Directory:")))
-  (traad-call 'add_cross_project directory))
+;; (defun traad-add-cross-project (directory)
+;;   "Add a cross-project to the traad instance."
+;;   (interactive
+;;    (list
+;;     (read-directory-name "Directory:")))
+;;   (traad-call 'add_cross_project directory))
 
 ; TODO
-(defun traad-remove-cross-project (directory)
-  "Remove a cross-project from the traad instance."
-  (interactive
-   (list
-    (completing-read
-     "Directory: "
-     (traad-call 'cross_project_directories))))
-  (traad-call 'remove_cross_project directory))
+;; (defun traad-remove-cross-project (directory)
+;;   "Remove a cross-project from the traad instance."
+;;   (interactive
+;;    (list
+;;     (completing-read
+;;      "Directory: "
+;;      (traad-call 'cross_project_directories))))
+;;   (traad-call 'remove_cross_project directory))
 
 ; TODO
-(defun traad-get-cross-project-directories ()
-  "Get a list of root directories for cross projects."
-  (interactive)
-  (traad-call 'cross_project_directories))
+;; (defun traad-get-cross-project-directories ()
+;;   "Get a list of root directories for cross projects."
+;;   (interactive)
+;;   (traad-call 'cross_project_directories))
 
 (defun traad-close ()
   "Close the current traad project, if any."
@@ -335,25 +329,25 @@ necessary. Return the history buffer."
 ;; renaming support
 
 ; TODO
-(defun traad-rename-current-file (new-name)
-  "Rename the current file/module."
-  (interactive
-   (list
-    (read-string "New file name: ")))
-  (traad-call-async
-   'rename (list new-name buffer-file-name)
-   (lambda (_ new-name dirname extension old-buff)
-     (switch-to-buffer 
-      (find-file
-       (expand-file-name 
-	(concat new-name "." extension) 
-	dirname)))
-     (kill-buffer old-buff)
-     (traad-update-history-buffer))
-   (list new-name
-	 (file-name-directory buffer-file-name)
-	 (file-name-extension buffer-file-name)
-	 (current-buffer))))
+;; (defun traad-rename-current-file (new-name)
+;;   "Rename the current file/module."
+;;   (interactive
+;;    (list
+;;     (read-string "New file name: ")))
+;;   (traad-call-async
+;;    'rename (list new-name buffer-file-name)
+;;    (lambda (_ new-name dirname extension old-buff)
+;;      (switch-to-buffer 
+;;       (find-file
+;;        (expand-file-name 
+;; 	(concat new-name "." extension) 
+;; 	dirname)))
+;;      (kill-buffer old-buff)
+;;      (traad-update-history-buffer))
+;;    (list new-name
+;; 	 (file-name-directory buffer-file-name)
+;; 	 (file-name-extension buffer-file-name)
+;; 	 (current-buffer))))
 
 (defun traad-rename (new-name)
   "Rename the object at the current location."
@@ -763,20 +757,20 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
          "*traad-doc*")))))
 
 ; TODO
-(defun traad-get-definition (pos)
-  "Go to definition of the object at POS."
-  (interactive "d")
-  (let* ((loc (traad-call 'get_definition_location
-			  (buffer-substring-no-properties 
-			   (point-min)
-			   (point-max))
-			  (traad-adjust-point pos)
-			  (buffer-file-name)))
-	 (path (elt loc 0))
-	 (lineno (elt loc 1)))
-    (when path
-      (find-file path)
-      (goto-line lineno))))
+;; (defun traad-get-definition (pos)
+;;   "Go to definition of the object at POS."
+;;   (interactive "d")
+;;   (let* ((loc (traad-call 'get_definition_location
+;; 			  (buffer-substring-no-properties 
+;; 			   (point-min)
+;; 			   (point-max))
+;; 			  (traad-adjust-point pos)
+;; 			  (buffer-file-name)))
+;; 	 (path (elt loc 0))
+;; 	 (lineno (elt loc 1)))
+;;     (when path
+;;       (find-file path)
+;;       (goto-line lineno))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
@@ -815,105 +809,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
    :parser 'json-read
    :headers '(("Content-Type" . "application/json"))
    :data (json-encode data)))
-
-(defun traad-call (func &rest args)
-  "Make an XMLRPC call to FUNC with ARGS on the traad server."
-  (let* ((tbegin (time-to-seconds))
-	 (rslt 
-	  (condition-case err
-	      (apply
-	       #'xml-rpc-method-call
-	       (concat
-		"http://" traad-host ":"
-		(number-to-string traad-server-port))
-	       func args)
-	    (error 
-	     (error (error-message-string err)))))
-	 (_ (traad-trace tbegin func args)))
-    rslt))
-
-(defun traad-async-handler (rslt callback cbargs)
-  "Called with result of asynchronous calls made with traad-call-async."
-
-  ; Print out ay error messages
-  (if rslt
-					; TODO: This feels wrong, but
-					; I don't know the "proper"
-					; way to deconstruct the
-					; result object.
-					; Look at "destructuring-bind".
-      (let ((type (car rslt)))
-	(if (eq type ':error) 
-	    (let* ((info (cadr rslt))
-		   (reason (cadr info)))
-	      (if (eq reason 'connection-failed)
-		  (message "Unable to contact traad server. Is it running?")
-		(message (pp-to-string reason)))))))
-
-  ; Call the user callback
-  (apply callback (append (list rslt) cbargs)))
-
-(defun traad-call-async (fun funargs callback &optional cbargs)
-  "Make an asynchronous XMLRPC call to FUN with FUNARGS on the traad server."
-  (if traad-use-async
-      
-      ; If async is enabled, use it
-      (apply
-       #'xml-rpc-method-call-async
-       (lexical-let ((callback callback)
-		     (cbargs cbargs))
-	 (lambda (result) (traad-async-handler result callback cbargs)))
-       (concat
-	"http://" traad-host ":"
-	(number-to-string traad-server-port))
-       fun funargs)
-    
-    ; otherwise, use a synchronous call
-    (let ((rslt (apply 'traad-call fun funargs)))
-      (apply callback rslt cbargs))))
-
-(defun traad-call-async-standard (fun funargs)
-  "A version of traad-call-async which calls a standard callback function."
-  (traad-call-async
-   fun funargs
-   (lambda (_ buff)
-     (progn
-       (traad-maybe-revert buff)
-       (traad-update-history-buffer)))
-   (list (current-buffer))))
-
-(defun traad-shorten-string (x)
-  (let* ((s (if (stringp x) 
-		x 
-	      (pp-to-string x)))
-	 (l (length s)))
-    (subseq s 0 (min l 10))))
-
-(defun traad-trace (start-time func args)
-  "Trace output for a function."
-  (if traad-debug
-      (message 
-       (concat
-	"[traad-call] "
-	(pp-to-string func) " "
-	(mapconcat 'traad-shorten-string args " ") " "
-	(number-to-string (- (time-to-seconds) start-time))
-	"s"
-	))))
-
-(defun traad-maybe-revert (buff)
-  "If traad-auto-revert is true, revert BUFF without asking."
-  (let ((fname (buffer-file-name buff)))
-    (if (and traad-auto-revert 
-	     fname)
-      (if (file-exists-p fname)
-	  (save-excursion
-	    (switch-to-buffer buff)
-	    (revert-buffer nil 't))
-	(message 
-	 (format 
-	  "File %s no longer exists. Possibly removed by an un/redo." 
-	  fname))))))
 
 (defun traad-range (upto)
   (defun range_ (x)
