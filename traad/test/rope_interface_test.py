@@ -1,7 +1,6 @@
 import os
 import unittest
 
-from traad.rope.interface import RopeInterface
 from traad.test import common
 
 
