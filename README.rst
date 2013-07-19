@@ -63,7 +63,9 @@ startup. You can get more details in the documentation in ``traad.el``
 itself.
 
 You will also need to install ``request.el``, which you can get `here
-<http://tkf.github.io/emacs-request/>`_.
+<http://tkf.github.io/emacs-request/>`_. You'll also need
+``deferred.el`` which you can from `here
+<http://github.com/kiwanami/emacs-deferred>`_.
 
 Usage
 =====
@@ -105,16 +107,10 @@ top-level directory. To open a traad project, use ``traad-open``::
 
 This will start a traad server. Once the project is open, you can
 start interacting with it using other traad functions. For example, to
-rename a Python file (and thus a module), switch to that file's buffer
-and run ``traad-rename-current-file``. This will run the rope
-``rename`` refactoring, it will kill the buffer you were visiting
-(since it's been renamed), and it will open a new buffer visiting the
-new file.
-
-You can also rename sub-file elements like classes, functions, etc. To
-do that, just put the point (i.e. your cursor) over the name you want
-to change, and then run ``traad-rename``. You will be prompted
-for the new name, after which rope will run that refactoring.
+rename a class, function, etc., just put the point (i.e. your cursor)
+over the name you want to change, and then run ``traad-rename``. You
+will be prompted for the new name, after which rope will run that
+refactoring.
 
 In general, you'll probably want to configure emacs to automatically
 refresh buffers for you. This way the changes caused by the
