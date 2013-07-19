@@ -12,13 +12,13 @@ script_name, rope_lib = {
 
 setup(
     name = 'traad',
-    version = '0.2',
+    version = '0.3',
     packages = find_packages(),
 
     # metadata for upload to PyPI
     author = 'Austin Bingham',
     author_email = 'austin.bingham@gmail.com',
-    description = 'An XMLRPC server for the rope Python refactoring library.',
+    description = 'A JSON+HTTP server for the rope Python refactoring library.',
     license = 'MIT',
     keywords = 'refactoring',
     url = 'http://github.com/abingham/traad',
