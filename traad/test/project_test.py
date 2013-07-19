@@ -1,16 +1,8 @@
-import os
 import unittest
 
-from traad.test import common
 
-
-class Tests(unittest.TestCase):
-    def setUp(self):
-        self.ri = common.activate(['main'])
-
-    def tearDown(self):
-        common.deactivate()
-
+class ProjectTests(unittest.TestCase):
+    @unittest.skip('TODO')
     def test_get_all_resources(self):
         self.assertEqual(
             sorted(self.ri.get_all_resources()),
@@ -21,6 +13,7 @@ class Tests(unittest.TestCase):
              ('basic/foo.py', False),
              ('basic/overrides.py', False)])
 
+    @unittest.skip('TODO')
     def test_get_children(self):
         self.assertEqual(
             sorted(self.ri.get_children('basic')),
@@ -28,8 +21,3 @@ class Tests(unittest.TestCase):
              ('basic/bar.py', False),
              ('basic/foo.py', False),
              ('basic/overrides.py', False)])
-
-
-
-if __name__ == '__main__':
-    unittest.main()

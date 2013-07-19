@@ -147,7 +147,6 @@ class Project:
             refactoring_type,
             *args)
 
-
     def get_children(self, path):
         '''Get a list of all child resources of a given path.
 
@@ -167,7 +166,6 @@ class Project:
         children = self.proj.get_resource(path).get_children()
         return [(child.path, child.is_folder()) for child in children]
 
-
     def get_all_resources(self):
         '''Get a list of all resources in the project.
 
@@ -175,7 +173,6 @@ class Project:
             is_folder).
         '''
         return list(get_all_resources(self.proj))
-
 
     def get_root(self):
         return self.proj.root.real_path
