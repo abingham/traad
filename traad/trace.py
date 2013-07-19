@@ -1,10 +1,15 @@
 import itertools
 import logging
-import reprlib
 import sys
 import traceback
 
 import decorator
+
+try:
+    import reprlib
+    repr = reprlib.repr
+except ImportError:
+    pass
 
 log = logging.getLogger('traad.trace')
 
@@ -16,7 +21,7 @@ def trace(f, *args, **kw):
     log.info('{}({})'.format(
         f.__name__,
         ', '.join(
-            map(reprlib.repr,
+            map(repr,
                 itertools.chain(
                     args,
                     kw.values())))))

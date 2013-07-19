@@ -1,7 +1,11 @@
 import itertools
 import logging
-import queue
 import sys
+
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 from bottle import abort, get, post, request, run
 
@@ -20,7 +24,7 @@ project = None
 state = State()
 
 task_ids = itertools.count()
-task_queue = queue.Queue()
+task_queue = Queue()
 
 
 def run_server(port, project_path):
