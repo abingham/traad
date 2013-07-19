@@ -4,7 +4,7 @@ from traad.rope.validate import validate
 
 @traad.trace.trace
 @validate
-def undo(project, index):
+def undo(project, index=0):
     project.proj.history.undo(
         project.proj.history.undo_list[index])
 
