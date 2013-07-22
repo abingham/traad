@@ -67,6 +67,8 @@
 (require 'request)
 (require 'request-deferred)
 
+; TODO: Call update-history-buffer as needed.
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; user variables
 
@@ -328,26 +330,34 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
-; TODO
-;; (defun traad-rename-current-file (new-name)
-;;   "Rename the current file/module."
-;;   (interactive
-;;    (list
-;;     (read-string "New file name: ")))
-;;   (traad-call-async
-;;    'rename (list new-name buffer-file-name)
-;;    (lambda (_ new-name dirname extension old-buff)
-;;      (switch-to-buffer 
-;;       (find-file
-;;        (expand-file-name 
-;; 	(concat new-name "." extension) 
-;; 	dirname)))
-;;      (kill-buffer old-buff)
-;;      (traad-update-history-buffer))
-;;    (list new-name
-;; 	 (file-name-directory buffer-file-name)
-;; 	 (file-name-extension buffer-file-name)
-;; 	 (current-buffer))))
+(defun traad-rename-current-file (new-name)
+  "Rename the current file/module."
+  (interactive
+   (list
+    (read-string "New file name: ")))
+  (lexical-let ((new-name new-name)
+                (data (list (cons "name" new-name)
+                            (cons "path" (buffer-file-name))))
+                (old-buff (current-buffer))
+                (dirname (file-name-directory buffer-file-name))
+                (extension (file-name-extension buffer-file-name)))
+    (deferred:$
+      
+      (traad-deferred-request
+       "/refactor/rename"
+       :data data)
+
+      ; TODO: This should actually poll until the operation is
+      ; complete. But then so should other stuff, I suppose...
+      (deferred:nextc it
+        (lambda (_)
+          (switch-to-buffer 
+           (find-file
+            (expand-file-name 
+             (concat new-name "." extension) 
+             dirname)))
+          (kill-buffer old-buff)
+          (traad-update-history-buffer))))))
 
 (defun traad-rename (new-name)
   "Rename the object at the current location."
