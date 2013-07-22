@@ -766,22 +766,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
          doc
          "*traad-doc*")))))
 
-; TODO
-;; (defun traad-get-definition (pos)
-;;   "Go to definition of the object at POS."
-;;   (interactive "d")
-;;   (let* ((loc (traad-call 'get_definition_location
-;; 			  (buffer-substring-no-properties 
-;; 			   (point-min)
-;; 			   (point-max))
-;; 			  (traad-adjust-point pos)
-;; 			  (buffer-file-name)))
-;; 	 (path (elt loc 0))
-;; 	 (lineno (elt loc 1)))
-;;     (when path
-;;       (find-file path)
-;;       (goto-line lineno))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
 
