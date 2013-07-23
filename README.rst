@@ -63,7 +63,7 @@ startup. You can get more details in the documentation in ``traad.el``
 itself.
 
 You will also need to install ``request.el``, which you can get `here
-<http://tkf.github.io/emacs-request/>`_. You'll also need
+<http://tkf.github.io/emacs-request/>`_, and
 ``deferred.el`` which you can from `here
 <http://github.com/kiwanami/emacs-deferred>`_.
 
