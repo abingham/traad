@@ -12,7 +12,7 @@ def activate(names,
              active_dir=ACTIVE_DIR,
              project_dir=PROJECT_DIR):
     """Copy `project_dir/name` to `active_dir/name` and return a
-    `RopeInterface` on the target directory.
+    `Project` on the target directory.
     """
     try:
         shutil.rmtree(active_dir)
