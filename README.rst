@@ -62,10 +62,10 @@ emacs load-path and call ``(require 'traad)`` somewhere in your emacs
 startup. You can get more details in the documentation in ``traad.el``
 itself.
 
-You will also need to install ``request.el``, which you can get `here
-<http://tkf.github.io/emacs-request/>`_. You'll also need
-``deferred.el`` which you can from `here
-<http://github.com/kiwanami/emacs-deferred>`_.
+You will also need to install ``request-deferred.el``, which you can get from 
+`here <https://github.com/tkf/emacs-request>`_. This, in turn, depends on 
+``request.el`` (from the same place) and ``deferred.el`` which you can get 
+from `here <http://github.com/kiwanami/emacs-deferred>`_.
 
 Usage
 =====
