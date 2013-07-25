@@ -1,8 +1,8 @@
-from .foo import Foo
+from .foo import Llama
 
 class Bar:
     def __init__(self):
-        self.foo = Foo()
+        self.foo = Llama()
 
     def some_func(self):
         return 1

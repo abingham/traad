@@ -7,7 +7,9 @@ from traad.test import common
 
 class FinditTests(unittest.TestCase):
     def setUp(self):
-        self.proj = common.activate(['main'])
+        self.proj = common.activate_project({
+            'main': ['basic'],
+        })
 
     def tearDown(self):
         common.deactivate()
@@ -28,8 +30,9 @@ class FinditTests(unittest.TestCase):
         self.assertEqual(len(impls), 1)
 
     def test_find_definition(self):
-        this_dir = os.path.split(__file__)[0]
-        path = os.path.join(this_dir, 'projects', 'main', 'basic', 'bar.py')
+        path = os.path.join(
+            common.activated_path('main'),
+            'basic', 'bar.py')
         with open(path, 'r') as f:
             code = f.read()
         loc = findit.find_definition(self.proj,

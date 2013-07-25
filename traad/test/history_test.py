@@ -8,7 +8,9 @@ from traad.test import common
 
 class HistoryTests(unittest.TestCase):
     def setUp(self):
-        self.proj = common.activate(['main'])
+        self.proj = common.activate_project({
+            'main': ['basic'],
+        })
         state = State()
         state.create(1)
         self.task_state = state.get_task_state(1)

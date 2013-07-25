@@ -12,7 +12,10 @@ class CrossTests(unittest.TestCase):
         self.task_id = 1
         self.state.create(self.task_id)
         self.task_state = self.state.get_task_state(self.task_id)
-        self.proj = common.activate(['main', 'cross'])
+        self.proj = common.activate_project({
+            'main': ['basic'],
+            'cross': ['use_bar'],
+        })
 
     def tearDown(self):
         common.deactivate()
