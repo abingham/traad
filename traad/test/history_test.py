@@ -18,6 +18,25 @@ class HistoryTests(unittest.TestCase):
     def tearDown(self):
         common.deactivate()
 
+    def test_undo_undoes_changes(self):
+        rename(self.proj, self.task_state,
+               'Llama',
+               'basic/foo.py',
+               8)
+
+        with self.assertRaises(ValueError):
+            common.compare_projects(
+                'basic',
+                'main',
+                'basic')
+
+        history.undo(self.proj)
+
+        common.compare_projects(
+            'basic',
+            'main',
+            'basic')
+
     def test_undo_exceptions(self):
         with self.assertRaises(IndexError):
             history.undo(self.proj)
@@ -40,14 +59,46 @@ class HistoryTests(unittest.TestCase):
                8)
         self.assertEqual(len(self.proj.proj.history.undo_list), 1)
 
+    def test_redo_redoes_changes(self):
+        rename(self.proj, self.task_state,
+               'Llama',
+               'basic/foo.py',
+               8)
+
+        with self.assertRaises(ValueError):
+            common.compare_projects(
+                'basic',
+                'main',
+                'basic')
+
+        history.undo(self.proj)
+
+        common.compare_projects(
+            'basic',
+            'main',
+            'basic')
+
+        history.redo(self.proj)
+
+        with self.assertRaises(ValueError):
+            common.compare_projects(
+                'basic',
+                'main',
+                'basic')
+
     def test_redo_adds_history(self):
         rename(self.proj, self.task_state,
                'Llama',
                'basic/foo.py',
                8)
         self.assertEqual(len(self.proj.proj.history.redo_list), 0)
+        self.assertEqual(len(self.proj.proj.history.undo_list), 1)
         history.undo(self.proj)
         self.assertEqual(len(self.proj.proj.history.redo_list), 1)
+        self.assertEqual(len(self.proj.proj.history.undo_list), 0)
+        history.redo(self.proj)
+        self.assertEqual(len(self.proj.proj.history.redo_list), 0)
+        self.assertEqual(len(self.proj.proj.history.undo_list), 1)
 
     def test_redo_exceptions(self):
         with self.assertRaises(IndexError):
