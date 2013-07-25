@@ -10,7 +10,5 @@ class Bar:
 b = Bar()
 b.some_func()
 
-def a_free_func(a,    b,
-
-            c):
+def a_free_func(a, b, c):
     return a + b + c

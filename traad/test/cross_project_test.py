@@ -27,6 +27,16 @@ class CrossTests(unittest.TestCase):
             'basic/bar.py',
             163)
 
+        common.compare_projects(
+            'cross_basic_normalize_arguments',
+            'main',
+            'basic')
+
+        common.compare_projects(
+            'cross_use_bar_normalize_arguments',
+            'cross',
+            'use_bar')
+
     def test_cross_remove_argument(self):
         remove_argument(
             self.proj,
@@ -34,6 +44,16 @@ class CrossTests(unittest.TestCase):
             1,
             'basic/bar.py',
             163)
+
+        common.compare_projects(
+            'cross_basic_remove_argument',
+            'main',
+            'basic')
+
+        common.compare_projects(
+            'cross_use_bar_remove_argument',
+            'cross',
+            'use_bar')
 
 if __name__ == '__main__':
     unittest.main()

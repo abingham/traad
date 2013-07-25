@@ -77,9 +77,12 @@ def diff_report(dc):
 
 def compare_projects(canned_project,
                      top_level_dir,
-                     project):
-    dc = dircmp(canned_project,
-                os.path.join(ACTIVE_DIR,
+                     project,
+                     active_dir=ACTIVE_DIR,
+                     project_dir=PROJECT_DIR):
+    dc = dircmp(os.path.join(project_dir,
+                             canned_project),
+                os.path.join(active_dir,
                              top_level_dir,
                              project))
     if any([dc.left_only,
