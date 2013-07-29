@@ -12,12 +12,15 @@ except ImportError:
 from traad.test import common
 
 
-def json_request(url, data={}, method='POST'):
-    req = Request(
-        url=url,
-        data=json.dumps(data).encode('utf-8'),
-        headers={'Content-Type': 'application/json; charset=utf-8'},
-        method=method)
+def json_request(url, data=None, method='POST'):
+    if data is None:
+        req = Request(
+            url=url)
+    else:
+        req = Request(
+            url=url,
+            data=json.dumps(data).encode('utf-8'),
+            headers={'Content-Type': 'application/json; charset=utf-8'})
     rsp = urlopen(req)
     return json.loads(rsp.read().decode('utf-8'))
 

@@ -38,7 +38,12 @@ def activate(projects,
 
     for tl_dir, prjs in projects.items():
         tl_dir = os.path.join(active_dir, tl_dir)
-        os.makedirs(tl_dir, exist_ok=True)
+
+        try:
+            os.makedirs(tl_dir)
+        except OSError:
+            pass
+
         for prj in prjs:
             shutil.copytree(
                 os.path.join(project_dir, prj),
