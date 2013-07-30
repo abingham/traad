@@ -14,7 +14,7 @@ class FinditTests(unittest.TestCase):
     def tearDown(self):
         common.deactivate()
 
-    def test_find_occurences(self):
+    def test_find_occurrences(self):
         # Find occurrences of the Foo class
         occ = findit.find_occurrences(
             self.proj,

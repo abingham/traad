@@ -6,21 +6,19 @@ import unittest
 try:
     from urllib.error import URLError
     from urllib.request import Request, urlopen
+    python_3 = True
 except ImportError:
-    from urllib2 import Request, URLError, urlopen
+    python_3 = False
 
 from traad.test import common
 
 
 def json_request(url, data=None, method='POST'):
-    if data is None:
-        req = Request(
-            url=url)
-    else:
-        req = Request(
-            url=url,
-            data=json.dumps(data).encode('utf-8'),
-            headers={'Content-Type': 'application/json; charset=utf-8'})
+    req = Request(
+        url=url,
+        data=json.dumps(data).encode('utf-8'),
+        headers={'Content-Type': 'application/json; charset=utf-8'},
+        method=method)
     rsp = urlopen(req)
     return json.loads(rsp.read().decode('utf-8'))
 
@@ -43,6 +41,8 @@ def wait_for_server(host, port, timeout=5):
     raise OSError('Unable to start server!')
 
 
+@unittest.skipUnless(python_3,
+                     'JSONAPI acceptance test disabled for Python 2')
 class JSONAPITests(unittest.TestCase):
     def setUp(self):
         common.activate({'main': ['basic']})
@@ -52,13 +52,16 @@ class JSONAPITests(unittest.TestCase):
             ['python',
              '-m', 'traad.server',
              '-p', str(self.port),
-             common.activated_path('main')])
+             common.activated_path('main')],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
 
         wait_for_server(self.host, self.port)
 
     def tearDown(self):
         self.server_proc.terminate()
         self.server_proc.wait()
+        common.deactivate()
 
     def test_rename(self):
         rsp_data = json_request(
@@ -91,6 +94,18 @@ class JSONAPITests(unittest.TestCase):
             'basic_rename_llama',
             'main',
             'basic')
+
+    def test_find_occurrences(self):
+        rsp_data = json_request(
+            url='http://{}:{}/findit/occurrences'.format(
+                self.host, self.port),
+            data={
+                'path': 'basic/foo.py',
+                'offset': 8,
+            },
+            method='GET')
+        self.assertEqual(len(rsp_data['data']), 3)
+
 
 if __name__ == '__main__':
     unittest.main()

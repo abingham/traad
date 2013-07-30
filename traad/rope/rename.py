@@ -1,5 +1,3 @@
-import sys
-
 import rope.refactor
 
 from traad.rope.validate import validate
