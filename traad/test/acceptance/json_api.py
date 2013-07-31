@@ -42,6 +42,23 @@ def wait_for_server(host, port, timeout=5):
     raise OSError('Unable to start server!')
 
 
+def wait_for_task(task_id, host, port):
+    while True:
+        rsp_data = json_request(
+            url='http://{}:{}/task/{}'.format(
+                host,
+                port,
+                task_id),
+            method='GET')
+
+        if rsp_data['status'] == 'success':
+            return True
+        elif rsp_data['status'] == 'failure':
+            return False
+
+        time.sleep(0.01)
+
+
 @unittest.skipUnless(python_3,
                      'JSONAPI acceptance test disabled for Python 2')
 class JSONAPITests(unittest.TestCase):
@@ -74,22 +91,11 @@ class JSONAPITests(unittest.TestCase):
                 'offset': 8,
             })
 
-        self.assertEqual(rsp_data['result'], 'ok')
+        self.assertEqual(rsp_data['result'], 'success')
         task_id = rsp_data['task_id']
 
-        while True:
-            rsp_data = json_request(
-                url='http://{}:{}/task/{}'.format(
-                    self.host,
-                    self.port,
-                    task_id),
-                method='GET')
-
-            if rsp_data['status'] == 'success':
-                break
-            self.assertNotEqual(rsp_data['status'], 'failure')
-
-            time.sleep(0.01)
+        self.assertTrue(
+            wait_for_task(task_id, self.host, self.port))
 
         common.compare_projects(
             'basic_rename_llama',
@@ -142,6 +148,40 @@ class JSONAPITests(unittest.TestCase):
              91,
              False,
              7])
+
+    def test_undo_undoes_changes(self):
+        rsp_data = json_request(
+            url='http://{}:{}/refactor/rename'.format(
+                self.host, self.port),
+            data={
+                'name': 'Llama',
+                'path': 'basic/foo.py',
+                'offset': 8,
+            })
+
+        self.assertEqual(rsp_data['result'], 'success')
+        task_id = rsp_data['task_id']
+
+        self.assertTrue(
+            wait_for_task(task_id, self.host, self.port))
+
+        with self.assertRaises(ValueError):
+            common.compare_projects(
+                'basic',
+                'main',
+                'basic')
+
+        rsp_data = json_request(
+            url='http://{}:{}/history/undo'.format(
+                self.host, self.port),
+            data={'index': 0})
+
+        self.assertEqual(rsp_data['result'], 'success')
+
+        common.compare_projects(
+            'basic',
+            'main',
+            'basic')
 
 if __name__ == '__main__':
     unittest.main()

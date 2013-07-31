@@ -378,14 +378,14 @@ def standard_async_task(method, *args):
         log.info('{}: success'.format(method))
 
         return {
-            'result': 'ok',
+            'result': 'success',
             'task_id': task_id
         }
     except:
         e = sys.exc_info()[1]
         log.error('{} error: {}'.format(method, e))
         return {
-            'result': 'fail',
+            'result': 'failure',
             'message': str(e)
         }
 
