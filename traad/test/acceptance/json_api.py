@@ -106,6 +106,16 @@ class JSONAPITests(unittest.TestCase):
             method='GET')
         self.assertEqual(len(rsp_data['data']), 3)
 
+    def test_find_implementations(self):
+        rsp_data = json_request(
+            url='http://{}:{}/findit/implementations'.format(
+                self.host, self.port),
+            data={
+                'path': 'basic/overrides.py',
+                'offset': 33,
+            },
+            method='GET')
+        self.assertEqual(len(rsp_data['data']), 1)
 
 if __name__ == '__main__':
     unittest.main()
