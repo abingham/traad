@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import time
 import unittest
@@ -116,6 +117,31 @@ class JSONAPITests(unittest.TestCase):
             },
             method='GET')
         self.assertEqual(len(rsp_data['data']), 1)
+
+    def test_find_definition(self):
+        path = os.path.join(
+            common.activated_path('main'),
+            'basic', 'bar.py')
+        with open(path, 'r') as f:
+            code = f.read()
+
+        rsp_data = json_request(
+            url='http://{}:{}/findit/definition'.format(
+                self.host, self.port),
+            data={
+                'code': code,
+                'path': 'basic/bar.py',
+                'offset': 142,
+            },
+            method='GET')
+
+        self.assertEqual(
+            rsp_data['data'],
+            [os.path.join('basic', 'bar.py'),
+             [91, 100],
+             91,
+             False,
+             7])
 
 if __name__ == '__main__':
     unittest.main()
