@@ -78,7 +78,7 @@ higher-level tool which manages a traad process on your behalf.
 Python server
 -------------
 
-The traad XMLRPC server is written in Python. When traad is installed,
+The traad HTTP server is written in Python. When traad is installed,
 it installs a program called (shockingly) ``traad`` which is the
 server program. The basic usage of the server, should you choose to
 run it standalone, is:
