@@ -679,7 +679,8 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
                                   (point-min) 
                                   (point-max)))
                     (cons "offset" (traad-adjust-point pos))
-                    (cons "path" (buffer-file-name)))))
+                    (cons "path" (buffer-file-name))))
+	(request-backend 'url-retrieve))
     (request-response-data
      (request
       (concat "http://" traad-host ":" (number-to-string traad-server-port)
@@ -797,12 +798,13 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
              (message "Error: %S" error-thrown)))))
 
 (defun* traad-deferred-request (location &key (type "POST") (data '()))
-  (request-deferred
-   (traad-construct-url location)
-   :type type
-   :parser 'json-read
-   :headers '(("Content-Type" . "application/json"))
-   :data (json-encode data)))
+  (let ((request-backend 'url-retrieve))
+    (request-deferred
+     (traad-construct-url location)
+     :type type
+     :parser 'json-read
+     :headers '(("Content-Type" . "application/json"))
+     :data (json-encode data))))
 
 (defun traad-range (upto)
   (defun range_ (x)
