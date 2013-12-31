@@ -64,6 +64,7 @@
 (require 'cl)
 (require 'deferred)
 (require 'json)
+(require 'popup)
 (require 'request)
 (require 'request-deferred)
 
@@ -733,6 +734,17 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
          calltip
          "*traad-calltip*")))))
 
+(defun traad-popup-calltip (pos)
+  (interactive "d")
+  (lexical-let ((pos pos))
+    (deferred:$
+      (traad-get-calltip pos)
+      (deferred:nextc it
+	(lambda (calltip)
+	  (popup-tip 
+	   calltip 
+	   :point pos))))))
+
 (defun traad-get-doc (pos)
   "Get docstring for an object.
 
@@ -766,6 +778,17 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
         (traad-display-in-buffer
          doc
          "*traad-doc*")))))
+
+(defun traad-popup-doc (pos)
+  (interactive "d")
+  (lexical-let ((pos pos))
+    (deferred:$
+      (traad-get-doc pos)
+      (deferred:nextc it
+	(lambda (calltip)
+	  (popup-tip 
+	   calltip 
+	   :point pos))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support
