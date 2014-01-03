@@ -730,9 +730,11 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
     (traad-get-calltip pos)
     (deferred:nextc it
       (lambda (calltip)
-        (traad-display-in-buffer
-         calltip
-         "*traad-calltip*")))))
+	(if calltip
+	    (traad-display-in-buffer
+	     calltip
+	     "*traad-calltip*")
+	  (message "No calltip available."))))))
 
 (defun traad-popup-calltip (pos)
   (interactive "d")
@@ -741,14 +743,16 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
       (traad-get-calltip pos)
       (deferred:nextc it
 	(lambda (calltip)
-	  (popup-tip 
-	   calltip 
-	   :point pos))))))
+	  (if calltip
+	      (popup-tip 
+	       calltip 
+	       :point pos)))))))
 
 (defun traad-get-doc (pos)
   "Get docstring for an object.
 
-  Returns a deferred which produces the doc string.
+  Returns a deferred which produces the doc string. If there is
+  not docstring, the deferred produces nil.
   "
   (lexical-let ((data (list (cons "code" (buffer-substring-no-properties 
                                           (point-min)
@@ -775,9 +779,11 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
     (traad-get-doc pos)
     (deferred:nextc it
       (lambda (doc)
-        (traad-display-in-buffer
-         doc
-         "*traad-doc*")))))
+	(if doc
+	    (traad-display-in-buffer
+	     doc
+	     "*traad-doc*")
+	  (message "No docstring available."))))))
 
 (defun traad-popup-doc (pos)
   (interactive "d")
@@ -785,10 +791,11 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
     (deferred:$
       (traad-get-doc pos)
       (deferred:nextc it
-	(lambda (calltip)
-	  (popup-tip 
-	   calltip 
-	   :point pos))))))
+	(lambda (doc)
+	  (if doc
+	      (popup-tip 
+	       doc
+	       :point pos)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; low-level support

@@ -78,7 +78,8 @@ def get_doc(project, code, offset, path):
       path: The path to the resource in which the completion is
         being done.
 
-    Returns: The docstring for the object.
+    Returns: The docstring for the object, or None if there is no such
+        documentation.
     '''
 
     path = project.to_relative_path(path)
@@ -95,9 +96,6 @@ class CodeAssistFunctions:
     A base for RopeInterface.
 
     """
-
-
-
 
     @traad.trace.trace
     @validate

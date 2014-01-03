@@ -222,13 +222,15 @@ def code_assist_doc_view():
 
     log.info('get doc: {}'.format(args))
 
+    doc = get_doc(
+        project,
+        code=args['code'],
+        offset=args['offset'],
+        path=args['path'])
+
     return {
-        'result': 'success',
-        'doc': get_doc(
-            project,
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
+        'result': 'failure' if doc is None else 'success',
+        'doc': doc
     }
 
 
@@ -240,13 +242,15 @@ def code_assist_calltip_view():
 
     log.info('get calltip: {}'.format(args))
 
+    calltip = get_calltip(
+        project,
+        code=args['code'],
+        offset=args['offset'],
+        path=args['path'])
+
     return {
-        'result': 'success',
-        'calltip': get_calltip(
-            project,
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
+        'result': 'failure' if calltip is None else 'success',
+        'calltip': calltip
     }
 
 
