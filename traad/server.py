@@ -30,6 +30,8 @@ task_queue = Queue()
 def run_server(port, project_path):
     host = 'localhost'
 
+    log.info('Python version: {}'.format(sys.version))
+
     log.info(
         'Running traad server for project "{}" at {}:{}'.format(
             project_path,
