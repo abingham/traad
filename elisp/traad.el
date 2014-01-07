@@ -169,14 +169,12 @@ after successful refactorings."
 (defun traad-task-status (task-id)
   "Get the status of a traad task. Returns a deferred request."
   (traad-deferred-request
-   "/task/" (number-to-string task-id)
-   :type "GET"))
+   "/task/" (number-to-string task-id)))
 
 (defun traad-full-task-status ()
   "Get the status of all traad tasks. Returns a deferred request."
   (traad-deferred-request
-   "/tasks"
-   :type "GET"))
+   "/tasks"))
 
 (defun traad-display-task-status (task-id)
   "Get the status of a traad task."
@@ -216,8 +214,7 @@ after successful refactorings."
   ; server doesn't change roots or get restarted on a different
   ; root. Hmm...
   (traad-deferred-request
-   "/root"
-   :type "GET"))
+   "/root"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
@@ -262,11 +259,9 @@ necessary. Return the history buffer."
 
     (deferred:parallel
       (traad-deferred-request
-       "/history/undo"
-       :type "GET")
+       "/history/undo")
       (traad-deferred-request
-       "/history/redo"
-       :type "GET"))
+       "/history/redo"))
 
     (deferred:nextc it
       (lambda (inputs)
@@ -297,8 +292,7 @@ necessary. Return the history buffer."
   (deferred:$
     
     (traad-deferred-request
-     location
-     :type "GET")
+     location)
     
     (deferred:nextc it
       (lambda (rsp)
@@ -523,7 +517,6 @@ current buffer.
                             (cons "path" (buffer-file-name)))))
     (traad-deferred-request
      "/findit/occurrences"
-     :type "GET"
      :data data)))
 
 (defun traad-find-implementations (pos)
@@ -538,7 +531,6 @@ current buffer.
                             (cons "path" (buffer-file-name)))))
     (traad-deferred-request
      "/findit/implementations"
-     :type "GET"
      :data data)))
 
 (defun traad-find-definition (pos)
@@ -556,7 +548,6 @@ current buffer.
                             (cons "path" (buffer-file-name)))))
     (traad-deferred-request
      "/findit/definition"
-     :type "GET"
      :data data)))
 
 (defun traad-display-findit (pos func buff-name)
@@ -686,7 +677,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
      (request
       (concat "http://" traad-host ":" (number-to-string traad-server-port)
               "/code_assist/completions")
-      :type "GET"
       :headers '(("Content-Type" . "application/json"))
       :data (json-encode data)
       :sync t
@@ -715,7 +705,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
     (deferred:$
       (traad-deferred-request
        "/code_assist/calltip"
-       :type "GET"
        :data data)
       (deferred:nextc it
         (lambda (req)
@@ -763,7 +752,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
       
       (traad-deferred-request
        "/code_assist/doc"
-       :type "GET"
        :data data)
       
       (deferred:nextc it
@@ -827,7 +815,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
            (lambda (&key error-thrown &allow-other-keys&rest _)
              (message "Error: %S" error-thrown)))))
 
-(defun* traad-deferred-request (location &key (type "POST") (data '()))
+(defun* traad-deferred-request (location &key (type "GET") (data '()))
   (let ((request-backend 'url-retrieve))
     (request-deferred
      (traad-construct-url location)

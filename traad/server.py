@@ -84,7 +84,7 @@ def undo_view():
     return {'result': 'success'}
 
 
-@post('/history/redo')
+@get('/history/redo')
 def redo_view():
     from traad.rope.history import redo
 
@@ -131,7 +131,7 @@ def redo_info_view(idx):
     }
 
 
-@post('/test/long_running')
+@get('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks
     args = request.json
@@ -140,7 +140,7 @@ def long_running_test():
                                args['message'])
 
 
-@post('/refactor/rename')
+@get('/refactor/rename')
 def rename_view():
     from .rope.rename import rename
     args = request.json
@@ -165,19 +165,19 @@ def extract_core(method, request):
                                args['end-offset'])
 
 
-@post('/refactor/extract_method')
+@get('/refactor/extract_method')
 def extract_method_view():
     from .rope.extract import extract_method
     return extract_core(extract_method, request)
 
 
-@post('/refactor/extract_variable')
+@get('/refactor/extract_variable')
 def extract_variable_view():
     from .rope.extract import extract_variable
     return extract_core(extract_variable, request)
 
 
-@post('/refactor/normalize_arguments')
+@get('/refactor/normalize_arguments')
 def normalize_arguments_view():
     from .rope.change_signature import normalize_arguments
     args = request.json
@@ -186,7 +186,7 @@ def normalize_arguments_view():
                                args['offset'])
 
 
-@post('/refactor/remove_argument')
+@get('/refactor/remove_argument')
 def remove_argument_view():
     from .rope.change_signature import remove_argument
     args = request.json
@@ -320,36 +320,37 @@ def _importutil_core(request, method):
     # Refactor it.
 
     args = request.json
+    print(args)
     return standard_async_task(
         method,
         args['path'])
 
 
-@post("/imports/organize")
+@get("/imports/organize")
 def organize_imports_view():
     from traad.rope.importutil import organize_imports
     return _importutil_core(request, organize_imports)
 
 
-@post("/imports/expand_star")
+@get("/imports/expand_star")
 def expand_star_imports_view():
     from traad.rope.importutil import expand_star_imports
     return _importutil_core(request, expand_star_imports)
 
 
-@post("/imports/froms_to_imports")
+@get("/imports/froms_to_imports")
 def from_to_imports_view():
     from traad.rope.importutil import froms_to_imports
     return _importutil_core(request, froms_to_imports)
 
 
-@post("/imports/relatives_to_absolutes")
+@get("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view():
     from traad.rope.importutil import relatives_to_absolutes
     return _importutil_core(request, relatives_to_absolutes)
 
 
-@post("/imports/handle_long_imports")
+@get("/imports/handle_long_imports")
 def handle_long_imports_view():
     from traad.rope.importutil import handle_long_imports
     return _importutil_core(request, handle_long_imports)
