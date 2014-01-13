@@ -798,7 +798,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
    ":" (number-to-string traad-server-port)
    location))
 
-(defun* traad-request (location data callback &key (type "POST"))
+(defun* traad-request (location data callback &key (type "GET"))
   "Post `data` as JSON to `location` on the server, calling `callback` with the response."
 
   ; TODO: Should we just switch to deferred requests here?
