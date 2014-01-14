@@ -7,7 +7,7 @@ try:
 except ImportError:
     from Queue import Queue
 
-from bottle import abort, get, post, request, run
+from bottle import abort, get, request, run
 
 from .rope.project import Project
 from .state import State
