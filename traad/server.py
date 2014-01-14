@@ -73,7 +73,7 @@ def full_task_status():
     return status
 
 
-@post('/history/undo')
+@get('/history/undo')
 def undo_view():
     from traad.rope.history import undo
 
@@ -95,7 +95,7 @@ def redo_view():
     return {'result': 'success'}
 
 
-@get('/history/undo')
+@get('/history/view_undo')
 def undo_history_view():
     from traad.rope.history import undo_history
     return {
@@ -104,7 +104,7 @@ def undo_history_view():
     }
 
 
-@get('/history/redo')
+@get('/history/view_redo')
 def redo_history_view():
     from traad.rope.history import redo_history
     return {

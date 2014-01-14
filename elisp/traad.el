@@ -259,9 +259,9 @@ necessary. Return the history buffer."
 
     (deferred:parallel
       (traad-deferred-request
-       "/history/undo")
+       "/history/view_undo")
       (traad-deferred-request
-       "/history/redo"))
+       "/history/view_redo"))
 
     (deferred:nextc it
       (lambda (inputs)
