@@ -14,7 +14,8 @@ def make_req(loc, data=None):
     req = Request(
         url='http://localhost:6543{}'.format(loc),
         data=data,
-        headers={'Content-Type': 'application/json'})
+        headers={'Content-Type': 'application/json'},
+	method='GET')
     f = urlopen(req)
     return f.read()
 
