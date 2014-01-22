@@ -14,7 +14,7 @@ except ImportError:
 from traad.test import common
 
 
-def json_request(url, data=None, method='POST'):
+def json_request(url, data=None, method='GET'):
     req = Request(
         url=url,
         data=json.dumps(data).encode('utf-8'),
@@ -33,8 +33,7 @@ def wait_for_server(host, port, timeout=5):
             json_request(
                 url='http://{}:{}/root'.format(
                     host,
-                    port),
-                method='GET')
+                    port))
             return
         except URLError:
             time.sleep(0.01)
@@ -48,8 +47,7 @@ def wait_for_task(task_id, host, port):
             url='http://{}:{}/task/{}'.format(
                 host,
                 port,
-                task_id),
-            method='GET')
+                task_id))
 
         if rsp_data['status'] == 'success':
             return True
@@ -109,8 +107,7 @@ class JSONAPITests(unittest.TestCase):
             data={
                 'path': 'basic/foo.py',
                 'offset': 8,
-            },
-            method='GET')
+            })
         self.assertEqual(len(rsp_data['data']), 3)
 
     def test_find_implementations(self):
@@ -120,8 +117,7 @@ class JSONAPITests(unittest.TestCase):
             data={
                 'path': 'basic/overrides.py',
                 'offset': 33,
-            },
-            method='GET')
+            })
         self.assertEqual(len(rsp_data['data']), 1)
 
     def test_find_definition(self):
@@ -138,8 +134,7 @@ class JSONAPITests(unittest.TestCase):
                 'code': code,
                 'path': 'basic/bar.py',
                 'offset': 142,
-            },
-            method='GET')
+            })
 
         self.assertEqual(
             rsp_data['data'],
