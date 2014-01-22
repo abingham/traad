@@ -83,8 +83,8 @@
   :type '(string)
   :group 'traad)
 
-(defcustom traad-server-port 9752
-  "Port on which the traad server will listen."
+(defcustom traad-server-port 0
+  "Port on which the traad server will listen. (0 means any available port.)"
   :type '(number)
   :group 'traad)
 
@@ -123,9 +123,22 @@ after successful refactorings."
                          (list "-p" (number-to-string traad-server-port))
                          (list directory)))
 	   (program+args (append program args))
-	   (default-directory "~/"))
-      (apply #'start-process "traad-server" proc-buff program+args))))
-
+	   (default-directory "~/")
+	   (proc (apply #'start-process "traad-server" proc-buff program+args))
+	   (cont 1))
+      (while cont
+        (set-process-query-on-exit-flag proc nil)
+        (accept-process-output proc 0 100 t)
+        (let ((proc-output (with-current-buffer proc-buff
+			     (buffer-string))))
+	  (cond
+	   ((string-match "^Listening on http://.*:\\\([0-9]+\\\)/$" proc-output)
+	    (setq traad-server-port-actual (string-to-number (match-string 1 proc-output))
+		  cont nil))
+	   (t
+	    (incf cont)
+	    (when (< 30 cont) ; timeout after 3 seconds
+	      (error "Server timeout.")))))))))
 
 
 ; TODO
@@ -675,7 +688,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 	(request-backend 'url-retrieve))
     (request-response-data
      (request
-      (concat "http://" traad-host ":" (number-to-string traad-server-port)
+      (concat "http://" traad-host ":" (number-to-string traad-server-port-actual)
               "/code_assist/completions")
       :headers '(("Content-Type" . "application/json"))
       :data (json-encode data)
@@ -795,7 +808,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
   "
   (concat
    "http://" traad-host
-   ":" (number-to-string traad-server-port)
+   ":" (number-to-string traad-server-port-actual)
    location))
 
 (defun* traad-request (location data callback &key (type "GET"))

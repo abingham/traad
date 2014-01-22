@@ -30,7 +30,6 @@ setup(
         },
 
     install_requires=[
-        'bottle',
         'decorator',
         'eagertools',
         rope_lib,
