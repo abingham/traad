@@ -2615,7 +2615,7 @@ class FlupFCGIServer(ServerAdapter):
 
 class WSGIRefServer(ServerAdapter):
     def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+        super(WSGIRefServer, self).__init__(*args, **kargs)
         self.server = None
 
     def initialize(self, app):
