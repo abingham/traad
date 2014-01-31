@@ -108,6 +108,7 @@ after successful refactorings."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close
 
+;;;###autoload
 (defun traad-open (directory)
   "Open a traad project on the files in DIRECTORY."
   (interactive
@@ -166,12 +167,14 @@ after successful refactorings."
 ;;   (interactive)
 ;;   (traad-call 'cross_project_directories))
 
+;;;###autoload
 (defun traad-close ()
   "Close the current traad project, if any."
   (interactive)
   (if (traad-running?)
 	  (delete-process "traad-server")))
 
+;;;###autoload
 (defun traad-running? ()
   "Determine if a traad server is running."
   (interactive)
@@ -190,6 +193,7 @@ after successful refactorings."
   (traad-deferred-request
    "/tasks"))
 
+;;;###autoload
 (defun traad-display-task-status (task-id)
   "Get the status of a traad task."
   (interactive
@@ -202,6 +206,7 @@ after successful refactorings."
 		(message "Task status: %s"
 				 (request-response-data response))))))
 
+;;;###autoload
 (defun traad-display-full-task-status ()
   ; TODO: Improve the display of this data.
   (interactive)
@@ -233,6 +238,7 @@ after successful refactorings."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
 
+;;;###autoload
 (defun traad-undo (idx)
   "Undo the IDXth change from the history. \
 IDX is the position of an entry in the undo list (see: \
@@ -250,6 +256,7 @@ undone."
 	   (message "Undo"))))))
 
 
+;;;###autoload
 (defun traad-redo (idx)
   "Redo the IDXth change from the history. \
 IDX is the position of an entry in the redo list (see: \
@@ -291,6 +298,7 @@ necessary. Return the history buffer."
 		  (if redo (insert (pp-to-string (traad-enumerate redo))))
 		  buff)))))
 
+;;;###autoload
 (defun traad-display-history ()
   "Display undo and redo history."
   (interactive)
@@ -320,6 +328,7 @@ necessary. Return the history buffer."
 				  "Change:\n"
 				  (cdr (assoc 'full_change info))))))))
 
+;;;###autoload
 (defun traad-undo-info (i)
   "Get info on the I'th undo history."
   (interactive
@@ -328,6 +337,7 @@ necessary. Return the history buffer."
   (traad-history-info-core
    (concat "/history/undo_info/" (number-to-string i))))
 
+;;;###autoload
 (defun traad-redo-info (i)
   "Get info on the I'th redo history."
   (interactive
@@ -339,6 +349,7 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; renaming support
 
+;;;###autoload
 (defun traad-rename-current-file (new-name)
   "Rename the current file/module."
   (interactive
@@ -368,6 +379,7 @@ necessary. Return the history buffer."
 		  (kill-buffer old-buff)
 		  (traad-update-history-buffer))))))
 
+;;;###autoload
 (defun traad-rename (new-name)
   "Rename the object at the current location."
   (interactive
@@ -387,6 +399,7 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
 
+;;;###autoload
 (defun traad-normalize-arguments ()
   "Normalize the arguments for the method at point."
   (interactive)
@@ -399,6 +412,7 @@ necessary. Return the history buffer."
 				  (let* ((task-id (assoc-default 'task_id data)))
 					(message "Normalize-arguments started with task-id %s" task-id)))))))
 
+;;;###autoload
 (defun traad-remove-argument (index)
   "Remove the INDEXth argument from the signature at point."
   (interactive
@@ -439,11 +453,13 @@ necessary. Return the history buffer."
 		   (assoc-default 'task_id
 						  (request-response-data rsp))))))))
 
+;;;###autoload
 (defun traad-extract-method (name begin end)
   "Extract the currently selected region to a new method."
   (interactive "sMethod name: \nr")
   (traad-extract-core "/refactor/extract_method" name begin end))
 
+;;;###autoload
 (defun traad-extract-variable (name begin end)
   "Extract the currently selected region to a new variable."
   (interactive "sVariable name: \nr")
@@ -468,6 +484,7 @@ necessary. Return the history buffer."
 		   (assoc-default 'task_id
 						  (request-response-data rsp))))))))
 
+;;;###autoload
 (defun traad-organize-imports (filename)
   "Organize the import statements in FILENAME."
   (interactive
@@ -475,6 +492,8 @@ necessary. Return the history buffer."
 	(read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/organize"))
 
+
+;;;###autoload
 (defun traad-expand-star-imports (filename)
   "Expand * import statements in FILENAME."
   (interactive
@@ -482,6 +501,8 @@ necessary. Return the history buffer."
 	(read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/expand_star"))
 
+
+;;;###autoload
 (defun traad-froms-to-imports (filename)
   "Convert 'from' imports to normal imports in FILENAME."
   (interactive
@@ -489,6 +510,7 @@ necessary. Return the history buffer."
 	(read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/froms_to_imports"))
 
+;;;###autoload
 (defun traad-relatives-to-absolutes (filename)
   "Convert relative imports to absolute in FILENAME."
   (interactive
@@ -496,6 +518,7 @@ necessary. Return the history buffer."
 	(read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/relatives_to_absolutes"))
 
+;;;###autoload
 (defun traad-handle-long-imports (filename)
   "Clean up long import statements in FILENAME."
   (interactive
@@ -503,6 +526,7 @@ necessary. Return the history buffer."
 	(read-file-name "Filename: " "." (buffer-file-name))))
   (traad-imports-core filename "/imports/handle_long_imports"))
 
+;;;###autoload
 (defun traad-imports-super-smackdown (filename)
   (interactive
    (list
@@ -617,18 +641,22 @@ current buffer.
 							 (find-file-other-window abspath))))))
 			 locs)))))))
 
+
+;;;###autoload
 (defun traad-display-occurrences (pos)
   "Display all occurences the use of the symbol at POS in the
 current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-occurrences "*traad-occurrences*"))
 
+;;;###autoload
 (defun traad-display-implementations (pos)
   "Display all occurences the use of the symbol as POS in the
 current buffer."
   (interactive "d")
   (traad-display-findit pos 'traad-find-implementations "*traad-implementations*"))
 
+;;;###autoload
 (defun traad-goto-definition (pos)
   "Go to the definition of the function as POS."
   (interactive "d")
@@ -658,6 +686,7 @@ current buffer."
 		   lineno
 		   (find-file-other-window abspath)))))))
 
+;;;###autoload
 (defun traad-findit (type)
   "Run a findit function at the current point."
   (interactive
@@ -676,6 +705,7 @@ current buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; code assist
 
+;;;###autoload
 (defun traad-code-assist (pos)
   "Get possible completions at POS in current buffer.
 
@@ -726,6 +756,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 		   'calltip
 		   (request-response-data req)))))))
 
+;;;###autoload
 (defun traad-display-calltip (pos)
   "Display calltip for an object."
   (interactive "d")
@@ -739,6 +770,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 		 "*traad-calltip*")
 	  (message "No calltip available."))))))
 
+;;;###autoload
 (defun traad-popup-calltip (pos)
   (interactive "d")
   (lexical-let ((pos pos))
@@ -774,6 +806,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 		   'doc
 		   (request-response-data req)))))))
 
+;;;###autoload
 (defun traad-display-doc (pos)
   "Display docstring for an object."
   (interactive "d")
@@ -787,6 +820,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 		 "*traad-doc*")
 	  (message "No docstring available."))))))
 
+;;;###autoload
 (defun traad-popup-doc (pos)
   (interactive "d")
   (lexical-let ((pos pos))
