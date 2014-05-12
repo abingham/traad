@@ -1,8 +1,7 @@
 import unittest
 
 from traad.rope import history
-from traad.rope.rename import rename
-from traad.state import State
+from traad.state import State, TaskState
 from traad.test import common
 
 
@@ -11,18 +10,21 @@ class HistoryTests(unittest.TestCase):
         self.proj = common.activate_project({
             'main': ['basic'],
         })
-        state = State()
-        state.create(1)
-        self.task_state = state.get_task_state(1)
+        self.state = State.start().proxy()
+        self.state.create(1).get()
+        self.task_state = TaskState(self.state, 1)
 
     def tearDown(self):
+        self.proj.stop()
+        self.state.stop()
         common.deactivate()
 
     def test_undo_undoes_changes(self):
-        rename(self.proj, self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
 
         with self.assertRaises(ValueError):
             common.compare_projects(
@@ -30,7 +32,7 @@ class HistoryTests(unittest.TestCase):
                 'main',
                 'basic')
 
-        history.undo(self.proj)
+        self.proj.undo().get()
 
         common.compare_projects(
             'basic',
@@ -39,31 +41,34 @@ class HistoryTests(unittest.TestCase):
 
     def test_undo_exceptions(self):
         with self.assertRaises(IndexError):
-            history.undo(self.proj)
+            self.proj.undo().get()
 
-        rename(self.proj, self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
 
-        history.undo(self.proj)
+        self.proj.undo().get()
 
         with self.assertRaises(IndexError):
-            history.undo(self.proj, 1)
+            self.proj.undo(1).get()
 
     def test_undo_adds_history(self):
-        self.assertEqual(len(self.proj.proj.history.undo_list), 0)
-        rename(self.proj, self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
-        self.assertEqual(len(self.proj.proj.history.undo_list), 1)
+        self.assertEqual(len(self.proj.proj.get().history.undo_list), 0)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
+        self.assertEqual(len(self.proj.proj.get().history.undo_list), 1)
 
     def test_redo_redoes_changes(self):
-        rename(self.proj, self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
 
         with self.assertRaises(ValueError):
             common.compare_projects(
@@ -71,14 +76,14 @@ class HistoryTests(unittest.TestCase):
                 'main',
                 'basic')
 
-        history.undo(self.proj)
+        self.proj.undo().get()
 
         common.compare_projects(
             'basic',
             'main',
             'basic')
 
-        history.redo(self.proj)
+        self.proj.redo().get()
 
         with self.assertRaises(ValueError):
             common.compare_projects(
@@ -87,100 +92,102 @@ class HistoryTests(unittest.TestCase):
                 'basic')
 
     def test_redo_adds_history(self):
-        rename(self.proj, self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
-        self.assertEqual(len(self.proj.proj.history.redo_list), 0)
-        self.assertEqual(len(self.proj.proj.history.undo_list), 1)
-        history.undo(self.proj)
-        self.assertEqual(len(self.proj.proj.history.redo_list), 1)
-        self.assertEqual(len(self.proj.proj.history.undo_list), 0)
-        history.redo(self.proj)
-        self.assertEqual(len(self.proj.proj.history.redo_list), 0)
-        self.assertEqual(len(self.proj.proj.history.undo_list), 1)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
+        self.assertEqual(len(self.proj.proj.get().history.redo_list), 0)
+        self.assertEqual(len(self.proj.proj.get().history.undo_list), 1)
+        self.proj.undo().get()
+        self.assertEqual(len(self.proj.proj.get().history.redo_list), 1)
+        self.assertEqual(len(self.proj.proj.get().history.undo_list), 0)
+        self.proj.redo().get()
+        self.assertEqual(len(self.proj.proj.get().history.redo_list), 0)
+        self.assertEqual(len(self.proj.proj.get().history.undo_list), 1)
 
     def test_redo_exceptions(self):
         with self.assertRaises(IndexError):
-            history.redo(self.proj)
+            self.proj.redo().get()
 
-        rename(self.proj, self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
 
-        history.undo(self.proj)
-        history.redo(self.proj)
+        self.proj.undo().get()
+        self.proj.redo().get()
 
         with self.assertRaises(IndexError):
-            history.redo(self.proj, 1)
+            self.proj.redo(1).get()
 
     def test_undo_history(self):
         self.assertEqual(
-            len(history.undo_history(self.proj)), 0)
-        rename(self.proj, self.task_state,
+            len(self.proj.undo_history().get()), 0)
+        self.proj.rename(self.task_state,
                'Llama',
                'basic/foo.py',
-               8)
+               8).get()
         self.assertEqual(
-            len(history.undo_history(self.proj)), 1)
+            len(self.proj.undo_history().get()), 1)
 
     def test_undo_info(self):
-        rename(self.proj, self.task_state,
+        self.proj.rename(self.task_state,
                'Llama',
                'basic/foo.py',
-               8)
-        i = history.undo_info(self.proj, 0)
+               8).get()
+        i = self.proj.undo_info(0).get()
         for k in ['description', 'time', 'full_change', 'changes']:
             self.assertIn(k, i)
 
     def test_undo_info_exceptions(self):
         with self.assertRaises(IndexError):
-            history.undo_info(self.proj, 0)
+            self.proj.undo_info(0).get()
 
-        rename(self.proj, self.task_state,
+        self.proj.rename(self.task_state,
                'Llama',
                'basic/foo.py',
-               8)
-        history.undo_info(self.proj, 0)
+               8).get()
+        self.proj.undo_info(0).get()
         with self.assertRaises(IndexError):
-            history.undo_info(self.proj, 1)
+            self.proj.undo_info(1).get()
 
     def test_redo_history(self):
         self.assertEqual(
-            len(history.redo_history(self.proj)), 0)
-        rename(self.proj, self.task_state,
+            len(self.proj.redo_history().get()), 0)
+        self.proj.rename(self.task_state,
                'Llama',
                'basic/foo.py',
-               8)
-        history.undo(self.proj)
+               8).get()
+        self.proj.undo().get()
         self.assertEqual(
-            len(history.redo_history(self.proj)), 1)
+            len(self.proj.redo_history().get()), 1)
 
     def test_redo_info(self):
-        rename(self.proj, self.task_state,
+        self.proj.rename(self.task_state,
                'Llama',
                'basic/foo.py',
-               8)
-        history.undo(self.proj)
-        i = history.redo_info(self.proj, 0)
+               8).get()
+        self.proj.undo().get()
+        i = self.proj.redo_info(0).get()
         for k in ['description', 'time', 'full_change', 'changes']:
             self.assertIn(k, i)
 
     def test_redo_info_exceptions(self):
         with self.assertRaises(IndexError):
-            history.redo_info(self.proj, 0)
+            self.proj.redo_info(0).get()
 
-        rename(self.proj, self.task_state,
+        self.proj.rename(self.task_state,
                'Llama',
                'basic/foo.py',
-               8)
-        history.undo(self.proj)
+               8).get()
+        self.proj.undo().get()
 
-        history.redo_info(self.proj, 0)
+        self.proj.redo_info(0)
 
         with self.assertRaises(IndexError):
-            history.redo_info(self.proj, 1)
+            self.proj.redo_info(1).get()
 
 if __name__ == '__main__':
     import logging

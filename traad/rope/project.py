@@ -13,6 +13,7 @@ from traad.rope.codeassist import CodeAssistMixin
 from traad.rope.extract import ExtractMixin
 from traad.rope.findit import FinditMixin
 from traad.rope.history import HistoryMixin
+from traad.rope.importutil import ImportUtilsMixin
 from traad.rope.rename import RenameMixin
 
 
@@ -93,6 +94,7 @@ class Project(ChangeSignatureMixin,
               ExtractMixin,
               FinditMixin,
               HistoryMixin,
+              ImportUtilsMixin,
               RenameMixin,
               pykka.ThreadingActor):
     """An actor that controls access to an underlying Rope project.
