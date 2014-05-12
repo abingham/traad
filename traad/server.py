@@ -257,10 +257,10 @@ def code_assist_calltip_view():
 
 @get('/findit/occurrences')
 def findit_occurences_view():
-    from traad.rope.findit import find_occurrences
-
     args = request.json
-    data = find_occurrences(project, args['offset'], args['path'])
+    data = project.find_occurrences(
+        args['offset'],
+        args['path']).get()
 
     # TODO: What if it actually fails?
     return {
@@ -271,10 +271,10 @@ def findit_occurences_view():
 
 @get('/findit/implementations')
 def findit_implementations_view():
-    from traad.rope.findit import find_implementations
-
     args = request.json
-    data = find_implementations(project, args['offset'], args['path'])
+    data = project.find_implementations(
+        args['offset'],
+        args['path']).get()
 
     # TODO: What if it actually fails?
     return {
@@ -285,13 +285,11 @@ def findit_implementations_view():
 
 @get('/findit/definition')
 def findit_definitions_view():
-    from traad.rope.findit import find_definition
-
     args = request.json
-    data = find_definition(project,
-                           args['code'],
-                           args['offset'],
-                           args['path'])
+    data = project.find_definition(
+        args['code'],
+        args['offset'],
+        args['path']).get()
 
     # TODO: What if it actually fails?
     return {

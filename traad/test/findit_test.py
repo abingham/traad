@@ -1,7 +1,6 @@
 import os
 import unittest
 
-from traad.rope import findit
 from traad.test import common
 
 
@@ -12,21 +11,20 @@ class FinditTests(unittest.TestCase):
         })
 
     def tearDown(self):
+        self.proj.stop()
         common.deactivate()
 
     def test_find_occurrences(self):
         # Find occurrences of the Foo class
-        occ = findit.find_occurrences(
-            self.proj,
+        occ = self.proj.find_occurrences(
             8,
-            'basic/foo.py')
+            'basic/foo.py').get()
         self.assertEqual(len(occ), 3)
 
     def test_find_implementations(self):
-        impls = findit.find_implementations(
-            self.proj,
+        impls = self.proj.find_implementations(
             33,
-            'basic/overrides.py')
+            'basic/overrides.py').get()
         self.assertEqual(len(impls), 1)
 
     def test_find_definition(self):
@@ -35,10 +33,10 @@ class FinditTests(unittest.TestCase):
             'basic', 'bar.py')
         with open(path, 'r') as f:
             code = f.read()
-        loc = findit.find_definition(self.proj,
-                                     code,
-                                     142,
-                                     os.path.join('basic', 'bar.py'))
+        loc = self.proj.find_definition(
+            code,
+            142,
+            os.path.join('basic', 'bar.py')).get()
         self.assertEqual(
             loc,
             (os.path.join('basic', 'bar.py'),
