@@ -10,7 +10,7 @@ except ImportError:
 from .bottle import abort, get, request, run
 
 from .rope.project import Project
-from .state import State
+from .state import State, TaskState
 from .task import AsyncTask
 from .task_processor import TaskProcessor
 
@@ -141,7 +141,6 @@ def redo_info_view(idx):
 
 @get('/refactor/rename')
 def rename_view():
-    from .rope.rename import rename
     args = request.json
     return standard_async_task(project.rename,
                                args['name'],
@@ -166,14 +165,12 @@ def extract_core(method, request):
 
 @get('/refactor/extract_method')
 def extract_method_view():
-    from .rope.extract import extract_method
-    return extract_core(extract_method, request)
+    return extract_core(project.extract_method, request)
 
 
 @get('/refactor/extract_variable')
 def extract_variable_view():
-    from .rope.extract import extract_variable
-    return extract_core(extract_variable, request)
+    return extract_core(project.extract_variable, request)
 
 
 @get('/refactor/normalize_arguments')
@@ -429,8 +426,6 @@ def main():
     except KeyboardInterrupt:
         # TODO: Executor shutdown?
         log.info('Keyboard interrupt')
-    finally:
-        state.stop()
 
 if __name__ == '__main__':
     main()

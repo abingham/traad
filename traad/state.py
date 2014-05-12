@@ -6,7 +6,7 @@ class State(pykka.ThreadingActor):
     This should be run as an actor.
     """
     def __init__(self):
-        super().__init__()
+        super(State, self).__init__()
 
         self.data = {}
 

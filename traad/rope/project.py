@@ -8,6 +8,7 @@ import pykka
 import rope.base.project
 from rope.refactor import multiproject
 
+from traad.rope.extract import ExtractMixin
 from traad.rope.history import HistoryMixin
 from traad.rope.rename import RenameMixin
 
@@ -84,13 +85,14 @@ class MultiProjectRefactoring:
         return Change(self.rope_ref, *args)
 
 
-class Project(HistoryMixin,
+class Project(ExtractMixin,
+              HistoryMixin,
               RenameMixin,
               pykka.ThreadingActor):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self, project_dir, cross_project_dirs=[]):
-        super().__init__()
+        super(Project, self).__init__()
 
         self.proj = rope.base.project.Project(project_dir)
 
