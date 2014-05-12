@@ -57,6 +57,12 @@ def project_root_view():
         'root': project.proj.root.real_path,
     }
 
+@get('/all_resources')
+def all_resources():
+    return {
+        'result': 'success',
+        'resources': project.get_all_resources()
+    }
 
 @get('/task/<task_id>')
 def task_status_view(task_id):
