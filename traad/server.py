@@ -175,18 +175,16 @@ def extract_variable_view():
 
 @get('/refactor/normalize_arguments')
 def normalize_arguments_view():
-    from .rope.change_signature import normalize_arguments
     args = request.json
-    return standard_async_task(normalize_arguments,
+    return standard_async_task(project.normalize_arguments,
                                args['path'],
                                args['offset'])
 
 
 @get('/refactor/remove_argument')
 def remove_argument_view():
-    from .rope.change_signature import remove_argument
     args = request.json
-    return standard_async_task(remove_argument,
+    return standard_async_task(project.remove_argument,
                                args['arg_index'],
                                args['path'],
                                args['offset'])
