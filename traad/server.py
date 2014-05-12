@@ -19,13 +19,14 @@ log = logging.getLogger('traad.server')
 
 # TODO: Is there a way to attach this to every request rather than
 # using a global?
+project_ref = None
 project = None
 
-state = State()
+# actor for managing state
+state_ref = None
+state = None
 
 task_ids = itertools.count()
-task_queue = Queue()
-
 
 def run_server(port, project_path):
     host = 'localhost'
@@ -38,30 +39,31 @@ def run_server(port, project_path):
             host,
             port))
 
-    global project
-    project = Project(project_path)
-    proc = TaskProcessor(task_queue, project, state)
-    proc.start()
+    global project, project_ref, state, state_ref
+    state_ref = State.start()
+    state = state_ref.proxy()
+    project_ref = Project.start(project_path)
+    project = project_ref.proxy()
 
     try:
         run(host=host, port=port)
     finally:
-        task_queue.put(None)
-        task_queue.join()
+        project.stop()
+        state.stop()
 
 
 @get('/root')
 def project_root_view():
     return {
         'result': 'success',
-        'root': project.proj.root.real_path,
+        'root': project.get_root().get()
     }
 
 @get('/all_resources')
 def all_resources():
     return {
         'result': 'success',
-        'resources': project.get_all_resources()
+        'resources': project.get_all_resources().get()
     }
 
 @get('/task/<task_id>')
@@ -74,17 +76,15 @@ def task_status_view(task_id):
 
 @get('/tasks')
 def full_task_status():
-    status = state.get_full_state()
+    status = state.get_full_state().get()
     log.info('full status: {}'.format(status))
     return status
 
 
 @get('/history/undo')
 def undo_view():
-    from traad.rope.history import undo
-
     args = request.json
-    undo(project, args['index'])
+    project.undo(args['index'])
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -92,10 +92,8 @@ def undo_view():
 
 @get('/history/redo')
 def redo_view():
-    from traad.rope.history import redo
-
     args = request.json
-    redo(project, args['index'])
+    project.redo(args['index'])
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -103,54 +101,49 @@ def redo_view():
 
 @get('/history/view_undo')
 def undo_history_view():
-    from traad.rope.history import undo_history
     return {
         'result': 'success',
-        'history': undo_history(project)
+        'history': project.undo_history().get()
     }
 
 
 @get('/history/view_redo')
 def redo_history_view():
-    from traad.rope.history import redo_history
     return {
         'result': 'success',
-        'history': redo_history(project)
+        'history': project.redo_history().get()
     }
 
 
 @get('/history/undo_info/<idx>')
 def undo_info_view(idx):
-    from traad.rope.history import undo_info
     return {
         'result': 'success',
-        'info': undo_info(project, int(idx))
+        'info': project.undo_info(int(idx)).get()
     }
 
 
 @get('/history/redo_info/<idx>')
 def redo_info_view(idx):
-    from traad.rope.history import redo_info
     return {
         'result': 'success',
-        'info': redo_info(project, int(idx))
+        'info': project.redo_info(int(idx)).get()
     }
 
 
-@get('/test/long_running')
-def long_running_test():
-    import traad.test.tasks as tasks
-    args = request.json
+# @get('/test/long_running')
+# def long_running_test():
+#     import traad.test.tasks as tasks
+#     args = request.json
 
-    return standard_async_task(tasks.long_running,
-                               args['message'])
-
+#     return standard_async_task(tasks.long_running,
+#                                args['message'])
 
 @get('/refactor/rename')
 def rename_view():
     from .rope.rename import rename
     args = request.json
-    return standard_async_task(rename,
+    return standard_async_task(project.rename,
                                args['name'],
                                args['path'],
                                args.get('offset'))
@@ -380,13 +373,8 @@ def standard_async_task(method, *args):
         task_id = next(task_ids)
         state.create(task_id)
 
-        task_queue.put(
-            AsyncTask(
-                project,
-                state,
-                task_id,
-                method,
-                *args))
+        method(TaskState(state, task_id),
+               *args)
 
         log.info('{}: success'.format(method))
 
@@ -441,6 +429,8 @@ def main():
     except KeyboardInterrupt:
         # TODO: Executor shutdown?
         log.info('Keyboard interrupt')
+    finally:
+        state.stop()
 
 if __name__ == '__main__':
     main()

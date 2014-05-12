@@ -1,26 +1,27 @@
 import unittest
 
-from traad.rope.rename import rename
-from traad.state import State
+from traad.state import State, TaskState
 from traad.test import common
 
 
 class Tests(unittest.TestCase):
     def setUp(self):
         self.proj = common.activate_project({'main': ['basic']})
-        self.state = State()
-        self.state.create(1)
-        self.task_state = self.state.get_task_state(1)
+        self.state = State.start().proxy()
+        self.state.create(1).get()
+        self.task_state = TaskState(self.state, 1)
 
     def tearDown(self):
+        self.proj.stop()
+        self.state.stop()
         common.deactivate()
 
     def test_simple(self):
-        rename(self.proj,
-               self.task_state,
-               'Llama',
-               'basic/foo.py',
-               8)
+        self.proj.rename(
+            self.task_state,
+            'Llama',
+            'basic/foo.py',
+            8).get()
 
         common.compare_projects(
             'basic_rename_llama',

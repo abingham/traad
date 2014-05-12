@@ -1,11 +1,15 @@
 import contextlib
 import os
-import threading
 
 from eagertools import emap
 
+import pykka
+
 import rope.base.project
 from rope.refactor import multiproject
+
+from traad.rope.history import HistoryMixin
+from traad.rope.rename import RenameMixin
 
 
 def get_all_resources(proj):
@@ -80,12 +84,14 @@ class MultiProjectRefactoring:
         return Change(self.rope_ref, *args)
 
 
-class Project:
-    """Manages an underlying rope.base.Project, providing a lock to
-    serialize access to it, and is a factory for creating refactoring
-    objects.
+class Project(HistoryMixin,
+              RenameMixin,
+              pykka.ThreadingActor):
+    """An actor that controls access to an underlying Rope project.
     """
     def __init__(self, project_dir, cross_project_dirs=[]):
+        super().__init__()
+
         self.proj = rope.base.project.Project(project_dir)
 
         self.cross_projects = dict()
@@ -93,8 +99,6 @@ class Project:
         cross_dirs = set(cross_project_dirs)
         cross_dirs.discard(project_dir)
         emap(self.add_cross_project, cross_dirs)
-
-        self._lock = threading.Lock()
 
     def close(self):
         self.proj.close()
@@ -110,14 +114,6 @@ class Project:
     def cross_project_directories(self):
         """Get a list of root directories for all cross projects."""
         return list(self.cross_projects.keys())
-
-    @contextlib.contextmanager
-    def lock(self):
-        self._lock.acquire()
-        try:
-            yield
-        finally:
-            self._lock.release()
 
     def to_relative_path(self, path):
         '''Get a version of a path relative to the project root.

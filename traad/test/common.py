@@ -56,10 +56,10 @@ def activate_project(projects,
                      project_dir=PROJECT_DIR):
     activate(projects, active_dir, project_dir)
 
-    return Project(
+    return Project.start(
         os.path.join(active_dir, main_dir),
         cross_project_dirs=[os.path.join(active_dir, n)
-                            for n in projects if n != main_dir])
+                            for n in projects if n != main_dir]).proxy()
 
 
 def activated_path(top_level_name):
