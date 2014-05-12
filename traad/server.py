@@ -192,16 +192,13 @@ def remove_argument_view():
 
 @get('/code_assist/completions')
 def code_assist_completion_view():
-    from traad.rope.codeassist import code_assist
-
     args = request.json
 
     log.info('get completion: {}'.format(args))
 
-    results = code_assist(project,
-                          args['code'],
-                          args['offset'],
-                          args['path'])
+    results = project.code_assist(args['code'],
+                                  args['offset'],
+                                  args['path']).get()
 
     # TODO: What if it fails?
     return {
@@ -212,17 +209,14 @@ def code_assist_completion_view():
 
 @get('/code_assist/doc')
 def code_assist_doc_view():
-    from traad.rope.codeassist import get_doc
-
     args = request.json
 
     log.info('get doc: {}'.format(args))
 
-    doc = get_doc(
-        project,
+    doc = project.get_doc(
         code=args['code'],
         offset=args['offset'],
-        path=args['path'])
+        path=args['path']).get()
 
     return {
         'result': 'failure' if doc is None else 'success',
@@ -232,17 +226,14 @@ def code_assist_doc_view():
 
 @get('/code_assist/calltip')
 def code_assist_calltip_view():
-    from traad.rope.codeassist import get_calltip
-
     args = request.json
 
     log.info('get calltip: {}'.format(args))
 
-    calltip = get_calltip(
-        project,
+    calltip = project.get_calltip(
         code=args['code'],
         offset=args['offset'],
-        path=args['path'])
+        path=args['path']).get()
 
     return {
         'result': 'failure' if calltip is None else 'success',

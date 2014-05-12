@@ -9,6 +9,7 @@ import rope.base.project
 from rope.refactor import multiproject
 
 from traad.rope.change_signature import ChangeSignatureMixin
+from traad.rope.codeassist import CodeAssistMixin
 from traad.rope.extract import ExtractMixin
 from traad.rope.history import HistoryMixin
 from traad.rope.rename import RenameMixin
@@ -87,6 +88,7 @@ class MultiProjectRefactoring:
 
 
 class Project(ChangeSignatureMixin,
+              CodeAssistMixin,
               ExtractMixin,
               HistoryMixin,
               RenameMixin,
