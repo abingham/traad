@@ -30,6 +30,7 @@ setup(
         'decorator',
         'eagertools',
         'pykka',
+        'requests',
         rope_lib,
     ],
 )

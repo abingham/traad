@@ -9,7 +9,7 @@ lrthreads = set()
 
 class LRThread(threading.Thread):
     def __init__(self, state, message):
-        super().__init__()
+        super(LRThread, self).__init__()
         self.state = state
         self.message = message
 
