@@ -1,27 +1,26 @@
 import json
 import os
 import subprocess
+import sys
 import time
 import unittest
 
-try:
-    from urllib.error import URLError
-    from urllib.request import Request, urlopen
-    python_3 = True
-except ImportError:
-    python_3 = False
+import requests
 
 from traad.test import common
 
 
+request_type_map = {
+    'GET': requests.get,
+    'POST': requests.post,
+    }
+
 def json_request(url, data=None, method='GET'):
-    req = Request(
-        url=url,
-        data=json.dumps(data).encode('utf-8'),
-        headers={'Content-Type': 'application/json; charset=utf-8'},
-        method=method)
-    rsp = urlopen(req)
-    return json.loads(rsp.read().decode('utf-8'))
+    req_type = request_type_map[method]
+    req = req_type(url,
+                   data=json.dumps(data),
+                   headers={'Content-Type': 'application/json; charset=utf-8'})
+    return req.json()
 
 
 def wait_for_server(host, port, timeout=5):
@@ -35,7 +34,7 @@ def wait_for_server(host, port, timeout=5):
                     host,
                     port))
             return
-        except URLError:
+        except requests.exceptions.ConnectionError:
             time.sleep(0.01)
 
     raise OSError('Unable to start server!')
@@ -57,8 +56,8 @@ def wait_for_task(task_id, host, port):
         time.sleep(0.01)
 
 
-@unittest.skipUnless(python_3,
-                     'JSONAPI acceptance test disabled for Python 2')
+@unittest.skipUnless(sys.version_info.major == 3,
+                     'Only run for Python version 3+')
 class JSONAPITests(unittest.TestCase):
     def setUp(self):
         common.activate({'main': ['basic']})

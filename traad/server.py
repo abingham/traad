@@ -80,7 +80,7 @@ def full_task_status():
 @get('/history/undo')
 def undo_view():
     args = request.json
-    project.undo(args['index'])
+    project.undo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -89,7 +89,7 @@ def undo_view():
 @get('/history/redo')
 def redo_view():
     args = request.json
-    project.redo(args['index'])
+    project.redo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}

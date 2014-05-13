@@ -123,4 +123,4 @@ def compare_projects(canned_project,
             dc.right_only,
             dc.diff_files]):
         dr = diff_report(dc)
-        raise ValueError("hmmm")
+        raise ValueError(dr)

@@ -1,4 +1,8 @@
+import sys
+
+import decorator
 import pykka
+
 
 class State(pykka.ThreadingActor):
     """Maps task-ids to dicts of data about the task.
@@ -44,3 +48,16 @@ class TaskState:
 
     def update(self, data):
         return self.state.update_task_state(self.task_id, data).get()
+
+@decorator.decorator
+def success_monitor(f, self, state, *args, **kwargs):
+    try:
+        r = f(self, state, *args, **kwargs)
+        state.update({'status': 'success'})
+        return r
+    except:
+        state.update(
+            {'status': 'failure',
+             'message': str(sys.exc_info()[1]),
+         })
+        raise

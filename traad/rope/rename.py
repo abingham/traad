@@ -1,12 +1,14 @@
 import rope.refactor
 
 from traad.rope.validate import validate
+from traad.state import success_monitor
 import traad.trace
 
 
 class RenameMixin:
     @traad.trace.trace
     @validate
+    @success_monitor
     def rename(self, state, new_name, path, offset=None):
         path = self.to_relative_path(path)
 
@@ -19,7 +21,7 @@ class RenameMixin:
         # This gets a change object that knows about the new-name.
         change = ref.get_change(new_name)
 
-            # Update some state. The state is reentrant.
+        # Update some state. The state is reentrant.
         # Note that `state` encapsulates the task_id for this
         # refactoring, so we don't need to deal with it.
         state.update(
