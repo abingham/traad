@@ -153,6 +153,8 @@ class JSONAPITests(unittest.TestCase):
                 'offset': 8,
             })
 
+        if rsp_data['result'] != 'success':
+            print(rsp_data['message'])
         self.assertEqual(rsp_data['result'], 'success')
         task_id = rsp_data['task_id']
 

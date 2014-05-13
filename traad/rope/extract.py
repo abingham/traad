@@ -1,12 +1,14 @@
 import rope.refactor.extract
 
-import traad.trace
 from traad.rope.validate import validate
+from traad.state import success_monitor
+import traad.trace
 
 
 class ExtractMixin:
     @traad.trace.trace
     @validate
+    @success_monitor
     def _extract(self, state, method, name, path, start_offset, end_offset):
         """Shared implementation of extract_method and _variable.
         """

@@ -2,11 +2,14 @@ import sys
 
 import rope.refactor.change_signature
 
-import traad.trace
 from traad.rope.validate import validate
+from traad.state import success_monitor
+import traad.trace
 
 
 class ChangeSignatureMixin:
+    @validate
+    @success_monitor
     def change_sig(self, state, path, offset, refactoring):
         """Common implementation for change-signature refactorings.
 
@@ -39,7 +42,6 @@ class ChangeSignatureMixin:
         change.perform()
 
     @traad.trace.trace
-    @validate
     def normalize_arguments(self, state, path, offset):
         """Normalize arguments for a method.
 
@@ -60,7 +62,6 @@ class ChangeSignatureMixin:
 
 
     @traad.trace.trace
-    @validate
     def remove_argument(self,
                         state,
                         arg_index,

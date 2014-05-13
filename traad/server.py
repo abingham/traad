@@ -2,18 +2,9 @@ import itertools
 import logging
 import sys
 
-try:
-    from queue import Queue
-except ImportError:
-    from Queue import Queue
-
-from .bottle import abort, get, request, run
-
+from . import bottle
 from .rope.project import Project
 from .state import State, TaskState
-from .task import AsyncTask
-from .task_processor import TaskProcessor
-
 
 log = logging.getLogger('traad.server')
 
@@ -42,60 +33,60 @@ def run_server(port, project_path):
     project = Project.start(project_path).proxy()
 
     try:
-        run(host=host, port=port)
+        bottle.run(host=host, port=port)
     finally:
         project.stop()
         state.stop()
 
 
-@get('/root')
+@bottle.get('/root')
 def project_root_view():
     return {
         'result': 'success',
         'root': project.get_root().get()
     }
 
-@get('/all_resources')
+@bottle.get('/all_resources')
 def all_resources():
     return {
         'result': 'success',
         'resources': project.get_all_resources().get()
     }
 
-@get('/task/<task_id>')
+@bottle.get('/task/<task_id>')
 def task_status_view(task_id):
     try:
         return state.get_task_state(int(task_id)).get()
     except KeyError:
-        abort(404, "No task with that ID")
+        bottle.abort(404, "No task with that ID")
 
 
-@get('/tasks')
+@bottle.get('/tasks')
 def full_task_status():
     status = state.get_full_state().get()
     log.info('full status: {}'.format(status))
     return status
 
 
-@get('/history/undo')
+@bottle.get('/history/undo')
 def undo_view():
-    args = request.json
+    args = bottle.request.json
     project.undo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
 
 
-@get('/history/redo')
+@bottle.get('/history/redo')
 def redo_view():
-    args = request.json
+    args = bottle.request.json
     project.redo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
 
 
-@get('/history/view_undo')
+@bottle.get('/history/view_undo')
 def undo_history_view():
     return {
         'result': 'success',
@@ -103,7 +94,7 @@ def undo_history_view():
     }
 
 
-@get('/history/view_redo')
+@bottle.get('/history/view_redo')
 def redo_history_view():
     return {
         'result': 'success',
@@ -111,7 +102,7 @@ def redo_history_view():
     }
 
 
-@get('/history/undo_info/<idx>')
+@bottle.get('/history/undo_info/<idx>')
 def undo_info_view(idx):
     return {
         'result': 'success',
@@ -119,7 +110,7 @@ def undo_info_view(idx):
     }
 
 
-@get('/history/redo_info/<idx>')
+@bottle.get('/history/redo_info/<idx>')
 def redo_info_view(idx):
     return {
         'result': 'success',
@@ -127,17 +118,17 @@ def redo_info_view(idx):
     }
 
 
-@get('/test/long_running')
+@bottle.get('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks
-    args = request.json
+    args = bottle.request.json
 
     return standard_async_task(tasks.long_running,
                                args['message'])
 
-@get('/refactor/rename')
+@bottle.get('/refactor/rename')
 def rename_view():
-    args = request.json
+    args = bottle.request.json
     return standard_async_task(project.rename,
                                args['name'],
                                args['path'],
@@ -159,36 +150,36 @@ def extract_core(method, request):
                                args['end-offset'])
 
 
-@get('/refactor/extract_method')
+@bottle.get('/refactor/extract_method')
 def extract_method_view():
-    return extract_core(project.extract_method, request)
+    return extract_core(project.extract_method, bottle.request)
 
 
-@get('/refactor/extract_variable')
+@bottle.get('/refactor/extract_variable')
 def extract_variable_view():
-    return extract_core(project.extract_variable, request)
+    return extract_core(project.extract_variable, bottle.request)
 
 
-@get('/refactor/normalize_arguments')
+@bottle.get('/refactor/normalize_arguments')
 def normalize_arguments_view():
-    args = request.json
+    args = bottle.request.json
     return standard_async_task(project.normalize_arguments,
                                args['path'],
                                args['offset'])
 
 
-@get('/refactor/remove_argument')
+@bottle.get('/refactor/remove_argument')
 def remove_argument_view():
-    args = request.json
+    args = bottle.request.json
     return standard_async_task(project.remove_argument,
                                args['arg_index'],
                                args['path'],
                                args['offset'])
 
 
-@get('/code_assist/completions')
+@bottle.get('/code_assist/completions')
 def code_assist_completion_view():
-    args = request.json
+    args = bottle.request.json
 
     log.info('get completion: {}'.format(args))
 
@@ -203,9 +194,9 @@ def code_assist_completion_view():
     }
 
 
-@get('/code_assist/doc')
+@bottle.get('/code_assist/doc')
 def code_assist_doc_view():
-    args = request.json
+    args = bottle.request.json
 
     log.info('get doc: {}'.format(args))
 
@@ -220,9 +211,9 @@ def code_assist_doc_view():
     }
 
 
-@get('/code_assist/calltip')
+@bottle.get('/code_assist/calltip')
 def code_assist_calltip_view():
-    args = request.json
+    args = bottle.request.json
 
     log.info('get calltip: {}'.format(args))
 
@@ -251,9 +242,9 @@ def code_assist_calltip_view():
 #     }
 
 
-@get('/findit/occurrences')
+@bottle.get('/findit/occurrences')
 def findit_occurences_view():
-    args = request.json
+    args = bottle.request.json
     data = project.find_occurrences(
         args['offset'],
         args['path']).get()
@@ -265,9 +256,9 @@ def findit_occurences_view():
     }
 
 
-@get('/findit/implementations')
+@bottle.get('/findit/implementations')
 def findit_implementations_view():
-    args = request.json
+    args = bottle.request.json
     data = project.find_implementations(
         args['offset'],
         args['path']).get()
@@ -279,9 +270,9 @@ def findit_implementations_view():
     }
 
 
-@get('/findit/definition')
+@bottle.get('/findit/definition')
 def findit_definitions_view():
-    args = request.json
+    args = bottle.request.json
     data = project.find_definition(
         args['code'],
         args['offset'],
@@ -305,40 +296,41 @@ def _importutil_core(request, method):
         args['path'])
 
 
-@get("/imports/organize")
+@bottle.get("/imports/organize")
 def organize_imports_view():
-    return _importutil_core(request, project.organize_imports)
+    return _importutil_core(bottle.request, project.organize_imports)
 
 
-@get("/imports/expand_star")
+@bottle.get("/imports/expand_star")
 def expand_star_imports_view():
-    return _importutil_core(request, project.expand_star_imports)
+    return _importutil_core(bottle.request, project.expand_star_imports)
 
 
-@get("/imports/froms_to_imports")
+@bottle.get("/imports/froms_to_imports")
 def from_to_imports_view():
-    return _importutil_core(request, project.froms_to_imports)
+    return _importutil_core(bottle.request, project.froms_to_imports)
 
 
-@get("/imports/relatives_to_absolutes")
+@bottle.get("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view():
-    return _importutil_core(request, project.relatives_to_absolutes)
+    return _importutil_core(bottle.request, project.relatives_to_absolutes)
 
 
-@get("/imports/handle_long_imports")
+@bottle.get("/imports/handle_long_imports")
 def handle_long_imports_view():
-    return _importutil_core(request, project.handle_long_imports)
+    return _importutil_core(bottle.request, project.handle_long_imports)
 
 
 def standard_async_task(method, *args):
     """Launch a typical async task.
 
-    This runs ``method`` in an ``AsyncTask``, returning a dict with
-    the task-id. Information about the progress is logged. Errors are
-    detected, logged, and a proper result is returned.
+    This creates a `TaskState` for the new task and runs the task. The
+    assumption here is that `method` is a pykka actor method that will
+    execute in a separate thread. This function doesn't do anything to
+    magically make `method` execute asynchronously.
 
     Args:
-      method: The callable to execute in the ``AsyncTask``.
+      method: The asynchronous callable to execute.
       args: The arguments to pass to ``method``.
 
     """
