@@ -19,11 +19,9 @@ log = logging.getLogger('traad.server')
 
 # TODO: Is there a way to attach this to every request rather than
 # using a global?
-project_ref = None
 project = None
 
 # actor for managing state
-state_ref = None
 state = None
 
 task_ids = itertools.count()
@@ -40,10 +38,8 @@ def run_server(port, project_path):
             port))
 
     global project, project_ref, state, state_ref
-    state_ref = State.start()
-    state = state_ref.proxy()
-    project_ref = Project.start(project_path)
-    project = project_ref.proxy()
+    state = State.start().proxy()
+    project = Project.start(project_path).proxy()
 
     try:
         run(host=host, port=port)
@@ -131,13 +127,13 @@ def redo_info_view(idx):
     }
 
 
-# @get('/test/long_running')
-# def long_running_test():
-#     import traad.test.tasks as tasks
-#     args = request.json
+@get('/test/long_running')
+def long_running_test():
+    import traad.test.tasks as tasks
+    args = request.json
 
-#     return standard_async_task(tasks.long_running,
-#                                args['message'])
+    return standard_async_task(tasks.long_running,
+                               args['message'])
 
 @get('/refactor/rename')
 def rename_view():

@@ -15,7 +15,7 @@ def make_req(loc, data=None):
         url='http://localhost:6543{}'.format(loc),
         data=data,
         headers={'Content-Type': 'application/json'},
-	method='GET')
+        method='GET')
     f = urlopen(req)
     return f.read()
 
@@ -29,6 +29,7 @@ def run_test(proc):
 
     start_time = time.time()
     while time.time() - start_time < 10:
+        print("PING")
         results.add(
             make_req('/task/{}'.format(task_id)))
         time.sleep(0.1)
