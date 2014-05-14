@@ -1,13 +1,13 @@
 import rope.refactor.importutils
 
 from traad.rope.validate import validate
-from traad.state import success_monitor
+from traad.state import task_state_monitor
 import traad.trace
 
 
 class ImportUtilsMixin:
     @validate
-    @success_monitor
+    @task_state_monitor
     def _importutil_func(self, state, path, funcname):
         # TODO: Update state in some useful way.
         path = self.to_relative_path(path)

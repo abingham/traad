@@ -72,9 +72,16 @@ class TaskState:
         return self.state.update_task_state(self.task_id, data).get()
 
 @decorator.decorator
-def success_monitor(f, self, task_state, *args, **kwargs):
+def task_state_monitor(f, self, task_state, *args, **kwargs):
     """A decorator that updates a `TaskState` to reflect success or
     failure of an operation.
+
+    This executes `f`, passing it `self`, `task_state`, and all of the
+    other arguments. If `f` runs without an exception, this updates
+    `task_state` with {'status': 'success'} and returns `f`\'s return
+    value. If `f` throws, this updates `task_state` with {'status':
+    'failure', 'message': <exception info>} and reraises the
+    exception.
 
     This is primarily intended for use on asynchronous calls that need
     to update the state based on their success or failure.

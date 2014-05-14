@@ -1,14 +1,14 @@
 import rope.refactor
 
 from traad.rope.validate import validate
-from traad.state import success_monitor
+from traad.state import task_state_monitor
 import traad.trace
 
 
 class RenameMixin:
     @traad.trace.trace
     @validate
-    @success_monitor
+    @task_state_monitor
     def rename(self, state, new_name, path, offset=None):
         path = self.to_relative_path(path)
 

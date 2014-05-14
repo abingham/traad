@@ -3,13 +3,13 @@ import sys
 import rope.refactor.change_signature
 
 from traad.rope.validate import validate
-from traad.state import success_monitor
+from traad.state import task_state_monitor
 import traad.trace
 
 
 class ChangeSignatureMixin:
     @validate
-    @success_monitor
+    @task_state_monitor
     def change_sig(self, state, path, offset, refactoring):
         """Common implementation for change-signature refactorings.
 
