@@ -50,8 +50,8 @@ class Change:
         self.refactoring = refactoring
         self.args = args
 
-        # TODO: Perhaps this can be delayed until required.
         self.changes = self.refactoring.get_all_changes(*args)
+        self._performed = False
 
     @property
     def descriptions(self):
@@ -71,7 +71,10 @@ class Change:
 
     def perform(self):
         "Perform the refactoring."
+        assert not self._performed
+
         multiproject.perform(self.changes)
+        self._performed = True
 
 
 class MultiProjectRefactoring:
