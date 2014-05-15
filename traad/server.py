@@ -6,63 +6,73 @@ from . import bottle
 from .rope.project import Project
 from .state import State, TaskState
 
+
 log = logging.getLogger('traad.server')
 
-# TODO: Is there a way to attach this to every request rather than
-# using a global?
-project = None
-
-# actor for managing state
-state = None
-
-task_ids = itertools.count()
-
-def run_server(port, project_path):
+def run_server(app, port):
     host = 'localhost'
 
     log.info('Python version: {}'.format(sys.version))
 
     log.info(
-        'Running traad server for project "{}" at {}:{}'.format(
-            project_path,
+        'Running traad server for app "{}" at {}:{}'.format(
+            app,
             host,
             port))
 
-    global project, project_ref, state, state_ref
+    try:
+        app.run(host=host, port=port)
+    finally:
+        stop_app(app)
+
+# TODO: Clean this up with a context-manager if possible
+def make_app(project_path):
+    app = bottle.default_app()
+    print (dir(app))
+    print(app.routes)
+    print(project_path)
+
     state = State.start().proxy()
     project = Project.start(project_path).proxy()
 
-    try:
-        bottle.run(host=host, port=port)
-    finally:
-        project.stop()
-        state.stop()
+    app.config['project'] = project
+    app.config['state'] = state
+    app.config['task_ids'] = itertools.count()
+
+    return app
+
+def stop_app(app):
+    app.config['project'].stop()
+    app.config['state'].stop()
 
 @bottle.get('/root')
 def project_root_view():
-    return {
-        'result': 'success',
-        'root': project.get_root().get()
-    }
+    try:
+        return {
+            'result': 'success',
+            'root': bottle.request.app.config['project'].get_root().get()
+        }
+    except e:
+        return 'huh...'
 
 @bottle.get('/all_resources')
 def all_resources():
     return {
         'result': 'success',
-        'resources': project.get_all_resources().get()
+        'resources': bottle.request.app.config['project'].get_all_resources().get()
     }
 
 @bottle.get('/task/<task_id>')
 def task_status_view(task_id):
     try:
-        return state.get_task_state(int(task_id)).get()
+        return bottle.request.app.config['state'].get_task_state(int(task_id)).get()
     except KeyError:
         bottle.abort(404, "No task with that ID")
 
 
 @bottle.get('/tasks')
 def full_task_status():
-    status = state.get_full_state().get()
+    status = bottle.request.app.config['state'].get_full_state().get()
     log.info('full status: {}'.format(status))
     return status
 
@@ -336,8 +346,8 @@ def standard_async_task(method, *args):
     log.info('{}: {}'.format(method, args))
 
     try:
-        task_id = next(task_ids)
-        state.create(task_id)
+        task_id = next(bottle.request.app.config['task_ids'])
+        bottle.request.app.config['state'].create(task_id)
 
         method(TaskState(state, task_id),
                *args)
@@ -391,7 +401,8 @@ def main():
         level=level)
 
     try:
-        run_server(args.port, args.project)
+        app = make_app(args.project)
+        run_server(app, args.port)
     except KeyboardInterrupt:
         # TODO: Executor shutdown?
         log.info('Keyboard interrupt')

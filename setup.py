@@ -32,5 +32,6 @@ setup(
         'pykka',
         'requests',
         rope_lib,
+        'webtest',
     ],
 )
