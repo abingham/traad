@@ -218,7 +218,7 @@ after successful refactorings."
 		  (switch-to-buffer buff)
 		  (erase-buffer)
 		  (insert (format "%s"
-						  (request-response-data response))))))))
+				  (request-response-data response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; server info stuff.
@@ -253,7 +253,8 @@ undone."
 	 data
 	 (function*
 	  (lambda (&key data &allow-other-keys)
-	   (message "Undo"))))))
+	    (message "Undo")))
+	 :type "POST")))
 
 
 ;;;###autoload
@@ -271,7 +272,8 @@ redone."
 	 data
 	 (function*
 	  (lambda (&key data &allow-other-keys)
-		(message "Redo"))))))
+	    (message "Redo")))
+	 :type "POST")))
 
 (defun traad-update-history-buffer ()
   "Update the contents of the history buffer, creating it if \
@@ -394,7 +396,8 @@ necessary. Return the history buffer."
 	 (function*
 	  (lambda (&key data &allow-other-keys)
 		(let* ((task-id (assoc-default 'task_id data)))
-		  (message "Rename started with task-id %s" task-id)))))))
+		  (message "Rename started with task-id %s" task-id))))
+	 :type "POST")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
@@ -410,7 +413,8 @@ necessary. Return the history buffer."
 	 data
 	 (function* (lambda (&key data &allow-other-keys)
 				  (let* ((task-id (assoc-default 'task_id data)))
-					(message "Normalize-arguments started with task-id %s" task-id)))))))
+				    (message "Normalize-arguments started with task-id %s" task-id))))
+	 :type "POST")))
 
 ;;;###autoload
 (defun traad-remove-argument (index)
@@ -427,7 +431,8 @@ necessary. Return the history buffer."
 	 data
 	 (function* (lambda (&key data &allow-other-keys)
 				  (let* ((task-id (assoc-default 'task_id data)))
-					(message "Remove-argument started with task-id %s" task-id)))))))
+				    (message "Remove-argument started with task-id %s" task-id))))
+	 :type "POST")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -435,23 +440,23 @@ necessary. Return the history buffer."
 
 (defun traad-extract-core (location name begin end)
   (lexical-let ((location location)
-				(data (list (cons "path" (buffer-file-name))
-							(cons "start-offset" (traad-adjust-point begin))
-							(cons "end-offset" (traad-adjust-point end))
-							(cons "name" name))))
-	(deferred:$
-
-	  (traad-deferred-request
+		(data (list (cons "path" (buffer-file-name))
+			    (cons "start-offset" (traad-adjust-point begin))
+			    (cons "end-offset" (traad-adjust-point end))
+			    (cons "name" name))))
+    (deferred:$
+      
+      (traad-deferred-request
+       location
+       :type "POST"
+       :data data)
+      
+      (deferred:nextc it
+	(lambda (rsp)
+	  (message
+	   "%s started with task-id %s"
 	   location
-	   :data data)
-
-	  (deferred:nextc it
-		(lambda (rsp)
-		  (message
-		   "%s started with task-id %s"
-		   location
-		   (assoc-default 'task_id
-						  (request-response-data rsp))))))))
+	   (assoc-default 'task_id (request-response-data rsp))))))))
 
 ;;;###autoload
 (defun traad-extract-method (name begin end)
@@ -474,7 +479,8 @@ necessary. Return the history buffer."
 
 	  (traad-deferred-request
 	   location
-	   :data (list (cons "path" filename)))
+	   :data (list (cons "path" filename))
+	   :type "POST")
 
 	  (deferred:nextc it
 		(lambda (rsp)
@@ -555,7 +561,8 @@ current buffer.
 							(cons "path" (buffer-file-name)))))
 	(traad-deferred-request
 	 "/findit/occurrences"
-	 :data data)))
+	 :data data
+	 :type "POST")))
 
 (defun traad-find-implementations (pos)
   "Get the implementations of the symbol at POS in the current buffer.
@@ -569,7 +576,8 @@ current buffer.
 							(cons "path" (buffer-file-name)))))
 	(traad-deferred-request
 	 "/findit/implementations"
-	 :data data)))
+	 :data data
+	 :type "POST")))
 
 (defun traad-find-definition (pos)
   "Get location of a function definition.
@@ -580,13 +588,14 @@ current buffer.
 	[path, [region-start, region-stop], offset, unsure, lineno]
   "
   (lexical-let ((data (list (cons "code" (buffer-substring-no-properties
-										  (point-min)
-										  (point-max)))
-							(cons "offset" (traad-adjust-point pos))
-							(cons "path" (buffer-file-name)))))
-	(traad-deferred-request
-	 "/findit/definition"
-	 :data data)))
+					  (point-min)
+					  (point-max)))
+			    (cons "offset" (traad-adjust-point pos))
+			    (cons "path" (buffer-file-name)))))
+    (traad-deferred-request
+     "/findit/definition"
+     :data data
+     :type "POST")))
 
 (defun traad-display-findit (pos func buff-name)
   "Common display routine for occurrences and implementations.
@@ -725,7 +734,8 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 	  :data (json-encode data)
 	  :sync t
 	  :parser 'json-read
-	  :data (json-encode data)))))
+	  :data (json-encode data)
+	  :type "POST"))))
 
 (defun traad-display-in-buffer (msg buffer)
   (let ((cbuff (current-buffer))
@@ -749,7 +759,8 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 	(deferred:$
 	  (traad-deferred-request
 	   "/code_assist/calltip"
-	   :data data)
+	   :data data
+	   :type "POST")
 	  (deferred:nextc it
 		(lambda (req)
 		  (assoc-default
@@ -804,7 +815,8 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 		(lambda (req)
 		  (assoc-default
 		   'doc
-		   (request-response-data req)))))))
+		   (request-response-data req))))
+	  :type "POST")))
 
 ;;;###autoload
 (defun traad-display-doc (pos)

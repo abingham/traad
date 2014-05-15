@@ -38,7 +38,6 @@ def run_server(port, project_path):
         project.stop()
         state.stop()
 
-
 @bottle.get('/root')
 def project_root_view():
     return {
@@ -68,7 +67,7 @@ def full_task_status():
     return status
 
 
-@bottle.get('/history/undo')
+@bottle.post('/history/undo')
 def undo_view():
     args = bottle.request.json
     project.undo(args['index']).get()
@@ -77,7 +76,7 @@ def undo_view():
     return {'result': 'success'}
 
 
-@bottle.get('/history/redo')
+@bottle.post('/history/redo')
 def redo_view():
     args = bottle.request.json
     project.redo(args['index']).get()
@@ -126,7 +125,7 @@ def long_running_test():
     return standard_async_task(tasks.long_running,
                                args['message'])
 
-@bottle.get('/refactor/rename')
+@bottle.post('/refactor/rename')
 def rename_view():
     args = bottle.request.json
     return standard_async_task(project.rename,
@@ -150,17 +149,17 @@ def extract_core(method, request):
                                args['end-offset'])
 
 
-@bottle.get('/refactor/extract_method')
+@bottle.post('/refactor/extract_method')
 def extract_method_view():
     return extract_core(project.extract_method, bottle.request)
 
 
-@bottle.get('/refactor/extract_variable')
+@bottle.post('/refactor/extract_variable')
 def extract_variable_view():
     return extract_core(project.extract_variable, bottle.request)
 
 
-@bottle.get('/refactor/normalize_arguments')
+@bottle.post('/refactor/normalize_arguments')
 def normalize_arguments_view():
     args = bottle.request.json
     return standard_async_task(project.normalize_arguments,
@@ -168,7 +167,7 @@ def normalize_arguments_view():
                                args['offset'])
 
 
-@bottle.get('/refactor/remove_argument')
+@bottle.post('/refactor/remove_argument')
 def remove_argument_view():
     args = bottle.request.json
     return standard_async_task(project.remove_argument,
@@ -177,7 +176,7 @@ def remove_argument_view():
                                args['offset'])
 
 
-@bottle.get('/code_assist/completions')
+@bottle.post('/code_assist/completions')
 def code_assist_completion_view():
     args = bottle.request.json
 
@@ -194,7 +193,7 @@ def code_assist_completion_view():
     }
 
 
-@bottle.get('/code_assist/doc')
+@bottle.post('/code_assist/doc')
 def code_assist_doc_view():
     args = bottle.request.json
 
@@ -211,7 +210,7 @@ def code_assist_doc_view():
     }
 
 
-@bottle.get('/code_assist/calltip')
+@bottle.post('/code_assist/calltip')
 def code_assist_calltip_view():
     args = bottle.request.json
 
@@ -242,7 +241,7 @@ def code_assist_calltip_view():
 #     }
 
 
-@bottle.get('/findit/occurrences')
+@bottle.post('/findit/occurrences')
 def findit_occurences_view():
     args = bottle.request.json
     data = project.find_occurrences(
@@ -256,7 +255,7 @@ def findit_occurences_view():
     }
 
 
-@bottle.get('/findit/implementations')
+@bottle.post('/findit/implementations')
 def findit_implementations_view():
     args = bottle.request.json
     data = project.find_implementations(
@@ -270,7 +269,7 @@ def findit_implementations_view():
     }
 
 
-@bottle.get('/findit/definition')
+@bottle.post('/findit/definition')
 def findit_definitions_view():
     args = bottle.request.json
     data = project.find_definition(
@@ -296,27 +295,27 @@ def _importutil_core(request, method):
         args['path'])
 
 
-@bottle.get("/imports/organize")
+@bottle.post("/imports/organize")
 def organize_imports_view():
     return _importutil_core(bottle.request, project.organize_imports)
 
 
-@bottle.get("/imports/expand_star")
+@bottle.post("/imports/expand_star")
 def expand_star_imports_view():
     return _importutil_core(bottle.request, project.expand_star_imports)
 
 
-@bottle.get("/imports/froms_to_imports")
+@bottle.post("/imports/froms_to_imports")
 def from_to_imports_view():
     return _importutil_core(bottle.request, project.froms_to_imports)
 
 
-@bottle.get("/imports/relatives_to_absolutes")
+@bottle.post("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view():
     return _importutil_core(bottle.request, project.relatives_to_absolutes)
 
 
-@bottle.get("/imports/handle_long_imports")
+@bottle.post("/imports/handle_long_imports")
 def handle_long_imports_view():
     return _importutil_core(bottle.request, project.handle_long_imports)
 
