@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 import time
 import unittest
 
@@ -22,8 +21,6 @@ def wait_for_task(task_id, app):
         time.sleep(0.01)
 
 
-@unittest.skipUnless(sys.version_info.major == 3,
-                     'Only run for Python version 3+')
 class JSONAPITests(unittest.TestCase):
     def setUp(self):
         common.activate({'main': ['basic']})
