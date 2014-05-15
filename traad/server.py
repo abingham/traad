@@ -124,7 +124,7 @@ def redo_info_view(idx):
     }
 
 
-@bottle.get('/test/long_running')
+@bottle.post('/test/long_running')
 def long_running_test():
     import traad.test.tasks as tasks
     args = bottle.request.json
