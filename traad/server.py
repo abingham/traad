@@ -28,9 +28,6 @@ def run_server(app, port):
 # TODO: Clean this up with a context-manager if possible
 def make_app(project_path):
     app = bottle.default_app()
-    print (dir(app))
-    print(app.routes)
-    print(project_path)
 
     state = State.start().proxy()
     project = Project.start(project_path).proxy()
@@ -80,7 +77,7 @@ def full_task_status():
 @bottle.post('/history/undo')
 def undo_view():
     args = bottle.request.json
-    project.undo(args['index']).get()
+    bottle.request.app.config['project'].undo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -89,7 +86,7 @@ def undo_view():
 @bottle.post('/history/redo')
 def redo_view():
     args = bottle.request.json
-    project.redo(args['index']).get()
+    bottle.request.app.config['project'].redo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -99,7 +96,7 @@ def redo_view():
 def undo_history_view():
     return {
         'result': 'success',
-        'history': project.undo_history().get()
+        'history': bottle.request.app.config['project'].undo_history().get()
     }
 
 
@@ -107,7 +104,7 @@ def undo_history_view():
 def redo_history_view():
     return {
         'result': 'success',
-        'history': project.redo_history().get()
+        'history': bottle.request.app.config['project'].redo_history().get()
     }
 
 
@@ -115,7 +112,7 @@ def redo_history_view():
 def undo_info_view(idx):
     return {
         'result': 'success',
-        'info': project.undo_info(int(idx)).get()
+        'info': bottle.request.app.config['project'].undo_info(int(idx)).get()
     }
 
 
@@ -123,7 +120,7 @@ def undo_info_view(idx):
 def redo_info_view(idx):
     return {
         'result': 'success',
-        'info': project.redo_info(int(idx)).get()
+        'info': bottle.request.app.config['project'].redo_info(int(idx)).get()
     }
 
 
@@ -138,7 +135,7 @@ def long_running_test():
 @bottle.post('/refactor/rename')
 def rename_view():
     args = bottle.request.json
-    return standard_async_task(project.rename,
+    return standard_async_task(bottle.request.app.config['project'].rename,
                                args['name'],
                                args['path'],
                                args.get('offset'))
@@ -161,18 +158,18 @@ def extract_core(method, request):
 
 @bottle.post('/refactor/extract_method')
 def extract_method_view():
-    return extract_core(project.extract_method, bottle.request)
+    return extract_core(bottle.request.app.config['project'].extract_method, bottle.request)
 
 
 @bottle.post('/refactor/extract_variable')
 def extract_variable_view():
-    return extract_core(project.extract_variable, bottle.request)
+    return extract_core(bottle.request.app.config['project'].extract_variable, bottle.request)
 
 
 @bottle.post('/refactor/normalize_arguments')
 def normalize_arguments_view():
     args = bottle.request.json
-    return standard_async_task(project.normalize_arguments,
+    return standard_async_task(bottle.request.app.config['project'].normalize_arguments,
                                args['path'],
                                args['offset'])
 
@@ -180,7 +177,7 @@ def normalize_arguments_view():
 @bottle.post('/refactor/remove_argument')
 def remove_argument_view():
     args = bottle.request.json
-    return standard_async_task(project.remove_argument,
+    return standard_async_task(bottle.request.app.config['project'].remove_argument,
                                args['arg_index'],
                                args['path'],
                                args['offset'])
@@ -192,7 +189,7 @@ def code_assist_completion_view():
 
     log.info('get completion: {}'.format(args))
 
-    results = project.code_assist(args['code'],
+    results = bottle.request.app.config['project'].code_assist(args['code'],
                                   args['offset'],
                                   args['path']).get()
 
@@ -209,7 +206,7 @@ def code_assist_doc_view():
 
     log.info('get doc: {}'.format(args))
 
-    doc = project.get_doc(
+    doc = bottle.request.app.config['project'].get_doc(
         code=args['code'],
         offset=args['offset'],
         path=args['path']).get()
@@ -226,7 +223,7 @@ def code_assist_calltip_view():
 
     log.info('get calltip: {}'.format(args))
 
-    calltip = project.get_calltip(
+    calltip = bottle.request.app.config['project'].get_calltip(
         code=args['code'],
         offset=args['offset'],
         path=args['path']).get()
@@ -244,7 +241,7 @@ def code_assist_calltip_view():
 #     log.info('get definition: {}'.format(args))
 
 #     return {
-#         'results': project.get_definition_location(
+#         'results': bottle.request.app.config['project'].get_definition_location(
 #             code=args['code'],
 #             offset=args['offset'],
 #             path=args['path'])
@@ -254,7 +251,7 @@ def code_assist_calltip_view():
 @bottle.post('/findit/occurrences')
 def findit_occurences_view():
     args = bottle.request.json
-    data = project.find_occurrences(
+    data = bottle.request.app.config['project'].find_occurrences(
         args['offset'],
         args['path']).get()
 
@@ -268,7 +265,7 @@ def findit_occurences_view():
 @bottle.post('/findit/implementations')
 def findit_implementations_view():
     args = bottle.request.json
-    data = project.find_implementations(
+    data = bottle.request.app.config['project'].find_implementations(
         args['offset'],
         args['path']).get()
 
@@ -282,7 +279,7 @@ def findit_implementations_view():
 @bottle.post('/findit/definition')
 def findit_definitions_view():
     args = bottle.request.json
-    data = project.find_definition(
+    data = bottle.request.app.config['project'].find_definition(
         args['code'],
         args['offset'],
         args['path']).get()
@@ -299,7 +296,6 @@ def _importutil_core(request, method):
     # Refactor it.
 
     args = request.json
-    print(args)
     return standard_async_task(
         method,
         args['path'])
@@ -307,27 +303,27 @@ def _importutil_core(request, method):
 
 @bottle.post("/imports/organize")
 def organize_imports_view():
-    return _importutil_core(bottle.request, project.organize_imports)
+    return _importutil_core(bottle.request, bottle.request.app.config['project'].organize_imports)
 
 
 @bottle.post("/imports/expand_star")
 def expand_star_imports_view():
-    return _importutil_core(bottle.request, project.expand_star_imports)
+    return _importutil_core(bottle.request, bottle.request.app.config['project'].expand_star_imports)
 
 
 @bottle.post("/imports/froms_to_imports")
 def from_to_imports_view():
-    return _importutil_core(bottle.request, project.froms_to_imports)
+    return _importutil_core(bottle.request, bottle.request.app.config['project'].froms_to_imports)
 
 
 @bottle.post("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view():
-    return _importutil_core(bottle.request, project.relatives_to_absolutes)
+    return _importutil_core(bottle.request, bottle.request.app.config['project'].relatives_to_absolutes)
 
 
 @bottle.post("/imports/handle_long_imports")
 def handle_long_imports_view():
-    return _importutil_core(bottle.request, project.handle_long_imports)
+    return _importutil_core(bottle.request, bottle.request.app.config['project'].handle_long_imports)
 
 
 def standard_async_task(method, *args):
@@ -347,7 +343,8 @@ def standard_async_task(method, *args):
 
     try:
         task_id = next(bottle.request.app.config['task_ids'])
-        bottle.request.app.config['state'].create(task_id)
+        state = bottle.request.app.config['state']
+        state.create(task_id)
 
         method(TaskState(state, task_id),
                *args)
