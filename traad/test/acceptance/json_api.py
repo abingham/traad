@@ -5,7 +5,7 @@ import unittest
 
 import webtest
 
-import traad.server
+import traad.app
 from traad.test import common
 
 
@@ -24,11 +24,12 @@ def wait_for_task(task_id, app):
 class JSONAPITests(unittest.TestCase):
     def setUp(self):
         common.activate({'main': ['basic']})
-        self.traad_app = traad.server.make_app(common.activated_path('main'))
+        self.bind = traad.app.bind_to_project(common.activated_path('main'))
+        self.traad_app = self.bind.__enter__()
         self.app = webtest.TestApp(self.traad_app)
 
     def tearDown(self):
-        traad.server.stop_app(self.traad_app)
+        self.bind.__exit__(None, None, None)
         common.deactivate()
 
     def test_rename(self):

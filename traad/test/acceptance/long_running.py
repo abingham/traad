@@ -3,13 +3,12 @@ import unittest
 
 import webtest
 
-import traad.server
+import traad.app
 
 
 class LongRunningTest(unittest.TestCase):
     def test_long_running(self):
-        try:
-            traad_app = traad.server.make_app('.')
+        with traad.app.bind_to_project('.') as traad_app:
             app = webtest.TestApp(traad_app)
 
             resp = app.post_json(
@@ -27,8 +26,6 @@ class LongRunningTest(unittest.TestCase):
                 time.sleep(0.1)
 
             self.assertEqual(len(results), 11)
-        finally:
-            traad.server.stop_app(traad_app)
 
 if __name__ == '__main__':
     unittest.main()
