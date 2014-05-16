@@ -81,8 +81,6 @@ class MultiProjectRefactoring:
     """Support class for performing multi-project refactorings.
     """
     def __init__(self, project, refactoring_type, *args):
-        # TODO: Why do we only pass in cross_project.values()? What
-        # about the "base" project? Strange...
         cross_ref = multiproject.MultiProjectRefactoring(
             refactoring_type,
             list(project.cross_projects.values()))
