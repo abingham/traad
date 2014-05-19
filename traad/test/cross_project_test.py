@@ -1,24 +1,22 @@
 import unittest
 
+import with_fixture
+
 from traad.state import State
 from traad.test import common
 
 
-class CrossTests(unittest.TestCase):
-    def setUp(self):
-        self.state = State.start().proxy()
-        self.task_id = 1
-        self.state.create(self.task_id).get()
-        self.task_state = self.state.get_task_state(self.task_id).get()
-        self.proj = common.activate_project({
-            'main': ['basic'],
-            'cross': ['use_bar'],
-        })
+class CrossTests(with_fixture.TestCase):
+    def withFixture(self):
+        with common.use_project({'main': ['basic'],
+                                 'cross': ['use_bar']}) as self.proj,\
+            common.use_proxy(State.start().proxy()) as self.state:
 
-    def tearDown(self):
-        self.proj.stop()
-        self.state.stop()
-        common.deactivate()
+            self.task_id = 1
+            self.state.create(self.task_id).get()
+            self.task_state = self.state.get_task_state(self.task_id).get()
+
+            yield
 
     def test_cross_normalize_arguments(self):
         self.proj.normalize_arguments(

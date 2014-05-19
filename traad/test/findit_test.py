@@ -1,18 +1,15 @@
 import os
 import unittest
 
+import with_fixture
+
 from traad.test import common
 
 
-class FinditTests(unittest.TestCase):
-    def setUp(self):
-        self.proj = common.activate_project({
-            'main': ['basic'],
-        })
-
-    def tearDown(self):
-        self.proj.stop()
-        common.deactivate()
+class FinditTests(with_fixture.TestCase):
+    def withFixture(self):
+        with common.use_project({'main': ['basic']}) as self.proj:
+            yield
 
     def test_find_occurrences(self):
         # Find occurrences of the Foo class

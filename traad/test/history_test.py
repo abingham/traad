@@ -1,23 +1,19 @@
 import unittest
 
+import with_fixture
+
 from traad.rope import history
 from traad.state import State, TaskState
 from traad.test import common
 
 
-class HistoryTests(unittest.TestCase):
-    def setUp(self):
-        self.proj = common.activate_project({
-            'main': ['basic'],
-        })
-        self.state = State.start().proxy()
-        self.state.create(1).get()
-        self.task_state = TaskState(self.state, 1)
-
-    def tearDown(self):
-        self.proj.stop()
-        self.state.stop()
-        common.deactivate()
+class HistoryTests(with_fixture.TestCase):
+    def withFixture(self):
+        with common.use_project({'main': ['basic']}) as self.proj,\
+             common.use_proxy(State.start().proxy()) as self.state:
+            self.state.create(1).get()
+            self.task_state = TaskState(self.state, 1)
+            yield
 
     def test_undo_undoes_changes(self):
         self.proj.rename(

@@ -1,3 +1,4 @@
+import contextlib
 from filecmp import dircmp
 from itertools import chain
 import os
@@ -69,6 +70,33 @@ def activated_path(top_level_name):
 
 def deactivate(active_dir=ACTIVE_DIR):
     shutil.rmtree(active_dir)
+
+@contextlib.contextmanager
+def use_project(projects,
+                main_dir='main',
+                active_dir=ACTIVE_DIR,
+                project_dir=PROJECT_DIR):
+    """A context-manager that calls `activate_project`, yields the
+    project, and then on exit stops and deactivates the project.
+    """
+    try:
+        proj = activate_project(projects, main_dir, active_dir, project_dir)
+        yield proj
+    finally:
+        proj.stop()
+        deactivate(active_dir)
+
+@contextlib.contextmanager
+def use_proxy(proxy):
+    """A context-manager to simplify using Pykka actors in with-statement.
+
+    This yields `proxy` and then stops it on exit.
+    """
+    try:
+        yield proxy
+    finally:
+        proxy.stop()
+
 
 def diff_report(dc):
     '''Generate a report of differences.
