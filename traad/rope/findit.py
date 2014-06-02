@@ -90,14 +90,16 @@ class FinditMixin:
           path: The path to the resource containing ``code``.
 
         Returns: A tuple of the form (path, (region-start,
-          region-stop), offset, unsure, lineno).
+          region-stop), offset, unsure, lineno), or `None` if the
+          definition can't be found.
 
         """
 
         path = self.to_relative_path(path)
-        return location_to_tuple(
-            rope.contrib.findit.find_definition(
-                self.proj,
-                code,
-                offset,
-                self.get_resource(path)))
+        defn = rope.contrib.findit.find_definition(
+            self.proj,
+            code,
+            offset,
+            self.get_resource(path))
+
+        return None if defn is None else location_to_tuple(defn)

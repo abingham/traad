@@ -686,14 +686,16 @@ current buffer."
     
     (deferred:nextc it
       (lambda (input)
-	(letrec ((loc (elt input 0))
-		 (path (elt loc 0))
-		 (root (elt input 1))
-		 (abspath (if (file-name-absolute-p path) path (concat root "/" path)))
-		 (lineno (elt loc 4)))
-	  (goto-line
-	   lineno
-	   (find-file-other-window abspath)))))))
+	(let ((loc (elt input 0)))
+	  (if (not loc)
+	      (message "No definition found.")
+	    (letrec ((path (elt loc 0))
+		     (root (elt input 1)))
+	      (abspath ((file-name-absolute-p path) path (concat root "/" path)))
+	      (lineno (elt loc 4))
+	      (goto-line
+	       lineno
+	       (find-file-other-window abspath)))))))))
 
 ;;;###autoload
 (defun traad-findit (type)
