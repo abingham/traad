@@ -536,14 +536,14 @@ necessary. Return the history buffer."
 (defun traad-imports-super-smackdown (filename)
   (interactive
    (list
-	(read-file-name "Filename: " "." (buffer-file-name))))
+    (read-file-name "Filename: " nil (buffer-file-name))))
   (mapcar (lambda (f) (funcall f filename))
-		  (list
-		   'traad-expand-star-imports
-		   'traad-relatives-to-absolutes
-		   'traad-froms-to-imports
-		   'traad-handle-long-imports
-		   'traad-organize-imports)))
+	  (list
+	   'traad-expand-star-imports
+	   'traad-relatives-to-absolutes
+	   'traad-froms-to-imports
+	   'traad-handle-long-imports
+	   'traad-organize-imports)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; findit
