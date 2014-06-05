@@ -495,7 +495,7 @@ necessary. Return the history buffer."
   "Organize the import statements in FILENAME."
   (interactive
    (list
-	(read-file-name "Filename: " "." (buffer-file-name))))
+	(read-file-name "Filename: " nil (buffer-file-name))))
   (traad-imports-core filename "/imports/organize"))
 
 
@@ -504,7 +504,7 @@ necessary. Return the history buffer."
   "Expand * import statements in FILENAME."
   (interactive
    (list
-	(read-file-name "Filename: " "." (buffer-file-name))))
+	(read-file-name "Filename: " nil (buffer-file-name))))
   (traad-imports-core filename "/imports/expand_star"))
 
 
@@ -513,7 +513,7 @@ necessary. Return the history buffer."
   "Convert 'from' imports to normal imports in FILENAME."
   (interactive
    (list
-	(read-file-name "Filename: " "." (buffer-file-name))))
+	(read-file-name "Filename: " nil (buffer-file-name))))
   (traad-imports-core filename "/imports/froms_to_imports"))
 
 ;;;###autoload
@@ -521,7 +521,7 @@ necessary. Return the history buffer."
   "Convert relative imports to absolute in FILENAME."
   (interactive
    (list
-	(read-file-name "Filename: " "." (buffer-file-name))))
+	(read-file-name "Filename: " nil (buffer-file-name))))
   (traad-imports-core filename "/imports/relatives_to_absolutes"))
 
 ;;;###autoload
@@ -529,7 +529,7 @@ necessary. Return the history buffer."
   "Clean up long import statements in FILENAME."
   (interactive
    (list
-	(read-file-name "Filename: " "." (buffer-file-name))))
+	(read-file-name "Filename: " nil (buffer-file-name))))
   (traad-imports-core filename "/imports/handle_long_imports"))
 
 ;;;###autoload
