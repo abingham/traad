@@ -29,6 +29,11 @@ use rope should be able to easily communicate with traad.
 Most of the documentation for traad can be found on the `wiki
 <http://github.com/abingham/traad/wiki>`_.
 
+Setup
+=====
+
+Install instructions can be found `here <https://github.com/abingham/traad/wiki/installation>`_.
+
 Rationale
 =========
 
