@@ -690,9 +690,9 @@ current buffer."
 	  (if (not loc)
 	      (message "No definition found.")
 	    (letrec ((path (elt loc 0))
-		     (root (elt input 1)))
-	      (abspath ((file-name-absolute-p path) path (concat root "/" path)))
-	      (lineno (elt loc 4))
+		     (root (elt input 1))
+		     (abspath (if (file-name-absolute-p path) path (concat root "/" path)))
+		     (lineno (elt loc 4)))
 	      (goto-line
 	       lineno
 	       (find-file-other-window abspath)))))))))
