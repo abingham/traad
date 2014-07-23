@@ -34,6 +34,11 @@ Setup
 
 Install instructions can be found `here <https://github.com/abingham/traad/wiki/installation>`_.
 
+Press
+=====
+
+Here's a link to a `presentation on traad/rope <https://github.com/abingham/traad_rope_presentation>`_ from `EuroPython 2014 <https://ep2014.europython.eu/en/>`_.
+
 Rationale
 =========
 
