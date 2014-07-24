@@ -860,6 +860,9 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
      :data (json-encode data))))
 
 (defun traad-typical-deferred-post (name location data)
+  "Posts DATA to LOCATION and afterwards prints NAME and the new
+task-id. Should only be used with URLs that respond with a
+task_id field in the response."
   (lexical-let ((data data)
 		(name name))
     (deferred:$
