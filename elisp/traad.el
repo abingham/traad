@@ -253,14 +253,17 @@ undone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (let ((data (list (cons "index" idx))))
-    (traad-request
-     "/history/undo"
-     data
-     (function*
-      (lambda (&key data &allow-other-keys)
-	(message "Undo")))
-     :type "POST")))
+  (lexical-let ((data (list (cons "index" idx))))
+    
+    (deferred:$
+      
+      (traad-deferred-request
+       "/history/undo"
+       :data data
+       :type "POST")
+
+      (deferred:nextc it
+	(lambda (rsp) (message "Undo"))))))
 
 
 ;;;###autoload
@@ -272,14 +275,17 @@ redone."
   (interactive
    (list
     (read-number "Index: " 0)))
-  (let ((data (list (cons "index" idx))))
-    (traad-request
-     "/history/redo"
-     data
-     (function*
-      (lambda (&key data &allow-other-keys)
-	(message "Redo")))
-     :type "POST")))
+  (lexical-let ((data (list (cons "index" idx))))
+    
+    (deferred:$
+      
+      (traad-deferred-request
+       "/history/redo"
+       :data data
+       :type "POST")
+      
+      (deferred:nextc it
+	(lambda (rsp) (message "Redo"))))))
 
 (defun traad-update-history-buffer ()
   "Update the contents of the history buffer, creating it if \
