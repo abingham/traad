@@ -418,15 +418,20 @@ necessary. Return the history buffer."
 (defun traad-normalize-arguments ()
   "Normalize the arguments for the method at point."
   (interactive)
-  (let ((data (list (cons "path" (buffer-file-name))
-		    (cons "offset" (traad-adjust-point (point))))))
-    (traad-request
-     "/refactor/normalize_arguments"
-     data
-     (function* (lambda (&key data &allow-other-keys)
-		  (let* ((task-id (assoc-default 'task_id data)))
-		    (message "Normalize-arguments started with task-id %s" task-id))))
-     :type "POST")))
+  (lexical-let ((data (list (cons "path" (buffer-file-name))
+			    (cons "offset" (traad-adjust-point (point))))))
+    (deferred:$
+      
+      (traad-deferred-request
+       "/refactor/normalize_arguments"
+       :type "POST"
+       :data data)
+
+      (deferred:nextc it
+	(lambda (rsp)
+	  (message
+	   "Normalize-arguments started with task-id %s"
+	   (assoc-default 'task_id (request-response-data rsp))))))))
 
 ;;;###autoload
 (defun traad-remove-argument (index)
