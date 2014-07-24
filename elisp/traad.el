@@ -850,25 +850,6 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
    ":" (number-to-string traad-server-port-actual)
    location))
 
-(defun* traad-request (location data callback &key (type "GET"))
-  "Post `data` as JSON to `location` on the server, calling `callback` with the response."
-
-					; TODO: Should we just switch
-					; to deferred requests here?
-
-  (request
-   (traad-construct-url location)
-   :type type
-   :data (json-encode data)
-   :headers '(("Content-Type" . "application/json"))
-   :parser 'json-read
-   :success callback
-					; :complete (lambda (&rest _)
-					; (message "Finished!"))
-   :error (function*
-	   (lambda (&key error-thrown &allow-other-keys&rest _)
-	     (message "Error: %S" error-thrown)))))
-
 (defun* traad-deferred-request (location &key (type "GET") (data '()))
   (let ((request-backend 'url-retrieve))
     (request-deferred
