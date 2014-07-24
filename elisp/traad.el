@@ -395,17 +395,21 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-string "New name: ")))
-  (let ((data (list (cons "name" new-name)
-		    (cons "path" (buffer-file-name))
-		    (cons "offset" (traad-adjust-point (point))))))
-    (traad-request
-     "/refactor/rename"
-     data
-     (function*
-      (lambda (&key data &allow-other-keys)
-	(let* ((task-id (assoc-default 'task_id data)))
-	  (message "Rename started with task-id %s" task-id))))
-     :type "POST")))
+  (lexical-let ((data (list (cons "name" new-name)
+			    (cons "path" (buffer-file-name))
+			    (cons "offset" (traad-adjust-point (point))))))
+    (deferred:$
+
+      (traad-deferred-request
+       "/refactor/rename"
+       :type "POST"
+       :data data)
+
+      (deferred:nextc it
+	(lambda (rsp)
+	  (message
+	   "Rename started with task-id %s"
+	   (assoc-default 'task_id (request-response-data rsp))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
