@@ -395,21 +395,12 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-string "New name: ")))
-  (lexical-let ((data (list (cons "name" new-name)
-			    (cons "path" (buffer-file-name))
-			    (cons "offset" (traad-adjust-point (point))))))
-    (deferred:$
-
-      (traad-deferred-request
-       "/refactor/rename"
-       :type "POST"
-       :data data)
-
-      (deferred:nextc it
-	(lambda (rsp)
-	  (message
-	   "Rename started with task-id %s"
-	   (assoc-default 'task_id (request-response-data rsp))))))))
+  (traad-typical-deferred-post
+   "Rename"
+   "/refactor/rename"
+   (list (cons "name" new-name)
+	 (cons "path" (buffer-file-name))
+	 (cons "offset" (traad-adjust-point (point))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Change signature support
@@ -418,20 +409,11 @@ necessary. Return the history buffer."
 (defun traad-normalize-arguments ()
   "Normalize the arguments for the method at point."
   (interactive)
-  (lexical-let ((data (list (cons "path" (buffer-file-name))
-			    (cons "offset" (traad-adjust-point (point))))))
-    (deferred:$
-      
-      (traad-deferred-request
-       "/refactor/normalize_arguments"
-       :type "POST"
-       :data data)
-
-      (deferred:nextc it
-	(lambda (rsp)
-	  (message
-	   "Normalize-arguments started with task-id %s"
-	   (assoc-default 'task_id (request-response-data rsp))))))))
+  (traad-typical-deferred-post
+   "Normalize-arguments"
+   "/refactor/normalize_arguments"
+   (list (cons "path" (buffer-file-name))
+	 (cons "offset" (traad-adjust-point (point))))))
 
 ;;;###autoload
 (defun traad-remove-argument (index)
@@ -442,40 +424,25 @@ necessary. Return the history buffer."
 					; TODO: Surely there's a
 					; better way to construct
 					; these lists...
-  (let ((data (list (cons "arg_index" index)
-		    (cons "path" (buffer-file-name))
-		    (cons "offset" (traad-adjust-point (point))))))
-    (traad-request
-     "/refactor/remove_argument"
-     data
-     (function* (lambda (&key data &allow-other-keys)
-		  (let* ((task-id (assoc-default 'task_id data)))
-		    (message "Remove-argument started with task-id %s" task-id))))
-     :type "POST")))
+  (traad-typical-deferred-post
+   "Remove-argument"
+   "/refactor/remove_argument"
+   (list (cons "arg_index" index)
+	 (cons "path" (buffer-file-name))
+	 (cons "offset" (traad-adjust-point (point))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extraction support
 
 (defun traad-extract-core (location name begin end)
-  (lexical-let ((location location)
-		(data (list (cons "path" (buffer-file-name))
-			    (cons "start-offset" (traad-adjust-point begin))
-			    (cons "end-offset" (traad-adjust-point end))
-			    (cons "name" name))))
-    (deferred:$
-      
-      (traad-deferred-request
-       location
-       :type "POST"
-       :data data)
-      
-      (deferred:nextc it
-	(lambda (rsp)
-	  (message
-	   "%s started with task-id %s"
-	   location
-	   (assoc-default 'task_id (request-response-data rsp))))))))
+  (traad-typical-deferred-post
+   name
+   location
+   (list (cons "path" (buffer-file-name))
+	 (cons "start-offset" (traad-adjust-point begin))
+	 (cons "end-offset" (traad-adjust-point end))
+	 (cons "name" name))))
 
 ;;;###autoload
 (defun traad-extract-method (name begin end)
@@ -492,31 +459,16 @@ necessary. Return the history buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; importutils support
 
-(defun traad-imports-core (filename location)
-  (lexical-let ((location location))
-    (deferred:$
-
-      (traad-deferred-request
-       location
-       :data (list (cons "path" filename))
-       :type "POST")
-
-      (deferred:nextc it
-	(lambda (rsp)
-	  (message
-	   "%s task started with task-id %s"
-	   location
-	   (assoc-default 'task_id
-			  (request-response-data rsp))))))))
-
 ;;;###autoload
 (defun traad-organize-imports (filename)
   "Organize the import statements in FILENAME."
   (interactive
    (list
     (read-file-name "Filename: " nil (buffer-file-name))))
-  (traad-imports-core filename "/imports/organize"))
-
+  (traad-typical-deferred-post
+   "Organize-imports"
+   "/imports/organize"
+   (list (cons "path" filename))))
 
 ;;;###autoload
 (defun traad-expand-star-imports (filename)
@@ -524,8 +476,10 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-file-name "Filename: " nil (buffer-file-name))))
-  (traad-imports-core filename "/imports/expand_star"))
-
+  (traad-typical-deferred-post
+   "Expand-star-imports"
+   "/imports/expand_star"
+   (list (cons "path" filename))))
 
 ;;;###autoload
 (defun traad-froms-to-imports (filename)
@@ -533,7 +487,10 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-file-name "Filename: " nil (buffer-file-name))))
-  (traad-imports-core filename "/imports/froms_to_imports"))
+  (traad-typical-deferred-post
+   "Froms-to-imports"
+   "/imports/froms_to_imports"
+   (list (cons "path" filename))))
 
 ;;;###autoload
 (defun traad-relatives-to-absolutes (filename)
@@ -541,7 +498,10 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-file-name "Filename: " nil (buffer-file-name))))
-  (traad-imports-core filename "/imports/relatives_to_absolutes"))
+  (traad-typical-deferred-post
+   "Relatives-to-absolutes"
+   "/imports/relatives_to_absolutes"
+   (list (cons "path" filename))))
 
 ;;;###autoload
 (defun traad-handle-long-imports (filename)
@@ -549,7 +509,10 @@ necessary. Return the history buffer."
   (interactive
    (list
     (read-file-name "Filename: " nil (buffer-file-name))))
-  (traad-imports-core filename "/imports/handle_long_imports"))
+  (traad-typical-deferred-post
+   "Handle-long-imports"
+   "/imports/handle_long_imports"
+   (list (cons "path" filename))))
 
 ;;;###autoload
 (defun traad-imports-super-smackdown (filename)
@@ -908,6 +871,23 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
      :parser 'json-read
      :headers '(("Content-Type" . "application/json"))
      :data (json-encode data))))
+
+(defun traad-typical-deferred-post (name location data)
+  (lexical-let ((data data)
+		(name name))
+    (deferred:$
+      
+      (traad-deferred-request
+       location
+       :type "POST"
+       :data data)
+
+      (deferred:nextc it
+	(lambda (rsp)
+	  (message
+	   "%s started with task-id %s"
+	   name
+	   (assoc-default 'task_id (request-response-data rsp))))))))
 
 (defun traad-range (upto)
   (defun range_ (x)
