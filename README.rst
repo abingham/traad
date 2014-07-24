@@ -5,7 +5,7 @@
 =======================================
 
 Traad is a client-server approach to using the
-`rope <http://rope.sourceforge.net/>`_ Python refactory library. It
+`rope <https://github.com/python-rope/rope>`_ Python refactory library. It
 involves two basic components:
 
  1. A HTTP server exposing the rope API via JSON, and
