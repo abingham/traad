@@ -3,7 +3,7 @@
 ;; Copyright (c) 2012-2014 Austin Bingham
 ;;
 ;; Author: Austin Bingham <austin.bingham@gmail.com>
-;; Version: 0.1
+;; Version: 0.9
 ;; URL: https://github.com/abingham/traad
 ;; Package-Requires: ((deferred "0.3.2") (popup "0.5.0") (request "0.2.0"))
 ;;
@@ -107,6 +107,9 @@ after successful refactorings."
   :type '(boolean)
   :group 'traad)
 
+(defconst traad-required-protocol-version 1
+  "The required protocol version.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close
 
@@ -142,8 +145,24 @@ after successful refactorings."
 	   (t
 	    (incf cont)
 	    (when (< 30 cont) ; timeout after 3 seconds
-	      (error "Server timeout.")))))))))
+	      (error "Server timeout."))))))
+      (traad-check-protocol-version))))
 
+(defun traad-check-protocol-version ()
+  (deferred:$
+
+    (traad-deferred-request "/protocol_version")
+
+    (deferred:nextc it
+      (lambda (req)
+	(let ((protocol-version (assoc-default
+				 'protocol-version
+				 (request-response-data req))))
+	  (if (eq protocol-version traad-required-protocol-version)
+	      (message "Supported protocol version detected: %s" protocol-version)
+	    (error "Server protocol version is %s, but we require version %s"
+		   protocol-version
+		   traad-required-protocol-version)))))))
 
 					; TODO
 ;; (defun traad-add-cross-project (directory)

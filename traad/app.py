@@ -10,6 +10,9 @@ from .state import State, TaskState
 
 log = logging.getLogger('traad.app')
 
+PROTOCOL_VERSION = 1
+
+
 class ProjectApp(bottle.Bottle):
     def __init__(self):
         super(ProjectApp, self).__init__()
@@ -29,6 +32,12 @@ def bind_to_project(project_path):
     finally:
         app.state.stop()
         app.project.stop()
+
+
+@app.get('/protocol_version')
+def protocol_version_view():
+    return {'protocol-version': PROTOCOL_VERSION}
+
 
 @app.get('/root')
 def project_root_view():
