@@ -535,11 +535,12 @@ class Route(object):
             to recover the original function before inspection. '''
         return getargspec(self.get_undecorated_callback())[0]
 
-    def get_config(key, default=None):
+    def get_config(self, key, default=None):
         ''' Lookup a config field and return its value, first checking the
             route.config, then route.app.config.'''
         for conf in (self.config, self.app.conifg):
-            if key in conf: return conf[key]
+            if key in conf:
+                return conf[key]
         return default
 
     def __repr__(self):
