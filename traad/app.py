@@ -22,6 +22,7 @@ class ProjectApp(bottle.Bottle):
 
 app = ProjectApp()
 
+
 @contextlib.contextmanager
 def bind_to_project(project_path):
     app.project = Project.start(project_path).proxy()
@@ -46,8 +47,9 @@ def project_root_view():
             'result': 'success',
             'root': bottle.request.app.project.get_root().get()
         }
-    except e:
+    except Exception:
         return 'huh...'
+
 
 @app.get('/all_resources')
 def all_resources():
@@ -55,6 +57,7 @@ def all_resources():
         'result': 'success',
         'resources': bottle.request.app.project.get_all_resources().get()
     }
+
 
 @app.get('/task/<task_id>')
 def task_status_view(task_id):
@@ -129,6 +132,7 @@ def long_running_test():
     return standard_async_task(tasks.long_running,
                                args['message'])
 
+
 @app.post('/refactor/rename')
 def rename_view():
     args = bottle.request.json
@@ -155,12 +159,14 @@ def extract_core(method, request):
 
 @app.post('/refactor/extract_method')
 def extract_method_view():
-    return extract_core(bottle.request.app.project.extract_method, bottle.request)
+    return extract_core(bottle.request.app.project.extract_method,
+                        bottle.request)
 
 
 @app.post('/refactor/extract_variable')
 def extract_variable_view():
-    return extract_core(bottle.request.app.project.extract_variable, bottle.request)
+    return extract_core(bottle.request.app.project.extract_variable,
+                        bottle.request)
 
 
 @app.post('/refactor/normalize_arguments')
@@ -187,8 +193,8 @@ def code_assist_completion_view():
     log.info('get completion: {}'.format(args))
 
     results = bottle.request.app.project.code_assist(args['code'],
-                                  args['offset'],
-                                  args['path']).get()
+                                                     args['offset'],
+                                                     args['path']).get()
 
     # TODO: What if it fails?
     return {
@@ -300,27 +306,32 @@ def _importutil_core(request, method):
 
 @app.post("/imports/organize")
 def organize_imports_view():
-    return _importutil_core(bottle.request, bottle.request.app.project.organize_imports)
+    return _importutil_core(bottle.request,
+                            bottle.request.app.project.organize_imports)
 
 
 @app.post("/imports/expand_star")
 def expand_star_imports_view():
-    return _importutil_core(bottle.request, bottle.request.app.project.expand_star_imports)
+    return _importutil_core(bottle.request,
+                            bottle.request.app.project.expand_star_imports)
 
 
 @app.post("/imports/froms_to_imports")
 def from_to_imports_view():
-    return _importutil_core(bottle.request, bottle.request.app.project.froms_to_imports)
+    return _importutil_core(bottle.request,
+                            bottle.request.app.project.froms_to_imports)
 
 
 @app.post("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view():
-    return _importutil_core(bottle.request, bottle.request.app.project.relatives_to_absolutes)
+    return _importutil_core(bottle.request,
+                            bottle.request.app.project.relatives_to_absolutes)
 
 
 @app.post("/imports/handle_long_imports")
 def handle_long_imports_view():
-    return _importutil_core(bottle.request, bottle.request.app.project.handle_long_imports)
+    return _importutil_core(bottle.request,
+                            bottle.request.app.project.handle_long_imports)
 
 
 def standard_async_task(method, *args):
