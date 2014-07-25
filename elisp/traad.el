@@ -5,7 +5,7 @@
 ;; Author: Austin Bingham <austin.bingham@gmail.com>
 ;; Version: 0.9
 ;; URL: https://github.com/abingham/traad
-;; Package-Requires: ((deferred "0.3.2") (popup "0.5.0") (request "0.2.0"))
+;; Package-Requires: ((deferred "0.3.2") (popup "0.5.0") (request "0.2.0") (request-deferred "0.2.0"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
