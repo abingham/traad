@@ -594,10 +594,7 @@ current buffer.
 
 	[path, [region-start, region-stop], offset, unsure, lineno]
   "
-  (lexical-let ((data (list (cons "code" (buffer-substring-no-properties
-					  (point-min)
-					  (point-max)))
-			    (cons "offset" (traad-adjust-point pos))
+  (lexical-let ((data (list (cons "offset" (traad-adjust-point pos))
 			    (cons "path" (buffer-file-name)))))
     (traad-deferred-request
      "/findit/definition"
@@ -731,10 +728,7 @@ current buffer."
 
 This returns an alist like ((completions . [[name documentation scope type]]) (result . \"success\"))"
   (interactive "d")
-  (let ((data (list (cons "code" (buffer-substring-no-properties
-				  (point-min)
-				  (point-max)))
-		    (cons "offset" (traad-adjust-point pos))
+  (let ((data (list (cons "offset" (traad-adjust-point pos))
 		    (cons "path" (buffer-file-name))))
 	(request-backend 'url-retrieve))
     (request-response-data
@@ -762,10 +756,7 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
 
   Returns a deferred which produces the calltip string.
   "
-  (lexical-let ((data (list (cons "code"(buffer-substring-no-properties
-					 (point-min)
-					 (point-max)))
-			    (cons "offset" (traad-adjust-point pos))
+  (lexical-let ((data (list (cons "offset" (traad-adjust-point pos))
 			    (cons "path" (buffer-file-name)))))
     (deferred:$
       (traad-deferred-request
@@ -811,23 +802,20 @@ This returns an alist like ((completions . [[name documentation scope type]]) (r
   Returns a deferred which produces the doc string. If there is
   not docstring, the deferred produces nil.
   "
-  (lexical-let ((data (list (cons "code" (buffer-substring-no-properties
-					  (point-min)
-					  (point-max)))
-			    (cons "offset" (traad-adjust-point pos))
+  (lexical-let ((data (list (cons "offset" (traad-adjust-point pos))
 			    (cons "path" (buffer-file-name)))))
     (deferred:$
 
       (traad-deferred-request
        "/code_assist/doc"
-       :data data)
+       :data data
+       :type "POST")
 
       (deferred:nextc it
 	(lambda (req)
 	  (assoc-default
 	   'doc
-	   (request-response-data req))))
-      :type "POST")))
+	   (request-response-data req)))))))
 
 ;;;###autoload
 (defun traad-display-doc (pos)

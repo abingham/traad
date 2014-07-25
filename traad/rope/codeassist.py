@@ -66,7 +66,7 @@ class CodeAssistMixin:
 
     @traad.trace.trace
     @validate
-    def get_doc(project, code, offset, path):
+    def get_doc(self, code, offset, path):
         '''Get docstring for an object.
 
         ``path`` may be absolute or relative. If ``path`` is relative,

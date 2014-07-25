@@ -192,7 +192,10 @@ def code_assist_completion_view():
 
     log.info('get completion: {}'.format(args))
 
-    results = bottle.request.app.project.code_assist(args['code'],
+    with open(args['path'], 'r') as f:
+        code = f.read()
+
+    results = bottle.request.app.project.code_assist(code,
                                                      args['offset'],
                                                      args['path']).get()
 
@@ -209,8 +212,11 @@ def code_assist_doc_view():
 
     log.info('get doc: {}'.format(args))
 
+    with open(args['path'], 'r') as f:
+        code = f.read()
+
     doc = bottle.request.app.project.get_doc(
-        code=args['code'],
+        code=code,
         offset=args['offset'],
         path=args['path']).get()
 
@@ -226,8 +232,11 @@ def code_assist_calltip_view():
 
     log.info('get calltip: {}'.format(args))
 
+    with open(args['path'], 'r') as f:
+        code = f.read()
+
     calltip = bottle.request.app.project.get_calltip(
-        code=args['code'],
+        code=code,
         offset=args['offset'],
         path=args['path']).get()
 
@@ -282,8 +291,12 @@ def findit_implementations_view():
 @app.post('/findit/definition')
 def findit_definitions_view():
     args = bottle.request.json
+
+    with open(args['path'], 'r') as f:
+        code = f.read()
+
     data = bottle.request.app.project.find_definition(
-        args['code'],
+        code,
         args['offset'],
         args['path']).get()
 

@@ -81,8 +81,7 @@ class JSONAPITests(with_fixture.TestCase):
         resp = self.app.post_json(
             '/findit/definition',
             {
-                'code': code,
-                'path': 'basic/bar.py',
+                'path': path,
                 'offset': 142,
             })
 
