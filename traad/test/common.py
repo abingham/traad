@@ -113,7 +113,7 @@ def diff_report(dc):
 
     if dc.left_only:
         dc.left_only.sort()
-        sio.write(u' '.join(chain(['Only in', dc.left, ':'], s.left_only)))
+        sio.write(u' '.join(chain(['Only in', dc.left, ':'], dc.left_only)))
     if dc.right_only:
         dc.right_only.sort()
         sio.write(u' '.join(chain(['Only in', dc.right, ':'], dc.right_only)))
