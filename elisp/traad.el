@@ -489,7 +489,7 @@ necessary. Return the history buffer."
   "Organize the import statements in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: " nil (buffer-file-name))))
+    (read-file-name "Filename: " (buffer-file-name))))
   (traad-typical-deferred-post
    "Organize-imports"
    "/imports/organize"
@@ -500,7 +500,7 @@ necessary. Return the history buffer."
   "Expand * import statements in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: " nil (buffer-file-name))))
+    (read-file-name "Filename: " (buffer-file-name))))
   (traad-typical-deferred-post
    "Expand-star-imports"
    "/imports/expand_star"
@@ -511,7 +511,7 @@ necessary. Return the history buffer."
   "Convert 'from' imports to normal imports in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: " nil (buffer-file-name))))
+    (read-file-name "Filename: " (buffer-file-name))))
   (traad-typical-deferred-post
    "Froms-to-imports"
    "/imports/froms_to_imports"
@@ -522,7 +522,7 @@ necessary. Return the history buffer."
   "Convert relative imports to absolute in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: " nil (buffer-file-name))))
+    (read-file-name "Filename: " (buffer-file-name))))
   (traad-typical-deferred-post
    "Relatives-to-absolutes"
    "/imports/relatives_to_absolutes"
@@ -533,7 +533,7 @@ necessary. Return the history buffer."
   "Clean up long import statements in FILENAME."
   (interactive
    (list
-    (read-file-name "Filename: " nil (buffer-file-name))))
+    (read-file-name "Filename: " (buffer-file-name))))
   (traad-typical-deferred-post
    "Handle-long-imports"
    "/imports/handle_long_imports"
@@ -543,7 +543,7 @@ necessary. Return the history buffer."
 (defun traad-imports-super-smackdown (filename)
   (interactive
    (list
-    (read-file-name "Filename: " nil (buffer-file-name))))
+    (read-file-name "Filename: " (buffer-file-name))))
   (mapcar (lambda (f) (funcall f filename))
 	  (list
 	   'traad-expand-star-imports
