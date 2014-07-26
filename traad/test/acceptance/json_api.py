@@ -75,8 +75,6 @@ class JSONAPITests(with_fixture.TestCase):
         path = os.path.join(
             common.activated_path('main'),
             'basic', 'bar.py')
-        with open(path, 'r') as f:
-            code = f.read()
 
         resp = self.app.post_json(
             '/findit/definition',
