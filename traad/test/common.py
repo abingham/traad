@@ -13,10 +13,9 @@ except ImportError:
 from traad.rope.project import Project
 
 
-THIS_DIR = os.path.split(__file__)[0]
+THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
 ACTIVE_DIR = os.path.join(THIS_DIR, 'active')
 PROJECT_DIR = os.path.join(THIS_DIR, 'projects')
-
 
 def activate(projects,
              active_dir=ACTIVE_DIR,
