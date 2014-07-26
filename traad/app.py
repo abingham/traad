@@ -10,7 +10,7 @@ from .state import State, TaskState
 
 log = logging.getLogger('traad.app')
 
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2
 
 
 class ProjectApp(bottle.Bottle):

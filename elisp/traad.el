@@ -107,7 +107,7 @@ after successful refactorings."
   :type '(boolean)
   :group 'traad)
 
-(defconst traad-required-protocol-version 1
+(defconst traad-required-protocol-version 2
   "The required protocol version.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
