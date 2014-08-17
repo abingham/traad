@@ -1,8 +1,5 @@
 import sys
 
-import distribute_setup
-distribute_setup.use_setuptools()
-
 from setuptools import setup, find_packages
 
 script_name, rope_lib = {
@@ -12,7 +9,7 @@ script_name, rope_lib = {
 
 setup(
     name = 'traad',
-    version = '0.4',
+    version = '0.10',
     packages = find_packages(),
 
     # metadata for upload to PyPI
@@ -32,6 +29,10 @@ setup(
     install_requires=[
         'decorator',
         'eagertools',
+        'nose',
+        'pykka',
         rope_lib,
+        'webtest',
+        'with_fixture',
     ],
 )

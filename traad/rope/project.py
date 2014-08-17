@@ -1,11 +1,20 @@
 import contextlib
 import os
-import threading
 
 from eagertools import emap
 
+import pykka
+
 import rope.base.project
 from rope.refactor import multiproject
+
+from traad.rope.change_signature import ChangeSignatureMixin
+from traad.rope.codeassist import CodeAssistMixin
+from traad.rope.extract import ExtractMixin
+from traad.rope.findit import FinditMixin
+from traad.rope.history import HistoryMixin
+from traad.rope.importutil import ImportUtilsMixin
+from traad.rope.rename import RenameMixin
 
 
 def get_all_resources(proj):
@@ -41,8 +50,8 @@ class Change:
         self.refactoring = refactoring
         self.args = args
 
-        # TODO: Perhaps this can be delayed until required.
         self.changes = self.refactoring.get_all_changes(*args)
+        self._performed = False
 
     @property
     def descriptions(self):
@@ -62,15 +71,16 @@ class Change:
 
     def perform(self):
         "Perform the refactoring."
+        assert not self._performed
+
         multiproject.perform(self.changes)
+        self._performed = True
 
 
 class MultiProjectRefactoring:
     """Support class for performing multi-project refactorings.
     """
     def __init__(self, project, refactoring_type, *args):
-        # TODO: Why do we only pass in cross_project.values()? What
-        # about the "base" project? Strange...
         cross_ref = multiproject.MultiProjectRefactoring(
             refactoring_type,
             list(project.cross_projects.values()))
@@ -80,12 +90,19 @@ class MultiProjectRefactoring:
         return Change(self.rope_ref, *args)
 
 
-class Project:
-    """Manages an underlying rope.base.Project, providing a lock to
-    serialize access to it, and is a factory for creating refactoring
-    objects.
+class Project(ChangeSignatureMixin,
+              CodeAssistMixin,
+              ExtractMixin,
+              FinditMixin,
+              HistoryMixin,
+              ImportUtilsMixin,
+              RenameMixin,
+              pykka.ThreadingActor):
+    """An actor that controls access to an underlying Rope project.
     """
     def __init__(self, project_dir, cross_project_dirs=[]):
+        super(Project, self).__init__()
+
         self.proj = rope.base.project.Project(project_dir)
 
         self.cross_projects = dict()
@@ -93,8 +110,6 @@ class Project:
         cross_dirs = set(cross_project_dirs)
         cross_dirs.discard(project_dir)
         emap(self.add_cross_project, cross_dirs)
-
-        self._lock = threading.Lock()
 
     def close(self):
         self.proj.close()
@@ -110,14 +125,6 @@ class Project:
     def cross_project_directories(self):
         """Get a list of root directories for all cross projects."""
         return list(self.cross_projects.keys())
-
-    @contextlib.contextmanager
-    def lock(self):
-        self._lock.acquire()
-        try:
-            yield
-        finally:
-            self._lock.release()
 
     def to_relative_path(self, path):
         '''Get a version of a path relative to the project root.

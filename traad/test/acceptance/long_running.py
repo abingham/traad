@@ -1,46 +1,31 @@
-import json
-import subprocess
 import time
+import unittest
 
-try:
-    from urllib.request import Request, urlopen
-except ImportError:
-    from urllib2 import Request, urlopen
+import webtest
 
-
-def make_req(loc, data=None):
-    if data is not None:
-        data = json.dumps(data).encode('utf-8')
-    req = Request(
-        url='http://localhost:6543{}'.format(loc),
-        data=data,
-        headers={'Content-Type': 'application/json'},
-	method='GET')
-    f = urlopen(req)
-    return f.read()
+import traad.app
 
 
-def run_test(proc):
-    data = make_req('/test/long_running',
-                    {'message': 'Test message!'})
-    task_id = json.loads(data.decode('utf-8'))['task_id']
+class LongRunningTest(unittest.TestCase):
+    def test_long_running(self):
+        with traad.app.bind_to_project('.') as traad_app:
+            app = webtest.TestApp(traad_app)
 
-    results = set()
+            resp = app.post_json(
+                '/test/long_running',
+                {'message': 'Test message!'})
 
-    start_time = time.time()
-    while time.time() - start_time < 10:
-        results.add(
-            make_req('/task/{}'.format(task_id)))
-        time.sleep(0.1)
+            task_id = resp.json['task_id']
 
-    assert len(results) == 10
+            results = set()
 
+            start_time = time.time()
+            while time.time() - start_time < 15:
+                resp = app.get('/task/{}'.format(task_id))
+                results.add(resp.body)
+                time.sleep(0.1)
 
-try:
-    proc = subprocess.Popen(
-            ['python', '-m', 'traad.server', '-p', '6543', '.'])
-    time.sleep(1)
-    run_test(proc)
-finally:
-    proc.terminate()
-    proc.wait()
+            self.assertEqual(len(results), 11)
+
+if __name__ == '__main__':
+    unittest.main()

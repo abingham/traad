@@ -1,31 +1,28 @@
 import unittest
 
-from traad.rope.change_signature import (normalize_arguments,
-                                         remove_argument)
+import with_fixture
+
 from traad.state import State
 from traad.test import common
 
 
-class CrossTests(unittest.TestCase):
-    def setUp(self):
-        self.state = State()
-        self.task_id = 1
-        self.state.create(self.task_id)
-        self.task_state = self.state.get_task_state(self.task_id)
-        self.proj = common.activate_project({
-            'main': ['basic'],
-            'cross': ['use_bar'],
-        })
+class CrossTests(with_fixture.TestCase):
+    def withFixture(self):
+        with common.use_project({'main': ['basic'],
+                                 'cross': ['use_bar']}) as self.proj,\
+            common.use_proxy(State.start().proxy()) as self.state:
 
-    def tearDown(self):
-        common.deactivate()
+            self.task_id = 1
+            self.state.create(self.task_id).get()
+            self.task_state = self.state.get_task_state(self.task_id).get()
+
+            yield
 
     def test_cross_normalize_arguments(self):
-        normalize_arguments(
-            self.proj,
+        self.proj.normalize_arguments(
             self.task_state,
             'basic/bar.py',
-            163)
+            163).get()
 
         common.compare_projects(
             'cross_basic_normalize_arguments',
@@ -38,12 +35,11 @@ class CrossTests(unittest.TestCase):
             'use_bar')
 
     def test_cross_remove_argument(self):
-        remove_argument(
-            self.proj,
+        self.proj.remove_argument(
             self.task_state,
             1,
             'basic/bar.py',
-            163)
+            163).get()
 
         common.compare_projects(
             'cross_basic_remove_argument',

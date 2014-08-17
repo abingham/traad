@@ -1,99 +1,52 @@
 import json
 import os
-import subprocess
 import time
 import unittest
 
-try:
-    from urllib.error import URLError
-    from urllib.request import Request, urlopen
-    python_3 = True
-except ImportError:
-    python_3 = False
+import webtest
+import with_fixture
 
+import traad.app
 from traad.test import common
 
 
-def json_request(url, data=None, method='GET'):
-    req = Request(
-        url=url,
-        data=json.dumps(data).encode('utf-8'),
-        headers={'Content-Type': 'application/json; charset=utf-8'},
-        method=method)
-    rsp = urlopen(req)
-    return json.loads(rsp.read().decode('utf-8'))
-
-
-def wait_for_server(host, port, timeout=5):
-    """Wait up to ``timeout`` seconds for server to start.
-    """
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            json_request(
-                url='http://{}:{}/root'.format(
-                    host,
-                    port))
-            return
-        except URLError:
-            time.sleep(0.01)
-
-    raise OSError('Unable to start server!')
-
-
-def wait_for_task(task_id, host, port):
+def wait_for_task(task_id, app):
     while True:
-        rsp_data = json_request(
-            url='http://{}:{}/task/{}'.format(
-                host,
-                port,
-                task_id))
+        resp = app.get('/task/{}'.format(task_id))
 
-        if rsp_data['status'] == 'success':
+        if resp.json['status'] == 'success':
             return True
-        elif rsp_data['status'] == 'failure':
+        elif resp.json['status'] == 'failure':
             return False
 
         time.sleep(0.01)
 
 
-@unittest.skipUnless(python_3,
-                     'JSONAPI acceptance test disabled for Python 2')
-class JSONAPITests(unittest.TestCase):
-    def setUp(self):
+class JSONAPITests(with_fixture.TestCase):
+    def withFixture(self):
         common.activate({'main': ['basic']})
-        self.host = 'localhost'
-        self.port = '9752'
-        self.server_proc = subprocess.Popen(
-            ['python',
-             '-m', 'traad.server',
-             '-p', str(self.port),
-             common.activated_path('main')],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
 
-        wait_for_server(self.host, self.port)
+        with traad.app.bind_to_project(common.activated_path('main')) as self.traad_app:
+            self.app = webtest.TestApp(self.traad_app)
 
-    def tearDown(self):
-        self.server_proc.terminate()
-        self.server_proc.wait()
+            yield
+
         common.deactivate()
 
     def test_rename(self):
-        rsp_data = json_request(
-            url='http://{}:{}/refactor/rename'.format(
-                self.host, self.port),
-            data={
+        resp = self.app.post_json(
+            '/refactor/rename',
+            {
                 'name': 'Llama',
                 'path': 'basic/foo.py',
                 'offset': 8,
             })
 
-        self.assertEqual(rsp_data['result'], 'success')
-        task_id = rsp_data['task_id']
+        self.assertEqual(resp.json['result'], 'success')
+        task_id = resp.json['task_id']
 
         self.assertTrue(
-            wait_for_task(task_id, self.host, self.port))
+            wait_for_task(task_id, self.app))
 
         common.compare_projects(
             'basic_rename_llama',
@@ -101,43 +54,37 @@ class JSONAPITests(unittest.TestCase):
             'basic')
 
     def test_find_occurrences(self):
-        rsp_data = json_request(
-            url='http://{}:{}/findit/occurrences'.format(
-                self.host, self.port),
-            data={
+        resp = self.app.post_json(
+            '/findit/occurrences',
+            {
                 'path': 'basic/foo.py',
                 'offset': 8,
             })
-        self.assertEqual(len(rsp_data['data']), 3)
+        self.assertEqual(len(resp.json['data']), 3)
 
     def test_find_implementations(self):
-        rsp_data = json_request(
-            url='http://{}:{}/findit/implementations'.format(
-                self.host, self.port),
-            data={
+        resp = self.app.post_json(
+            '/findit/implementations',
+            {
                 'path': 'basic/overrides.py',
                 'offset': 33,
             })
-        self.assertEqual(len(rsp_data['data']), 1)
+        self.assertEqual(len(resp.json['data']), 1)
 
     def test_find_definition(self):
         path = os.path.join(
             common.activated_path('main'),
             'basic', 'bar.py')
-        with open(path, 'r') as f:
-            code = f.read()
 
-        rsp_data = json_request(
-            url='http://{}:{}/findit/definition'.format(
-                self.host, self.port),
-            data={
-                'code': code,
-                'path': 'basic/bar.py',
+        resp = self.app.post_json(
+            '/findit/definition',
+            {
+                'path': path,
                 'offset': 142,
             })
 
         self.assertEqual(
-            rsp_data['data'],
+            resp.json['data'],
             [os.path.join('basic', 'bar.py'),
              [91, 100],
              91,
@@ -145,20 +92,21 @@ class JSONAPITests(unittest.TestCase):
              7])
 
     def test_undo_undoes_changes(self):
-        rsp_data = json_request(
-            url='http://{}:{}/refactor/rename'.format(
-                self.host, self.port),
-            data={
+        resp = self.app.post_json(
+            '/refactor/rename',
+            {
                 'name': 'Llama',
                 'path': 'basic/foo.py',
                 'offset': 8,
             })
 
-        self.assertEqual(rsp_data['result'], 'success')
-        task_id = rsp_data['task_id']
+        if resp.json['result'] != 'success':
+            print(resp.json['message'])
+        self.assertEqual(resp.json['result'], 'success')
+        task_id = resp.json['task_id']
 
         self.assertTrue(
-            wait_for_task(task_id, self.host, self.port))
+            wait_for_task(task_id, self.app))
 
         with self.assertRaises(ValueError):
             common.compare_projects(
@@ -166,12 +114,11 @@ class JSONAPITests(unittest.TestCase):
                 'main',
                 'basic')
 
-        rsp_data = json_request(
-            url='http://{}:{}/history/undo'.format(
-                self.host, self.port),
-            data={'index': 0})
+        resp = self.app.post_json(
+            '/history/undo',
+            {'index': 0})
 
-        self.assertEqual(rsp_data['result'], 'success')
+        self.assertEqual(resp.json['result'], 'success')
 
         common.compare_projects(
             'basic',

@@ -1,4 +1,6 @@
+import contextlib
 from filecmp import dircmp
+from itertools import chain
 import os
 import shutil
 import sys
@@ -11,10 +13,9 @@ except ImportError:
 from traad.rope.project import Project
 
 
-THIS_DIR = os.path.split(__file__)[0]
+THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
 ACTIVE_DIR = os.path.join(THIS_DIR, 'active')
 PROJECT_DIR = os.path.join(THIS_DIR, 'projects')
-
 
 def activate(projects,
              active_dir=ACTIVE_DIR,
@@ -56,10 +57,10 @@ def activate_project(projects,
                      project_dir=PROJECT_DIR):
     activate(projects, active_dir, project_dir)
 
-    return Project(
+    return Project.start(
         os.path.join(active_dir, main_dir),
         cross_project_dirs=[os.path.join(active_dir, n)
-                            for n in projects if n != main_dir])
+                            for n in projects if n != main_dir]).proxy()
 
 
 def activated_path(top_level_name):
@@ -69,16 +70,70 @@ def activated_path(top_level_name):
 def deactivate(active_dir=ACTIVE_DIR):
     shutil.rmtree(active_dir)
 
+@contextlib.contextmanager
+def use_project(projects,
+                main_dir='main',
+                active_dir=ACTIVE_DIR,
+                project_dir=PROJECT_DIR):
+    """A context-manager that calls `activate_project`, yields the
+    project, and then on exit stops and deactivates the project.
+    """
+    try:
+        proj = activate_project(projects, main_dir, active_dir, project_dir)
+        yield proj
+    finally:
+        proj.stop()
+        deactivate(active_dir)
+
+@contextlib.contextmanager
+def use_proxy(proxy):
+    """A context-manager to simplify using Pykka actors in with-statement.
+
+    This yields `proxy` and then stops it on exit.
+    """
+    try:
+        yield proxy
+    finally:
+        proxy.stop()
+
 
 def diff_report(dc):
-    try:
-        old_stdout = sys.stdout
-        sys.stdout = StringIO()
-        dc.report()
-        return sys.stdout.getvalue()
-    finally:
-        sys.stdout = old_stdout
+    '''Generate a report of differences.
 
+    Stolen directly from `filecmp.dircmp` and modified to be non-insane.
+
+    Args:
+        dc: A `dircmp` object.
+
+    Returns: a string with the report.
+    '''
+    # Output format is purposely lousy
+    sio = StringIO()
+
+    if dc.left_only:
+        dc.left_only.sort()
+        sio.write(u' '.join(chain(['Only in', dc.left, ':'], dc.left_only)))
+    if dc.right_only:
+        dc.right_only.sort()
+        sio.write(u' '.join(chain(['Only in', dc.right, ':'], dc.right_only)))
+    if dc.same_files:
+        dc.same_files.sort()
+        sio.write(u' '.join(chain(['Identical files:'], dc.same_files)))
+    if dc.diff_files:
+        dc.diff_files.sort()
+        sio.write(u' '.join(chain(['Differing files:'], dc.diff_files)))
+    if dc.funny_files:
+        dc.funny_files.sort()
+        sio.write(u' '.join(chain(['Trouble with common files:'], dc.funny_files)))
+    if dc.common_dirs:
+        dc.common_dirs.sort()
+        sio.write(u' '.join(chain(['Common subdirectories:'], dc.common_dirs)))
+    if dc.common_funny:
+        dc.common_funny.sort()
+        sio.write(u' '.join(chain(['Common funny cases:'], dc.common_funny)))
+
+    sio.seek(0)
+    return sio.read()
 
 def compare_projects(canned_project,
                      top_level_dir,
@@ -90,7 +145,9 @@ def compare_projects(canned_project,
                 os.path.join(active_dir,
                              top_level_dir,
                              project))
+
     if any([dc.left_only,
             dc.right_only,
             dc.diff_files]):
-        raise ValueError(diff_report(dc))
+        dr = diff_report(dc)
+        raise ValueError(dr)
