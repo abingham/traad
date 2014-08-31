@@ -83,7 +83,7 @@
 
 (defcustom traad-server-program "traad"
   "The name of the traad server program. This may be a string or a list. For python3 projects this commonly needs to be set to 'traad3'."
-  :type '(string)
+  :type '(repeat string)
   :group 'traad)
 
 (defcustom traad-server-port 0
@@ -93,7 +93,7 @@
 
 (defcustom traad-server-args (list "-V" "2")
   "Parameters passed to the traad server before the directory name."
-  :type '()
+  :type '(repeat string)
   :group 'traad)
 
 (defcustom traad-auto-revert nil
