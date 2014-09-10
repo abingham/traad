@@ -82,7 +82,7 @@
   :group 'traad)
 
 (defcustom traad-server-program "traad"
-  "The name of the traad server program. This may be a string or a list. For python3 projects this commonly needs to be set to 'traad3'."
+  "The name of the traad server program. For python3 projects this commonly needs to be set to '(\"traad3\")."
   :type '(repeat string)
   :group 'traad)
 
