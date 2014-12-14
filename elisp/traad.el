@@ -5,7 +5,7 @@
 ;; Author: Austin Bingham <austin.bingham@gmail.com>
 ;; Version: 0.9
 ;; URL: https://github.com/abingham/traad
-;; Package-Requires: ((deferred "0.3.2") (popup "0.5.0") (request "0.2.0") (request-deferred "0.2.0"))
+;; Package-Requires: ((deferred "0.3.2") (popup "0.5.0") (request "0.2.0") (request-deferred "0.2.0") (python-environment "0.0.2"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -66,6 +66,7 @@
 (require 'deferred)
 (require 'json)
 (require 'popup)
+(require 'python-environment)
 (require 'request)
 (require 'request-deferred)
 
@@ -81,13 +82,20 @@
   :type '(string)
   :group 'traad)
 
-(defcustom traad-server-program "traad"
-  "The name of the traad server program. For python3 projects this commonly needs to be set to '(\"traad3\")."
+(defcustom traad-server-program nil
+  "The name of the traad server program. 
+
+If this is nil (default) then the server found in the
+`traad-environment-name' virtual environment is used.
+
+Note that for python3 projects this commonly needs to be set to `traad3'."
   :type '(repeat string)
   :group 'traad)
 
 (defcustom traad-server-port 0
-  "Port on which the traad server will listen. (0 means any available port.)"
+  "Port on which the traad server will listen. 
+
+0 means any available port."
   :type '(number)
   :group 'traad)
 
@@ -110,6 +118,36 @@ after successful refactorings."
 (defconst traad-required-protocol-version 2
   "The required protocol version.")
 
+(defcustom traad-environment-root "traad"
+  "The name of the Python environment containing the traad server to use.
+
+This is only used when `traad-server-program' is nil.  When that
+is set, it is used in favor of any virtual-environment settings.
+
+This name is used by `python-environment.el' to locate the
+virtual environment into which the desired version of traad is
+installed.  If you have multiple traads in different virtual
+environment (e.g. one for Python 2 and one for Python 3) then you
+may need to dynamically alter this variable to select the one you
+want to use."
+  :group 'traad)
+
+(defcustom traad-environment-virtualenv nil
+  "``virtualenv`` command to use.  A list of string.
+
+If nil, `python-environment-virtualenv' is used instead.
+
+You must set `traad-environment-root' for this setting to work."
+  :group 'traad)
+
+(defun traad--server-command ()
+  "Get the command to launch the server."
+  (or traad-server-program
+      (let* ((get-bin (lambda (x) (python-environment-bin x traad-environment-root)))
+             (script (or (funcall get-bin "traad")
+                         (funcall get-bin "traad3"))))
+        (when script (list script)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open-close
 
@@ -123,9 +161,8 @@ after successful refactorings."
   (let ((proc-buff (get-buffer-create "*traad-server*")))
     (set-buffer proc-buff)
     (erase-buffer)
-    (let* ((program (if (listp traad-server-program)
-			traad-server-program
-		      (list traad-server-program)))
+    (let* ((program (traad--server-command))
+           (program (if (listp program) program (list program)))
 	   (args (append traad-server-args
 			 (list "-p" (number-to-string traad-server-port))
 			 (list directory)))
@@ -897,7 +934,7 @@ task_id field in the response."
   (map 'list 'cons (traad-range (length l)) l))
 
 (defun traad-adjust-point (p)
-  "rope uses 0-based indexing, but emacs points are 1-based. This adjusts."
+  "Rope uses 0-based indexing, but Emacs points are 1-based."
   (- p 1))
 
 (defun traad-read-lines (path)
@@ -907,6 +944,25 @@ task_id field in the response."
     (split-string (buffer-string) "\n" nil)))
 
 					; TODO: invalidation support?
+
+(defconst traad-install-server--command
+  `("pip" "install" "--upgrade" "traad"))
+
+(defun traad-install-server ()
+  "Install traad. 
+
+This installs the server into the `traad-environment-root'
+virtual environment using `traad-environment-virtualenv' to
+create the virtualenv if necessary.  Manipulate these two variable
+to create multiple installations of traad if needed.
+
+By default, then, it installs traad into
+`PYTHON-ENVIRONMENT_DIRECTORY/traad`."
+  (interactive)
+  (deferred:$
+    (python-environment-run traad-install-server--command
+                            traad-environment-root
+                            traad-environment-virtualenv)))
 
 (provide 'traad)
 
