@@ -29,6 +29,21 @@ use rope should be able to easily communicate with traad.
 Most of the documentation for traad can be found on the `wiki
 <http://github.com/abingham/traad/wiki>`_.
 
+Quickstart for Emacs users
+==========================
+
+You can install the Emacs client for traad via ``package.el``::
+
+    M-x package-install<RET>traad
+
+Then you can use ``traad-install-server`` to install the Python server
+into a default location::
+
+    M-x traad-install-server
+
+For more information on this process, see `the wiki
+<https://github.com/abingham/traad/wiki/installation>`_.
+
 Setup
 =====
 
@@ -37,7 +52,9 @@ Install instructions can be found `here <https://github.com/abingham/traad/wiki/
 Press
 =====
 
-Here's a link to a `presentation on traad/rope <https://github.com/abingham/traad_rope_presentation>`_ from `EuroPython 2014 <https://ep2014.europython.eu/en/>`_.
+Here's a link to a `presentation on traad/rope
+<https://github.com/abingham/traad_rope_presentation>`_ from
+`EuroPython 2014 <https://ep2014.europython.eu/en/>`_.
 
 Rationale
 =========
