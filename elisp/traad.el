@@ -121,8 +121,11 @@ after successful refactorings."
 (defcustom traad-environment-root "traad"
   "The name of the Python environment containing the traad server to use.
 
-This is only used when `traad-server-program' is nil.  When that
-is set, it is used in favor of any virtual-environment settings.
+When `traad-install-server' runs, it uses this variable to
+determine where to install the server.
+
+When `traad-server-program' is nil, this variable is used to
+determine where the traad server program is installed.
 
 This name is used by `python-environment.el' to locate the
 virtual environment into which the desired version of traad is
@@ -135,9 +138,7 @@ want to use."
 (defcustom traad-environment-virtualenv nil
   "``virtualenv`` command to use.  A list of string.
 
-If nil, `python-environment-virtualenv' is used instead.
-
-You must set `traad-environment-root' for this setting to work."
+If nil, `python-environment-virtualenv' is used instead."
   :group 'traad)
 
 (defun traad--server-command ()
