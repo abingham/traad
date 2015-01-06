@@ -37,7 +37,7 @@ class ProjectApp(bottle.Bottle):
         """Create a new project rooted at `path`.
         """
         log.info('Creating new project at {}'.format(path))
-        return self.projects.setdefault(path, Project(path))
+        return self.projects.setdefault(path, Project.start(path).proxy())
 
 app = ProjectApp()
 
@@ -107,13 +107,15 @@ def full_task_status():
 # multiple projects. History is specific to a single project, so users
 # will need to be able to distinguish between them and specify which
 # they mean. Hmmm...
-# @app.post('/history/undo')
-# def undo_view():
-#     args = bottle.request.json
-#     bottle.request.app.project.undo(args['index']).get()
+@app.post('/history/undo')
+def undo_view():
+    args = bottle.request.json
+    root = args['root']
+    index = args['index']
+    bottle.request.app.projects[root].undo(index).get()
 
-#     # TODO: What if it actually fails?
-#     return {'result': 'success'}
+    # TODO: What if it actually fails?
+    return {'result': 'success'}
 
 
 # @app.post('/history/redo')
@@ -125,20 +127,28 @@ def full_task_status():
 #     return {'result': 'success'}
 
 
-# @app.get('/history/view_undo')
-# def undo_history_view():
-#     return {
-#         'result': 'success',
-#         'history': bottle.request.app.project.undo_history().get()
-#     }
+@app.get('/history/view_undo')
+def undo_history_view():
+    data = {path: project.undo_history().get()
+            for path, project
+            in bottle.request.app.projects.items()}
+
+    return {
+        'result': 'success',
+        'history': data
+    }
 
 
-# @app.get('/history/view_redo')
-# def redo_history_view():
-#     return {
-#         'result': 'success',
-#         'history': bottle.request.app.project.redo_history().get()
-#     }
+@app.get('/history/view_redo')
+def redo_history_view():
+    data = {path: project.redo_history().get()
+            for path, project
+            in bottle.request.app.projects.items()}
+
+    return {
+        'result': 'success',
+        'history': data
+    }
 
 
 # @app.get('/history/undo_info/<idx>')

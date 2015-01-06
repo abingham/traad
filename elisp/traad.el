@@ -305,25 +305,35 @@ If nil, `python-environment-virtualenv' is used instead."
 ;; history
 
 ;;;###autoload
-(defun traad-undo (idx)
+(defun traad-undo ()
   "Undo the IDXth change from the history. \
 IDX is the position of an entry in the undo list (see: \
 traad-history). This change and all that depend on it will be \
 undone."
-  (interactive
-   (list
-    (read-number "Index: " 0)))
-  (lexical-let ((data (list (cons "index" idx))))
+  (interactive)
+  
+  (deferred:$
+    (traad-deferred-request "/history/view_undo")
     
-    (deferred:$
-      
-      (traad-deferred-request
-       "/history/undo"
-       :data data
-       :type "POST")
+    (deferred:nextc it
+      (lambda (rsp)
+	(let* ((histories (assoc-default 'history (request-response-data rsp)))
+	       (projects (mapcar 'car histories))
+	       (project-root (completing-read "Project: " projects))
+	       (history (assoc-default project-root histories 'string-equal))
+	       (history-index (completing-read "Index: " (mapcar 'int-to-string (number-sequence 0 (1- (length history)))))))
+	  `(("root" . ,project-root)
+	    ("index" . ,(string-to-int history-index))))))
 
-      (deferred:nextc it
-	(lambda (rsp) (message "Undo"))))))
+    (deferred:nextc it
+      (lambda (data)
+	(traad-deferred-request
+	 "/history/undo"
+	 :data data
+	 :type "POST")))
+
+    (deferred:nextc it
+      (lambda (rsp) (message "undo")))))
 
 
 ;;;###autoload
@@ -347,6 +357,15 @@ redone."
       (deferred:nextc it
 	(lambda (rsp) (message "Redo"))))))
 
+(defun traad--prettify-history (hist)
+  "Prepare history struct HIST for printing."
+  (mapcar
+   (lambda (project)
+     (list
+      (car project)
+      (traad-enumerate (cdr project))))
+   hist))
+
 (defun traad-update-history-buffer ()
   "Update the contents of the history buffer, creating it if \
 necessary. Return the history buffer."
@@ -366,10 +385,10 @@ necessary. Return the history buffer."
 	  (set-buffer buff)
 	  (erase-buffer)
 	  (insert "== UNDO HISTORY ==\n")
-	  (if undo (insert (pp-to-string (traad-enumerate undo))))
+	  (if undo (insert (pp-to-string (traad--prettify-history undo))))
 	  (insert "\n")
 	  (insert "== REDO HISTORY ==\n")
-	  (if redo (insert (pp-to-string (traad-enumerate redo))))
+	  (if redo (insert (pp-to-string (traad--prettify-history redo))))
 	  buff)))))
 
 ;;;###autoload
