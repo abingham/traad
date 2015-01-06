@@ -29,10 +29,17 @@ use rope should be able to easily communicate with traad.
 Most of the documentation for traad can be found on the `wiki
 <http://github.com/abingham/traad/wiki>`_.
 
+Emacs warning
+=============
+
+There is a `known problem with emacs-request 
+<https://github.com/tkf/emacs-request/pull/15>`_ that makes the traad 
+emacs client misbehave when using Python3. You can fix this by patching 
+`request.el`.
+
+
 Quickstart for Emacs users
 ==========================
-
-.. WARNING:: There is a `known problem with emacs-request <https://github.com/tkf/emacs-request/pull/15>`_ that makes the traad emacs client misbehave when using Python3. You can fix this by patching `request.el`.
 
 You can install the Emacs client for traad via ``package.el``::
 
