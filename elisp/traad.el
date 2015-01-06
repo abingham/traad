@@ -304,58 +304,52 @@ If nil, `python-environment-virtualenv' is used instead."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; history
 
-;;;###autoload
-(defun traad-undo ()
-  "Undo the IDXth change from the history. \
-IDX is the position of an entry in the undo list (see: \
-traad-history). This change and all that depend on it will be \
-undone."
-  (interactive)
-  
-  (deferred:$
-    (traad-deferred-request "/history/view_undo")
-    
-    (deferred:nextc it
-      (lambda (rsp)
-	(let* ((histories (assoc-default 'history (request-response-data rsp)))
-	       (projects (mapcar 'car histories))
-	       (project-root (completing-read "Project: " projects))
-	       (history (assoc-default project-root histories 'string-equal))
-	       (history-index (completing-read "Index: " (mapcar 'int-to-string (number-sequence 0 (1- (length history)))))))
-	  `(("root" . ,project-root)
-	    ("index" . ,(string-to-int history-index))))))
+(defun traad--apply-history (verb)
+  "Perform an undo or redo, depending on VERB.
 
-    (deferred:nextc it
-      (lambda (data)
-	(traad-deferred-request
-	 "/history/undo"
-	 :data data
-	 :type "POST")))
+This is essentially just the refactored core of `traad-undo' and
+`traad-redo'."
 
-    (deferred:nextc it
-      (lambda (rsp) (message "undo")))))
-
-
-;;;###autoload
-(defun traad-redo (idx)
-  "Redo the IDXth change from the history. \
-IDX is the position of an entry in the redo list (see: \
-traad-history). This change and all that depend on it will be \
-redone."
-  (interactive
-   (list
-    (read-number "Index: " 0)))
-  (lexical-let ((data (list (cons "index" idx))))
-    
+  (lexical-let ((verb verb))
     (deferred:$
-      
-      (traad-deferred-request
-       "/history/redo"
-       :data data
-       :type "POST")
+      (traad-deferred-request (concat "/history/view_" verb))
       
       (deferred:nextc it
-	(lambda (rsp) (message "Redo"))))))
+	(lambda (rsp)
+	  (let* ((histories (assoc-default 'history (request-response-data rsp)))
+		 (projects (mapcar 'car histories))
+		 (project-root (completing-read "Project: " projects))
+		 (history (assoc-default project-root histories 'string-equal))
+		 (history-index (completing-read "Index: " (mapcar 'int-to-string (number-sequence 0 (1- (length history)))))))
+	    `(("root" . ,project-root)
+	      ("index" . ,(string-to-int history-index))))))
+
+      (deferred:nextc it
+	(lambda (data)
+	  (traad-deferred-request
+	   (concat "/history/" verb)
+	   :data data
+	   :type "POST")))
+
+      (deferred:nextc it
+	(lambda (rsp) (message verb))))))
+
+;;;###autoload
+(defun traad-undo ()
+  "Undo a change from the history.
+
+All dependent changes will be undone as well."
+  (interactive)
+  (traad--apply-history "undo"))
+
+
+;;;###autoload
+(defun traad-redo ()
+  "Redo a change from the history.
+
+All dependent changes will be redone as well."
+  (interactive)
+  (traad--apply-history "redo"))
 
 (defun traad--prettify-history (hist)
   "Prepare history struct HIST for printing."

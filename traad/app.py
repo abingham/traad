@@ -118,13 +118,15 @@ def undo_view():
     return {'result': 'success'}
 
 
-# @app.post('/history/redo')
-# def redo_view():
-#     args = bottle.request.json
-#     bottle.request.app.project.redo(args['index']).get()
+@app.post('/history/redo')
+def redo_view():
+    args = bottle.request.json
+    root = args['root']
+    index = args['index']
+    bottle.request.app.projects[root].redo(index).get()
 
-#     # TODO: What if it actually fails?
-#     return {'result': 'success'}
+    # TODO: What if it actually fails?
+    return {'result': 'success'}
 
 
 @app.get('/history/view_undo')
