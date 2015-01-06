@@ -1,6 +1,6 @@
 ;;; traad.el --- emacs interface to the traad refactoring server.
 ;;
-;; Copyright (c) 2012-2014 Austin Bingham
+;; Copyright (c) 2012-2015 Austin Bingham
 ;;
 ;; Author: Austin Bingham <austin.bingham@gmail.com>
 ;; Version: 0.9
