@@ -158,11 +158,10 @@ If nil, `python-environment-virtualenv' is used instead."
 ;; open-close
 
 ;;;###autoload
-(defun traad-open (directory)
-  "Open a traad project on the files in DIRECTORY."
-  (interactive
-   (list
-    (read-directory-name "Directory: ")))
+(defun traad-open ()
+  "Start a new traad server."
+  (interactive)
+  
   (traad-close)
   (let ((proc-buff (get-buffer-create "*traad-server*")))
     (set-buffer proc-buff)
@@ -170,8 +169,7 @@ If nil, `python-environment-virtualenv' is used instead."
     (let* ((program (traad--server-command))
            (program (if (listp program) program (list program)))
 	   (args (append traad-server-args
-			 (list "-p" (number-to-string traad-server-port))
-			 (list directory)))
+			 (list "-p" (number-to-string traad-server-port))))
 	   (program+args (append program args))
 	   (default-directory "~/")
 	   (proc (apply #'start-process "traad-server" proc-buff program+args))

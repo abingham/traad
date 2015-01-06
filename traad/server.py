@@ -1,4 +1,3 @@
-import itertools
 import logging
 import sys
 
@@ -7,21 +6,19 @@ import traad.app
 
 log = logging.getLogger('traad.server')
 
+
 def run_server(app, port):
     host = 'localhost'
 
     log.info('Python version: {}'.format(sys.version))
 
     log.info(
-        'Running traad server for app "{}" at {}:{}'.format(
-            app,
+        'Running traad server at {}:{}'.format(
             host,
             port))
 
-    try:
-        app.run(host=host, port=port)
-    finally:
-        stop_app(app)
+    app.run(host=host, port=port)
+
 
 def main():
     import argparse
@@ -40,10 +37,6 @@ def main():
         dest='verbosity', default=0,
         help='Verbosity level (0=normal, 1=info, 2=debug).')
 
-    parser.add_argument(
-        'project', metavar='P', type=str,
-        help='the directory containing the project to serve')
-
     args = parser.parse_args()
 
     # Configure logging
@@ -56,7 +49,7 @@ def main():
     logging.basicConfig(
         level=level)
 
-    with traad.app.bind_to_project(args.project) as app:
+    with traad.app.activate_app() as app:
         run_server(app, args.port)
 
 if __name__ == '__main__':

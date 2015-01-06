@@ -1,6 +1,7 @@
 import contextlib
 import itertools
 import logging
+import os.path
 import sys
 
 from . import bottle
@@ -16,23 +17,43 @@ PROTOCOL_VERSION = 2
 class ProjectApp(bottle.Bottle):
     def __init__(self):
         super(ProjectApp, self).__init__()
-        self.project = None
+        self.projects = {}
         self.state = None
         self.task_ids = itertools.count()
+
+    def find_project(self, path):
+        """Get the active project for a `path`, if any.
+
+        If there is no active project for `path`, raise `KeyError`.
+        """
+        for project_path, project in self.projects.items():
+            common = os.path.commonprefix([project_path, path])
+            if os.path.samefile(common, project_path):
+                return project
+        raise LookupError(
+            'No existing project for path {}'.format(path))
+
+    def create_project(self, path):
+        """Create a new project rooted at `path`.
+        """
+        log.info('Creating new project at {}'.format(path))
+        return self.projects.setdefault(path, Project(path))
 
 app = ProjectApp()
 
 
 @contextlib.contextmanager
-def bind_to_project(project_path):
-    app.project = Project.start(project_path).proxy()
+def activate_app():
+    """Initialize the global app's state actor and yield the app.
+
+    When this context manager exits, it stop the state actor.
+    """
     app.state = State.start().proxy()
 
     try:
         yield app
     finally:
         app.state.stop()
-        app.project.stop()
 
 
 @app.get('/protocol_version')
@@ -42,21 +63,29 @@ def protocol_version_view():
 
 @app.get('/root')
 def project_root_view():
+    """Get the root directory of the active project for `args['path']`.
+    """
+    args = bottle.request.json
+    path = args['path']
+
     try:
+        project = bottle.request.app.find_project(path)
         return {
             'result': 'success',
-            'root': bottle.request.app.project.get_root().get()
+            'root': project.get_root().get()
         }
-    except Exception:
-        return 'huh...'
+    except KeyError:
+        bottle.abort(
+            404,
+            'No active project instance for {}'.format(path))
 
 
-@app.get('/all_resources')
-def all_resources():
-    return {
-        'result': 'success',
-        'resources': bottle.request.app.project.get_all_resources().get()
-    }
+# @app.get('/all_resources')
+# def all_resources():
+#     return {
+#         'result': 'success',
+#         'resources': bottle.request.app.project.get_all_resources().get()
+#     }
 
 
 @app.get('/task/<task_id>')
@@ -74,54 +103,58 @@ def full_task_status():
     return status
 
 
-@app.post('/history/undo')
-def undo_view():
-    args = bottle.request.json
-    bottle.request.app.project.undo(args['index']).get()
+# TODO: We need to think about how to manage history when there are
+# multiple projects. History is specific to a single project, so users
+# will need to be able to distinguish between them and specify which
+# they mean. Hmmm...
+# @app.post('/history/undo')
+# def undo_view():
+#     args = bottle.request.json
+#     bottle.request.app.project.undo(args['index']).get()
 
-    # TODO: What if it actually fails?
-    return {'result': 'success'}
-
-
-@app.post('/history/redo')
-def redo_view():
-    args = bottle.request.json
-    bottle.request.app.project.redo(args['index']).get()
-
-    # TODO: What if it actually fails?
-    return {'result': 'success'}
+#     # TODO: What if it actually fails?
+#     return {'result': 'success'}
 
 
-@app.get('/history/view_undo')
-def undo_history_view():
-    return {
-        'result': 'success',
-        'history': bottle.request.app.project.undo_history().get()
-    }
+# @app.post('/history/redo')
+# def redo_view():
+#     args = bottle.request.json
+#     bottle.request.app.project.redo(args['index']).get()
+
+#     # TODO: What if it actually fails?
+#     return {'result': 'success'}
 
 
-@app.get('/history/view_redo')
-def redo_history_view():
-    return {
-        'result': 'success',
-        'history': bottle.request.app.project.redo_history().get()
-    }
+# @app.get('/history/view_undo')
+# def undo_history_view():
+#     return {
+#         'result': 'success',
+#         'history': bottle.request.app.project.undo_history().get()
+#     }
 
 
-@app.get('/history/undo_info/<idx>')
-def undo_info_view(idx):
-    return {
-        'result': 'success',
-        'info': bottle.request.app.project.undo_info(int(idx)).get()
-    }
+# @app.get('/history/view_redo')
+# def redo_history_view():
+#     return {
+#         'result': 'success',
+#         'history': bottle.request.app.project.redo_history().get()
+#     }
 
 
-@app.get('/history/redo_info/<idx>')
-def redo_info_view(idx):
-    return {
-        'result': 'success',
-        'info': bottle.request.app.project.redo_info(int(idx)).get()
-    }
+# @app.get('/history/undo_info/<idx>')
+# def undo_info_view(idx):
+#     return {
+#         'result': 'success',
+#         'info': bottle.request.app.project.undo_info(int(idx)).get()
+#     }
+
+
+# @app.get('/history/redo_info/<idx>')
+# def redo_info_view(idx):
+#     return {
+#         'result': 'success',
+#         'info': bottle.request.app.project.redo_info(int(idx)).get()
+#     }
 
 
 @app.post('/test/long_running')
@@ -133,12 +166,49 @@ def long_running_test():
                                args['message'])
 
 
+def parent_dirs(path):
+    last = None
+    parent = path
+    while parent != last:
+        last = parent
+        parent = os.path.dirname(last)
+        yield parent
+
+
+def find_project_root(path):
+    for parent_dir in parent_dirs(path):
+        if os.path.exists(os.path.join(parent_dir, '.ropeproject')):
+            return parent_dir
+
+    raise LookupError(
+        'No parent directory of {} contains .ropeproject'.format(path))
+
+
+def get_project(app, path):
+    try:
+        return app.find_project(path)
+    except LookupError:
+        try:
+            root_dir = find_project_root(path)
+        except LookupError:
+            raise bottle.HTTPError(
+                500,
+                data={'exception':
+                      {'type': 'LookupError',
+                       'message': 'Unable to find suitable project root for {}'.format(path)}})
+
+        return app.create_project(root_dir)
+
+
 @app.post('/refactor/rename')
 def rename_view():
     args = bottle.request.json
-    return standard_async_task(bottle.request.app.project.rename,
+    path = args['path']
+    project = get_project(bottle.request.app, path)
+
+    return standard_async_task(project.rename,
                                args['name'],
-                               args['path'],
+                               path,
                                args.get('offset'))
 
 
