@@ -1,6 +1,6 @@
 *.py[co]
 
-prosjekt.cfg
+wiki
 
 # Packages
 *.egg
