@@ -9,8 +9,8 @@ Traad is a client-server approach to using the
 involves two basic components:
 
  1. A HTTP server exposing the rope API via JSON, and
- 2. Client libraries (currently just emacs lisp) for talking to the
-    server
+ 2. Client libraries (currently just [emacs
+    lisp](https://github.com/abingham/emacs-traad)) for talking to the server
 
 The hope is that this approach will make it easier - at least in some
 cases - to use rope from various other tools.
@@ -29,34 +29,26 @@ use rope should be able to easily communicate with traad.
 Most of the documentation for traad can be found on the `wiki
 <http://github.com/abingham/traad/wiki>`_.
 
-Emacs warning
-=============
-
-There is a `known problem with emacs-request 
-<https://github.com/tkf/emacs-request/pull/15>`_ that makes the traad 
-emacs client misbehave when using Python3. You can fix this by patching 
-`request.el`.
-
-
-Quickstart for Emacs users
-==========================
-
-You can install the Emacs client for traad via ``package.el``::
-
-    M-x package-install<RET>traad
-
-Then you can use ``traad-install-server`` to install the Python server
-into a default location::
-
-    M-x traad-install-server
-
-For more information on this process, see `the wiki
-<https://github.com/abingham/traad/wiki/installation>`_.
-
 Setup
 =====
 
-Install instructions can be found `here <https://github.com/abingham/traad/wiki/installation>`_.
+To use traad you'll normally need both the server and some client code. *Some
+clients install the server for you, so you should start by looking at the
+clients*.
+
+Emacs
+-----
+
+Currently the only traad client the Emacs package
+[emacs-traad](https://github.com/abingham/emacs-traad). It can install the
+server for you, so you should start by installing this client and following its
+setup instruction.
+
+Further details
+---------------
+
+Further installation instructions can be found `here
+<https://github.com/abingham/traad/wiki/installation>`_.
 
 Press
 =====
