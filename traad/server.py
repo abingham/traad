@@ -1,4 +1,3 @@
-import itertools
 import logging
 import sys
 
@@ -6,6 +5,7 @@ import traad.app
 
 
 log = logging.getLogger('traad.server')
+
 
 def run_server(app, port):
     host = 'localhost'
@@ -18,10 +18,8 @@ def run_server(app, port):
             host,
             port))
 
-    try:
-        app.run(host=host, port=port)
-    finally:
-        stop_app(app)
+    app.run(host=host, port=port)
+
 
 def main():
     import argparse
