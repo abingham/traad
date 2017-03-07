@@ -51,5 +51,21 @@ class CrossTests(with_fixture.TestCase):
             'cross',
             'use_bar')
 
+    def test_cross_add_argument(self):
+        self.proj.add_argument(
+            self.task_state,
+            'basic/bar.py',
+            163,
+            0,
+            'newarg',
+            None,
+            "newvalue").get()
+
+        common.compare_projects(
+            'cross_basic_add_argument',
+            'main',
+            'basic')
+
+
 if __name__ == '__main__':
     unittest.main()
