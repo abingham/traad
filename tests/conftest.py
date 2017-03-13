@@ -3,9 +3,7 @@ import pytest
 import shutil
 from traad.rope.project import Project
 
-THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
-ACTIVE_DIR = os.path.join(THIS_DIR, 'active')
-PROJECT_DIR = os.path.join(THIS_DIR, 'projects')
+from paths import ACTIVE_DIR, PROJECT_DIR
 
 
 @pytest.fixture
