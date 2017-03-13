@@ -1,0 +1,53 @@
+import os
+import pytest
+import shutil
+from traad.rope.project import Project
+
+THIS_DIR = os.path.abspath(os.path.split(__file__)[0])
+ACTIVE_DIR = os.path.join(THIS_DIR, 'active')
+PROJECT_DIR = os.path.join(THIS_DIR, 'projects')
+
+
+@pytest.fixture
+def start_project():
+    projects = []
+
+    def f(main, *cross):
+        proj = Project.start(
+            os.path.join(ACTIVE_DIR, main),
+            cross_project_dirs=[
+                os.path.join(ACTIVE_DIR, project)
+                for project in cross]).proxy()
+        projects.append(proj)
+        return proj
+
+    yield f
+
+    for proj in projects:
+        proj.stop()
+
+
+@pytest.fixture
+def copy_project():
+    def f(source, dest):
+        dest_dir = os.path.join(ACTIVE_DIR, dest)
+
+        shutil.rmtree(dest_dir, ignore_errors=True)
+        try:
+            os.makedirs(dest_dir)
+        except OSError:
+            pass
+
+        shutil.copytree(
+            os.path.join(PROJECT_DIR, source),
+            os.path.join(dest_dir, source))
+
+    try:
+        yield f
+    except:
+        pass
+
+    try:
+        shutil.rmtree(ACTIVE_DIR)
+    except OSError:
+        pass

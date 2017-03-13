@@ -8,19 +8,19 @@ script_name, rope_lib = {
 }[sys.version_info.major]
 
 setup(
-    name = 'traad',
-    version = '0.11',
-    packages = find_packages(),
+    name='traad',
+    version='0.11',
+    packages=find_packages(),
 
     # metadata for upload to PyPI
-    author = 'Austin Bingham',
-    author_email = 'austin.bingham@gmail.com',
-    description = 'A JSON+HTTP server for the rope Python refactoring library.',
-    license = 'MIT',
-    keywords = 'refactoring',
-    url = 'http://github.com/abingham/traad',
+    author='Austin Bingham',
+    author_email='austin.bingham@gmail.com',
+    description='A JSON+HTTP server for the rope Python refactoring library.',
+    license='MIT',
+    keywords='refactoring',
+    url='http://github.com/abingham/traad',
 
-    entry_points = {
+    entry_points={
         'console_scripts': [
             '{} = traad.server:main'.format(script_name),
             ],
@@ -31,8 +31,8 @@ setup(
         'eagertools',
         'nose',
         'pykka',
+        'pytest',
         rope_lib,
         'webtest',
-        'with_fixture',
     ],
 )
