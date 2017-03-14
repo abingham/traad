@@ -1,11 +1,12 @@
 import common
+import paths
 import pytest
 from traad.state import TaskState
 
 
 @pytest.fixture
-def fixture(copy_project, start_project, state):
-    copy_project('basic', 'main')
+def fixture(activate_package, start_project, state):
+    activate_package(package='basic', into='main')
     proj = start_project('main')
     state.create(1).get()
     task_state = TaskState(state, 1)
@@ -24,16 +25,14 @@ def test_undo_undoes_changes(fixture):
 
     with pytest.raises(ValueError):
         common.compare_projects(
-            'basic',
-            'main',
-            'basic')
+            paths.packages('basic'),
+            paths.active('main', 'basic'))
 
     project.undo().get()
 
     common.compare_projects(
-        'basic',
-        'main',
-        'basic')
+        paths.packages('basic'),
+        paths.active('main', 'basic'))
 
 
 def test_undo_exceptions(fixture):
@@ -75,24 +74,21 @@ def test_redo_redoes_changes(fixture):
 
     with pytest.raises(ValueError):
         common.compare_projects(
-            'basic',
-            'main',
-            'basic')
+            paths.packages('basic'),
+            paths.active('main', 'basic'))
 
     project.undo().get()
 
     common.compare_projects(
-        'basic',
-        'main',
-        'basic')
+        paths.packages('basic'),
+        paths.active('main', 'basic'))
 
     project.redo().get()
 
     with pytest.raises(ValueError):
         common.compare_projects(
-            'basic',
-            'main',
-            'basic')
+            paths.packages('basic'),
+            paths.active('main', 'basic'))
 
 
 def test_redo_adds_history(fixture):
