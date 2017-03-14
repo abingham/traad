@@ -1,11 +1,15 @@
 import os
 import paths
+import pytest
 
 
-def test_find_occurrences(copy_project, start_project):
-    copy_project('basic', 'main')
-    proj = start_project('main')
+@pytest.fixture
+def proj(activate_package, start_project):
+    activate_package(package='basic', into='main')
+    yield start_project('main')
 
+
+def test_find_occurrences(proj):
     # Find occurrences of the Foo class
     occ = proj.find_occurrences(
         8,
@@ -14,21 +18,16 @@ def test_find_occurrences(copy_project, start_project):
     assert len(occ) == 3
 
 
-def test_find_implementations(copy_project, start_project):
-    copy_project('basic', 'main')
-    proj = start_project('main')
+def test_find_implementations(proj):
     impls = proj.find_implementations(
         33,
         'basic/overrides.py').get()
     assert len(impls) == 1
 
 
-def test_find_definition(copy_project, start_project):
-    copy_project('basic', 'main')
-    proj = start_project('main')
-
+def test_find_definition(proj):
     path = os.path.join(
-        paths.activated_path('main'),
+        paths.active('main'),
         'basic', 'bar.py')
 
     with open(path, 'r') as f:

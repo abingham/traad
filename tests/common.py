@@ -49,14 +49,8 @@ def diff_report(dc):
     return sio.read()
 
 
-def compare_projects(canned_project,
-                     top_level_dir,
-                     project):
-    dc = dircmp(os.path.join(paths.PROJECT_DIR,
-                             canned_project),
-                os.path.join(paths.ACTIVE_DIR,
-                             top_level_dir,
-                             project))
+def compare_projects(approved, active):
+    dc = dircmp(approved, active)
 
     if any([dc.left_only,
             dc.right_only,

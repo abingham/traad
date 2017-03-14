@@ -4,7 +4,7 @@ import shutil
 from traad.rope.project import Project
 from traad.state import State
 
-from paths import ACTIVE_DIR, PROJECT_DIR
+from paths import ACTIVE_DIR, PACKAGES_DIR
 
 
 @pytest.fixture
@@ -36,8 +36,8 @@ def state():
 
 
 @pytest.fixture
-def copy_project():
-    def f(source, into):
+def activate_package():
+    def f(package, into):
         dest_dir = os.path.join(ACTIVE_DIR, into)
 
         shutil.rmtree(dest_dir, ignore_errors=True)
@@ -47,8 +47,8 @@ def copy_project():
             pass
 
         shutil.copytree(
-            os.path.join(PROJECT_DIR, source),
-            os.path.join(dest_dir, source))
+            os.path.join(PACKAGES_DIR, package),
+            os.path.join(dest_dir, package))
 
     try:
         yield f
