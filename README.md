@@ -44,6 +44,14 @@ will be `traad3`. If you install it into a Python 2 environment it will simply
 be `traad`. This makes it somewhat simpler to have system-wide installations of
 both on systems with both Python 2 and 3.
 
+## Tests
+
+`traad` has a suite of tests in the `tests` directory. They are based on [`pytest`](http://docs.pytest.org). In order to run them, go to the project's root directory (i.e. the one containing this README) and use:
+
+```
+pytest tests
+```
+
 ## Rationale
 
 I (the author of traad) use emacs for most of my Python development,
