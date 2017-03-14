@@ -29,7 +29,6 @@ setup(
     install_requires=[
         'decorator',
         'eagertools',
-        'nose',
         'pykka',
         'pytest',
         rope_lib,
