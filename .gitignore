@@ -1,4 +1,6 @@
 *.py[co]
+.ropeproject
+.cache
 
 wiki
 

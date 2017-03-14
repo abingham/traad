@@ -168,7 +168,7 @@ class Project(ChangeSignatureMixin,
 
         '''
 
-        path = self._to_relative_path(path)
+        path = self.to_relative_path(path)
 
         children = self.proj.get_resource(path).get_children()
         return [(child.path, child.is_folder()) for child in children]

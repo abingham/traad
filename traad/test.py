@@ -1,11 +1,13 @@
+# This is for supporting testing only.
+
 import threading
 import time
 
-from traad.rope.validate import validate
 import traad.trace
 
 
 lrthreads = set()
+
 
 class LRThread(threading.Thread):
     def __init__(self, state, message):
@@ -24,8 +26,13 @@ class LRThread(threading.Thread):
 
         lrthreads.discard(self)
 
+
 @traad.trace.trace
 def long_running(state, message):
+    """An arbitrary long-running task that lets us reproducibly test our support
+    for polling such tasks.
+
+    """
     lrt = LRThread(state, message)
     lrthreads.add(lrt)
     lrt.start()
