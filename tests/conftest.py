@@ -37,8 +37,8 @@ def state():
 
 @pytest.fixture
 def copy_project():
-    def f(source, dest):
-        dest_dir = os.path.join(ACTIVE_DIR, dest)
+    def f(source, into):
+        dest_dir = os.path.join(ACTIVE_DIR, into)
 
         shutil.rmtree(dest_dir, ignore_errors=True)
         try:
