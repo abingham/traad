@@ -14,6 +14,7 @@ def app(activate_package):
         yield webtest.TestApp(traad_app)
 
 
+@pytest.mark.slowtest
 def test_long_running(app):
     resp = app.post_json(
         '/test/long_running',
