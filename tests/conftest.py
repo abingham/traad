@@ -1,3 +1,4 @@
+import logging
 import os
 import pytest
 import shutil
@@ -5,6 +6,11 @@ from traad.rope.project import Project
 from traad.state import State
 
 from paths import ACTIVE_DIR, PACKAGES_DIR
+
+# We don't want to see logging output for the most part. We intentionally
+# trigger cases where traad will log to error, and those just mess up the
+# output.
+logging.basicConfig(level=logging.CRITICAL)
 
 
 @pytest.fixture
