@@ -126,10 +126,10 @@ def redo_info_view(idx):
 
 @app.post('/test/long_running')
 def long_running_test():
-    import traad.test.tasks as tasks
+    import traad.test
     args = bottle.request.json
 
-    return standard_async_task(tasks.long_running,
+    return standard_async_task(traad.test.long_running,
                                args['message'])
 
 
