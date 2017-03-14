@@ -1,7 +1,6 @@
 import common
 import pytest
-from traad.rope import history
-from traad.state import State, TaskState
+from traad.state import TaskState
 
 
 @pytest.fixture
