@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/abingham/traad.svg)](https://travis-ci.org/abingham/traad)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Traad: A Python refactoring server
 
