@@ -2,6 +2,7 @@ import os
 import pytest
 import shutil
 from traad.rope.project import Project
+from traad.state import State
 
 from paths import ACTIVE_DIR, PROJECT_DIR
 
@@ -23,6 +24,15 @@ def start_project():
 
     for proj in projects:
         proj.stop()
+
+
+@pytest.fixture
+def state():
+    state = State.start().proxy()
+    try:
+        yield state
+    finally:
+        state.stop()
 
 
 @pytest.fixture
