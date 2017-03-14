@@ -63,7 +63,7 @@ class TaskState:
         self.task_id = task_id
 
     def get(self):
-        return self.state.get_task_satte(self.task_id).get()
+        return self.state.get_task_state(self.task_id).get()
 
     def set(self, data):
         self.state.set_task_state(self.task_id, dict(data)).get()
