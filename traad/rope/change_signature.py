@@ -104,8 +104,8 @@ class ChangeSignatureMixin:
           offset: The offset in the resource of the method signature.
           index: The position of the new argument in the signature.
           name: The name of the new argument.
-          default:
-          value:
+          default: The default argument value (optional).
+          value: The argument value (optional).
         """
         self.change_sig(
             state,

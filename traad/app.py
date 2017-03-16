@@ -190,12 +190,12 @@ def remove_argument_view():
 def add_argument_view():
     args = bottle.request.json
     return standard_async_task(bottle.request.app.project.add_argument,
+                               args['path'],
+                               args['offset'],
                                args['index'],
                                args['name'],
                                args['default'],
-                               args['value'],
-                               args['path'],
-                               args['offset'])
+                               args['value'])
 
 
 @app.post('/code_assist/completions')
