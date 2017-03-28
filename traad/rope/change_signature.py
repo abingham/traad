@@ -20,7 +20,8 @@ class ChangeSignatureMixin:
           self: The Project on which this operates.
           state: The TaskState for this refactoring.
           path: The path of the file/directory to query.
-          offset: The offset in the resource of the method signature.
+          offset: The offset in the resource of the method signature
+            (i.e., the distance into the file of the cursor).
           refactoring: The refactoring job to run.
         """
 
