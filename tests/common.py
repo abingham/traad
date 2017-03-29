@@ -50,7 +50,7 @@ def diff_report(dc):
 
 
 def compare_projects(approved, active):
-    dc = dircmp(approved, active)
+    dc = dircmp(approved, active, ignore=[".ropeproject"])
 
     if any([dc.left_only,
             dc.right_only,
