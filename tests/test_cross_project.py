@@ -21,7 +21,7 @@ def test_cross_normalize_arguments(fixture):
     project.normalize_arguments(
         task_state,
         'basic/bar.py',
-        163).get()
+        163).get()    # 163 offset = cursor position on "a_free_func"
 
     common.compare_projects(
         paths.approved('cross_basic_normalize_arguments'),
@@ -48,3 +48,21 @@ def test_cross_remove_argument(fixture):
     common.compare_projects(
         paths.approved('cross_use_bar_remove_argument'),
         paths.active('cross', 'use_bar'))
+
+
+def test_cross_add_argument(self):
+    project, state, task_state = fixture
+
+    project.add_argument(
+        task_state,
+        'basic/bar.py',
+        163,
+        3,
+        'newarg',
+        None,
+        "newvalue").get()
+
+    common.compare_projects(
+        paths.approved('cross_basic_add_argument'),
+        paths.active('main', 'basic'))
+

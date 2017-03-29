@@ -186,6 +186,18 @@ def remove_argument_view():
                                args['offset'])
 
 
+@app.post('/refactor/add_argument')
+def add_argument_view():
+    args = bottle.request.json
+    return standard_async_task(bottle.request.app.project.add_argument,
+                               args['path'],
+                               args['offset'],
+                               args['index'],
+                               args['name'],
+                               args['default'],
+                               args['value'])
+
+
 @app.post('/code_assist/completions')
 def code_assist_completion_view():
     args = bottle.request.json

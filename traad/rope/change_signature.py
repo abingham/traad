@@ -20,7 +20,8 @@ class ChangeSignatureMixin:
           self: The Project on which this operates.
           state: The TaskState for this refactoring.
           path: The path of the file/directory to query.
-          offset: The offset in the resource of the method signature.
+          offset: The offset in the resource of the method signature
+            (i.e., the distance into the file of the cursor).
           refactoring: The refactoring job to run.
         """
 
@@ -84,3 +85,33 @@ class ChangeSignatureMixin:
             path,
             offset,
             rope.refactor.change_signature.ArgumentRemover(arg_index))
+
+
+    @traad.trace.trace
+    def add_argument(self,
+                     state,
+                     path,
+                     offset,
+                     index,
+                     name,
+                     default=None,
+                     value=None):
+        """Add an argument to a method.
+
+        Args:
+          self: The Project on which this operates.
+          state: The TaskState for this refactoring.
+          path: The path of the file/directory to query.
+          offset: The offset in the resource of the method signature.
+          index: The position of the new argument in the signature.
+          name: The name of the new argument.
+          default: The default argument value (optional).
+          value: The argument value (optional).
+        """
+        self.change_sig(
+            state,
+            path,
+            offset,
+            rope.refactor.change_signature.ArgumentAdder(index, name,
+                                                         default=default,
+                                                         value=value))
