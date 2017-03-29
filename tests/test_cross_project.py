@@ -50,8 +50,7 @@ def test_cross_remove_argument(fixture):
         paths.active('cross', 'use_bar'))
 
 
-
-def test_cross_add_argument(self):
+def test_cross_add_argument(fixture):
     project, state, task_state = fixture
 
     project.add_argument(
@@ -60,8 +59,7 @@ def test_cross_add_argument(self):
         163,
         3,
         'newarg',
-        None,
-        "newvalue").get()
+        "\"newvalue\"").get()
 
     common.compare_projects(
         paths.approved('cross_basic_add_argument'),
