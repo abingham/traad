@@ -8,5 +8,6 @@ python:
 
 install: python setup.py install
 
-script:  pytest tests
-script:  pytest tests -m slowtest
+script:
+  - pytest tests
+  - pytest tests -m slowtest
