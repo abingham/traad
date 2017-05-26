@@ -169,6 +169,14 @@ def extract_variable_view():
                         bottle.request)
 
 
+@app.post('/refactor/inline')
+def inline_view():
+    args = bottle.request.json
+    return standard_async_task(bottle.request.app.project.inline,
+                               args['path'],
+                               args['offset'])
+
+
 @app.post('/refactor/normalize_arguments')
 def normalize_arguments_view():
     args = bottle.request.json

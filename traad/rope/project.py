@@ -13,6 +13,7 @@ from traad.rope.codeassist import CodeAssistMixin
 from traad.rope.extract import ExtractMixin
 from traad.rope.findit import FinditMixin
 from traad.rope.history import HistoryMixin
+from traad.rope.inline import InlineMixin
 from traad.rope.importutil import ImportUtilsMixin
 from traad.rope.rename import RenameMixin
 
@@ -94,6 +95,7 @@ class Project(ChangeSignatureMixin,
               CodeAssistMixin,
               ExtractMixin,
               FinditMixin,
+              InlineMixin,
               HistoryMixin,
               ImportUtilsMixin,
               RenameMixin,
