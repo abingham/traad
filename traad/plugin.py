@@ -1,6 +1,6 @@
-import inspect
 import itertools
 
+from .compat import getargspec
 from .rope.project import Project
 from .state import State
 
@@ -32,7 +32,7 @@ class TraadPlugin:
     def apply(self, callback, context):
         # Test if the original callback accepts a 'db' keyword.
         # Ignore it if it does not need a database handle.
-        args = inspect.getfullargspec(context.callback)[0]
+        args = getargspec(context.callback)[0]
         if self.keyword not in args:
             return callback
 

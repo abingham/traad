@@ -35,7 +35,7 @@ def test_rename(app):
         {
             'name': 'Llama',
             'path': 'basic/foo.py',
-            'offset': 8,
+            'offset': 8
         })
 
     assert resp.json['result'] == 'success'
