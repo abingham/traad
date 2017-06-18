@@ -1,9 +1,6 @@
-import contextlib
 import os
 
 from eagertools import emap
-
-import pykka
 
 import rope.base.project
 from rope.refactor import multiproject
@@ -96,8 +93,7 @@ class Project(ChangeSignatureMixin,
               FinditMixin,
               HistoryMixin,
               ImportUtilsMixin,
-              RenameMixin,
-              pykka.ThreadingActor):
+              RenameMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self, project_dir, cross_project_dirs=[]):

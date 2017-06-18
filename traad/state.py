@@ -1,10 +1,9 @@
 import sys
 
 import decorator
-import pykka
 
 
-class State(pykka.ThreadingActor):
+class State:
     """Maps task-ids to dicts of data about the task.
 
     This is essentially a dictionary of task-ids to dicts. Each dict
@@ -15,8 +14,6 @@ class State(pykka.ThreadingActor):
     to the task data.
     """
     def __init__(self):
-        super(State, self).__init__()
-
         self.data = {}
 
     def create(self, task_id, initial_data=None):
@@ -52,6 +49,7 @@ class State(pykka.ThreadingActor):
         """
         # TODO: Should this use deepcopy? probably.
         return dict(self.data)
+
 
 class TaskState:
     """A wrapper around `State` that provides access to just the state for
@@ -94,6 +92,5 @@ def task_state_monitor(f, self, task_state, *args, **kwargs):
     except:
         task_state.update(
             {'status': 'failure',
-             'message': str(sys.exc_info()[1]),
-         })
+             'message': str(sys.exc_info()[1])})
         raise

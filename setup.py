@@ -22,14 +22,14 @@ setup(
 
     entry_points={
         'console_scripts': [
-            '{} = traad.server:main'.format(script_name),
+            '{} = traad.app:main'.format(script_name),
             ],
         },
 
     install_requires=[
+        'aiohttp',
         'decorator',
         'eagertools',
-        'pykka',
         'pytest',
         rope_lib,
         'webtest',
