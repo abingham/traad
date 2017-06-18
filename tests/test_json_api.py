@@ -24,8 +24,9 @@ def wait_for_task(task_id, app):
 @pytest.fixture
 def app(activate_package):
     activate_package(package='basic', into='main')
-    with traad.app.bind_to_project(paths.active('main')) as traad_app:
-        yield webtest.TestApp(traad_app)
+
+    with traad.app.using_project(paths.active('main')) as app:
+        yield webtest.TestApp(app)
 
 
 def test_rename(app):
@@ -34,7 +35,7 @@ def test_rename(app):
         {
             'name': 'Llama',
             'path': 'basic/foo.py',
-            'offset': 8,
+            'offset': 8
         })
 
     assert resp.json['result'] == 'success'

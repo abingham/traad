@@ -54,8 +54,9 @@ def main():
     logging.basicConfig(
         level=level)
 
-    with traad.app.bind_to_project(args.project) as app:
+    with traad.app.using_project(args.project) as app:
         run_server(app, args.port)
+
 
 if __name__ == '__main__':
     main()
