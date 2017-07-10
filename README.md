@@ -5,6 +5,7 @@
 
 Traad is an refactoring server for Python code. It listens for HTTP requests to
 perform refactorings, performs them, and allows clients to query for the status.
+There is also talk from EuroPython 2014 with design description and some live demo: https://www.youtube.com/watch?v=NvV5OrVk24c
 
 ## Setup
 
