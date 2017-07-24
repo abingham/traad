@@ -1,3 +1,4 @@
+import asyncio
 import itertools
 import logging
 import sys
@@ -68,7 +69,22 @@ def main():
             host,
             args.port))
 
-    web.run_app(app, host=host, port=args.port)
+    # web.run_app(app, host=host, port=args.port)
+    loop = asyncio.get_event_loop()
+    handler = app.make_handler()
+    coroutine = loop.create_server(handler, '0.0.0.0', 0)
+    server = loop.run_until_complete(coroutine)
+    print('Listening on http://localhost:{}'.format(server.sockets[0].getsockname()[1]))
+
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.close()
+        loop.run_until_complete(server.wait_closed())
+        loop.run_until_complete(handler.finish_connections(1.0))
+        loop.close()
 
 
 if __name__ == '__main__':
