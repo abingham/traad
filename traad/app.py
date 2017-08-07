@@ -13,7 +13,10 @@ log = logging.getLogger('traad.app')
 
 
 async def print_port(app):
-    print("Listening on http://localhost:{}/".format(app))
+    server = app['asyncio_servers'][0]
+    socket = server.sockets[0]
+    port = socket.getsockname()[1]
+    print('Listening on http://localhost:{}/'.format(port))
 
 
 def main():
@@ -51,7 +54,7 @@ def main():
 
     # TODO: Add middleware that looks for exceptions and does a 400
     app = web.Application(middlewares=[])
-    app.on_startup.append(print_port)
+    app.on_pre_serve.append(print_port)
 
     app['task_ids'] = itertools.count()
     app['state'] = State()
@@ -69,22 +72,7 @@ def main():
             host,
             args.port))
 
-    # web.run_app(app, host=host, port=args.port)
-    loop = asyncio.get_event_loop()
-    handler = app.make_handler()
-    coroutine = loop.create_server(handler, '0.0.0.0', 0)
-    server = loop.run_until_complete(coroutine)
-    print('Listening on http://localhost:{}'.format(server.sockets[0].getsockname()[1]))
-
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.close()
-        loop.run_until_complete(server.wait_closed())
-        loop.run_until_complete(handler.finish_connections(1.0))
-        loop.close()
+    web.run_app(app, host=host, port=args.port)
 
 
 if __name__ == '__main__':

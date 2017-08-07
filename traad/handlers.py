@@ -116,7 +116,7 @@ async def long_running_test(request):
     import traad.test
     args = await request.json()
 
-    return standard_task(
+    return await standard_task(
         request,
         traad.test.long_running,
         args['message'])
@@ -124,7 +124,7 @@ async def long_running_test(request):
 
 async def rename(request):
     args = await request.json()
-    return standard_task(
+    return await standard_task(
         request,
         request.app['project'].rename,
         args['name'],
@@ -140,7 +140,7 @@ async def extract_core(method, request):
       request: The bottle request for the refactoring.
     """
     args = await request.json()
-    return standard_task(
+    return await standard_task(
         request,
         method,
         args['name'],
@@ -163,7 +163,7 @@ async def extract_variable(request):
 
 async def normalize_arguments(request):
     args = await request.json()
-    return standard_task(
+    return await standard_task(
         request,
         request.app['project'].normalize_arguments,
         args['path'],
@@ -172,7 +172,7 @@ async def normalize_arguments(request):
 
 async def remove_argument(request):
     args = await request.json()
-    return standard_task(
+    return await standard_task(
         request,
         request.app['project'].remove_argument,
         args['arg_index'],
@@ -182,7 +182,7 @@ async def remove_argument(request):
 
 async def add_argument(request):
     args = await request.json()
-    return standard_task(
+    return await standard_task(
         request,
         request.app['project'].add_argument,
         args['path'],

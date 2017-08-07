@@ -61,13 +61,13 @@ class TaskState:
         self.task_id = task_id
 
     def get(self):
-        return self.state.get_task_state(self.task_id).get()
+        return self.state.get_task_state(self.task_id)
 
     def set(self, data):
-        self.state.set_task_state(self.task_id, dict(data)).get()
+        self.state.set_task_state(self.task_id, dict(data))
 
     def update(self, data):
-        return self.state.update_task_state(self.task_id, data).get()
+        return self.state.update_task_state(self.task_id, data)
 
 @decorator.decorator
 def task_state_monitor(f, self, task_state, *args, **kwargs):
