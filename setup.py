@@ -2,11 +2,6 @@ import sys
 
 from setuptools import setup, find_packages
 
-script_name, rope_lib = {
-    2: ('traad', 'rope'),
-    3: ('traad3', 'rope_py3k'),
-}[sys.version_info.major]
-
 setup(
     name='traad',
     version='0.11',
@@ -22,7 +17,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            '{} = traad.server:main'.format(script_name),
+            'traad = traad.server:main',
             ],
         },
 
@@ -31,7 +26,7 @@ setup(
         'eagertools',
         'pykka',
         'pytest',
-        rope_lib,
+        'rope',
         'webtest',
     ],
 )
