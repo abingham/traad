@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='traad',
-    version='0.11',
+    version='1.0.0',
     packages=find_packages(),
 
     # metadata for upload to PyPI
