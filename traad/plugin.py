@@ -1,17 +1,17 @@
 import itertools
 
 from .compat import getargspec
-from .rope.project import Project
+from .rope.workspace import Workspace
 from .state import State
 
 
 class TraadPlugin:
-    """Bottle plugin that manages Project, State, and Task-IDs context for traad.
+    """Bottle plugin that manages Workspace, State, and Task-IDs context for traad.
 
     If this plugin is active, it passes a `Context` object to the `context`
     keyword on handlers. This object has three members:
 
-     - project: A `traad.rope.Project`
+     - workspace: A `traad.rope.Workspace`
      - state: A `traad.state.State`
      - task_ids: An iterable from which new task IDs can be fetched
 
@@ -21,12 +21,12 @@ class TraadPlugin:
 
     class Context:
         def __init__(self, path):
-            self.project = Project.start(path).proxy()
+            self.workspace = Workspace.start(path).proxy()
             self.state = State.start().proxy()
             self.task_ids = itertools.count()
 
-    def __init__(self, project_path, keyword='context'):
-        self.context = TraadPlugin.Context(project_path)
+    def __init__(self, root_project_path, keyword='context'):
+        self.context = TraadPlugin.Context(root_project_path)
         self.keyword = keyword
 
     def apply(self, callback, context):
@@ -45,4 +45,4 @@ class TraadPlugin:
 
     def close(self):
         self.context.state.stop()
-        self.context.project.stop()
+        self.context.workspace.stop()

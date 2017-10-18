@@ -21,7 +21,6 @@ setup(
 
     install_requires=[
         'decorator',
-        'eagertools',
         'pykka',
         'pytest',
         'rope',

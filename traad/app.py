@@ -2,9 +2,12 @@ from contextlib import contextmanager
 import logging
 import sys
 
+import rope.refactor.rename
+
 from . import bottle
 from .plugin import TraadPlugin
 from .state import TaskState
+from .rope.workspace import changes_to_data, data_to_changes
 
 
 log = logging.getLogger('traad.app')
@@ -38,7 +41,7 @@ def project_root_view(context):
     try:
         return {
             'result': 'success',
-            'root': context.project.get_root().get()
+            'root': context.workspace.get_root().get()
         }
     except Exception:
         return 'huh...'
@@ -48,7 +51,7 @@ def project_root_view(context):
 def all_resources(context):
     return {
         'result': 'success',
-        'resources': context.project.get_all_resources().get()
+        'resources': context.workspace.get_all_resources().get()
     }
 
 
@@ -70,7 +73,7 @@ def full_task_status(context):
 @app.post('/history/undo')
 def undo_view(context):
     args = bottle.request.json
-    context.project.undo(args['index']).get()
+    context.workspace.undo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -79,7 +82,7 @@ def undo_view(context):
 @app.post('/history/redo')
 def redo_view(context):
     args = bottle.request.json
-    context.project.redo(args['index']).get()
+    context.workspace.redo(args['index']).get()
 
     # TODO: What if it actually fails?
     return {'result': 'success'}
@@ -89,7 +92,7 @@ def redo_view(context):
 def undo_history_view(context):
     return {
         'result': 'success',
-        'history': context.project.undo_history().get()
+        'history': context.workspace.undo_history().get()
     }
 
 
@@ -97,7 +100,7 @@ def undo_history_view(context):
 def redo_history_view(context):
     return {
         'result': 'success',
-        'history': context.project.redo_history().get()
+        'history': context.workspace.redo_history().get()
     }
 
 
@@ -105,7 +108,7 @@ def redo_history_view(context):
 def undo_info_view(idx, context):
     return {
         'result': 'success',
-        'info': context.project.undo_info(int(idx)).get()
+        'info': context.workspace.undo_info(int(idx)).get()
     }
 
 
@@ -113,7 +116,7 @@ def undo_info_view(idx, context):
 def redo_info_view(idx, context):
     return {
         'result': 'success',
-        'info': context.project.redo_info(int(idx)).get()
+        'info': context.workspace.redo_info(int(idx)).get()
     }
 
 
@@ -128,15 +131,55 @@ def long_running_test(context):
         args['message'])
 
 
+# TODO: COmmon exception handler decorator? Middleware?
+@app.post('/refactor/perform')
+def perform_view(context):
+    args = bottle.request.json
+
+    try:
+        changes = args['changes']
+        changes = data_to_changes(context.workspace, changes)
+        context.workspace.perform(changes).get()
+        return {
+            'result': 'success'
+        }
+    except:
+        e = sys.exc_info()[1]
+        log.error('perform error: {}'.format(e))
+        return {
+            'result': 'failure',
+            'message': str(e)
+        }
+
+
+#  TODO: Should this be a GET? We're not making any changes.
 @app.post('/refactor/rename')
 def rename_view(context):
     args = bottle.request.json
-    return standard_async_task(
-        context,
-        context.project.rename,
-        args['name'],
-        args['path'],
-        args.get('offset'))
+
+    try:
+        task_id = next(context.task_ids)
+        state = context.state
+        state.create(task_id)
+
+        # TODO: ts = TaskState(state, task_id), ???
+
+        changes = context.workspace.get_changes(
+            rope.refactor.rename.Rename,
+            args['path'],
+            (args.get('offset'),),
+            (args['name'],)).get()
+
+        return {
+            'result': 'success',
+            'changes': changes_to_data(changes)
+        }
+    except:
+        log.exception('rename error')
+        return {
+            'result': 'failure',
+            'message': str(sys.exc_info()[1])
+        }
 
 
 def extract_core(context, method):
@@ -160,14 +203,14 @@ def extract_core(context, method):
 def extract_method_view(context):
     return extract_core(
         context,
-        context.project.extract_method)
+        context.workspace.extract_method)
 
 
 @app.post('/refactor/extract_variable')
 def extract_variable_view(context):
     return extract_core(
         context,
-        context.project.extract_variable)
+        context.workspace.extract_variable)
 
 
 @app.post('/refactor/inline')
@@ -183,7 +226,7 @@ def normalize_arguments_view(context):
     args = bottle.request.json
     return standard_async_task(
         context,
-        context.project.normalize_arguments,
+        context.workspace.normalize_arguments,
         args['path'],
         args['offset'])
 
@@ -193,7 +236,7 @@ def remove_argument_view(context):
     args = bottle.request.json
     return standard_async_task(
         context,
-        context.project.remove_argument,
+        context.workspace.remove_argument,
         args['arg_index'],
         args['path'],
         args['offset'])
@@ -204,7 +247,7 @@ def add_argument_view(context):
     args = bottle.request.json
     return standard_async_task(
         context,
-        context.project.add_argument,
+        context.workspace.add_argument,
         args['path'],
         args['offset'],
         args['index'],
@@ -222,7 +265,7 @@ def code_assist_completion_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    results = context.project.code_assist(
+    results = context.workspace.code_assist(
         code,
         args['offset'],
         args['path']).get()
@@ -243,7 +286,7 @@ def code_assist_doc_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    doc = context.project.get_doc(
+    doc = context.workspace.get_doc(
         code=code,
         offset=args['offset'],
         path=args['path']).get()
@@ -263,7 +306,7 @@ def code_assist_calltip_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    calltip = context.project.get_calltip(
+    calltip = context.workspace.get_calltip(
         code=code,
         offset=args['offset'],
         path=args['path']).get()
@@ -281,7 +324,7 @@ def code_assist_calltip_view(context):
 #     log.info('get definition: {}'.format(args))
 
 #     return {
-#         'results': context.project.get_definition_location(
+#         'results': context.workspace.get_definition_location(
 #             code=args['code'],
 #             offset=args['offset'],
 #             path=args['path'])
@@ -291,7 +334,7 @@ def code_assist_calltip_view(context):
 @app.post('/findit/occurrences')
 def findit_occurences_view(context):
     args = bottle.request.json
-    data = context.project.find_occurrences(
+    data = context.workspace.find_occurrences(
         args['offset'],
         args['path']).get()
 
@@ -305,7 +348,7 @@ def findit_occurences_view(context):
 @app.post('/findit/implementations')
 def findit_implementations_view(context):
     args = bottle.request.json
-    data = context.project.find_implementations(
+    data = context.workspace.find_implementations(
         args['offset'],
         args['path']).get()
 
@@ -323,7 +366,7 @@ def findit_definitions_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    data = context.project.find_definition(
+    data = context.workspace.find_definition(
         code,
         args['offset'],
         args['path']).get()
@@ -350,35 +393,35 @@ def _importutil_core(context, method):
 def organize_imports_view(context):
     return _importutil_core(
         context,
-        context.project.organize_imports)
+        context.workspace.organize_imports)
 
 
 @app.post("/imports/expand_star")
 def expand_star_imports_view(context):
     return _importutil_core(
         context,
-        context.project.expand_star_imports)
+        context.workspace.expand_star_imports)
 
 
 @app.post("/imports/froms_to_imports")
 def from_to_imports_view(context):
     return _importutil_core(
         context,
-        context.project.froms_to_imports)
+        context.workspace.froms_to_imports)
 
 
 @app.post("/imports/relatives_to_absolutes")
 def relatives_to_absolutes_view(context):
     return _importutil_core(
         context,
-        context.project.relatives_to_absolutes)
+        context.workspace.relatives_to_absolutes)
 
 
 @app.post("/imports/handle_long_imports")
 def handle_long_imports_view(context):
     return _importutil_core(
         context,
-        context.project.handle_long_imports)
+        context.workspace.handle_long_imports)
 
 
 def standard_async_task(context, method, *args):
