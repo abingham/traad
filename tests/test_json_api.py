@@ -25,7 +25,7 @@ def wait_for_task(task_id, app):
 def app(activate_package):
     activate_package(package='basic', into='main')
 
-    with traad.app.using_project(paths.active('main')) as app:
+    with traad.app.using_workspace(paths.active('main')) as app:
         yield webtest.TestApp(app)
 
 

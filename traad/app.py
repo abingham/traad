@@ -18,7 +18,7 @@ app = bottle.Bottle()
 
 
 @contextmanager
-def using_project(project_path, app=app):
+def using_workspace(project_path, app=app):
     """Context-manager that attaches a TraadPlugin to `app` for the specified path.
 
     This plugin will be uninstalled at the end of the context.
