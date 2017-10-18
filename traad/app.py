@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import logging
 import sys
 
+import rope.refactor.extract
 import rope.refactor.rename
 
 from . import bottle
@@ -153,11 +154,11 @@ def perform_view(context):
         }
 
 
-#  TODO: Should this be a GET? We're not making any changes.
-@app.post('/refactor/rename')
-def rename_view(context):
-    args = bottle.request.json
-
+def _basic_refactoring(context,
+                       refactoring,
+                       path,
+                       refactoring_args,
+                       change_args):
     try:
         task_id = next(context.task_ids)
         state = context.state
@@ -166,21 +167,35 @@ def rename_view(context):
         # TODO: ts = TaskState(state, task_id), ???
 
         changes = context.workspace.get_changes(
-            rope.refactor.rename.Rename,
-            args['path'],
-            (args.get('offset'),),
-            (args['name'],)).get()
+            refactoring,
+            path,
+            refactoring_args,
+            change_args).get()
 
         return {
             'result': 'success',
             'changes': changes_to_data(changes)
         }
     except:
-        log.exception('rename error')
+        log.exception('{} error'.format(refactoring))
         return {
             'result': 'failure',
             'message': str(sys.exc_info()[1])
         }
+
+
+
+#  TODO: Should this be a GET? We're not making any changes.
+@app.post('/refactor/rename')
+def rename_view(context):
+    args = bottle.request.json
+
+    return _basic_refactoring(
+        context,
+        rope.refactor.rename.Rename,
+        path=args['path'],
+        refactoring_args=(args.get('offset'),),
+        change_args=(args['name'],))
 
 
 def extract_core(context, method):
@@ -191,32 +206,34 @@ def extract_core(context, method):
       request: The bottle request for the refactoring.
     """
     args = bottle.request.json
-    return standard_async_task(
+    return _basic_refactoring(
         context,
         method,
-        args['name'],
-        args['path'],
-        args['start-offset'],
-        args['end-offset'])
+        path=args['path'],
+        refactoring_args=(args['start-offset'], args['end-offset']),
+        change_args=(args['name'],))
 
 
 @app.post('/refactor/extract_method')
 def extract_method_view(context):
     return extract_core(
         context,
-        context.workspace.extract_method)
+        rope.refactor.extract.ExtractMethod)
 
 
 @app.post('/refactor/extract_variable')
 def extract_variable_view(context):
     return extract_core(
         context,
-        context.workspace.extract_variable)
+        rope.refactor.extract.ExtractVariable)
 
 
 @app.post('/refactor/inline')
 def inline_view():
     args = bottle.request.json
+    return _basic_refactoring(
+
+    )
     return standard_async_task(bottle.request.app.project.inline,
                                args['path'],
                                args['offset'])

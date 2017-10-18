@@ -9,7 +9,6 @@ from rope.refactor import multiproject
 
 from traad.rope.change_signature import ChangeSignatureMixin
 from traad.rope.codeassist import CodeAssistMixin
-from traad.rope.extract import ExtractMixin
 from traad.rope.findit import FinditMixin
 from traad.rope.history import HistoryMixin
 from traad.rope.inline import InlineMixin
@@ -91,7 +90,6 @@ def get_all_resources(proj):
 
 class Workspace(ChangeSignatureMixin,
                 CodeAssistMixin,
-                ExtractMixin,
                 FinditMixin,
                 InlineMixin,
                 HistoryMixin,
