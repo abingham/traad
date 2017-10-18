@@ -4,6 +4,13 @@ import pykka
 
 from rope.base.change import ChangeToData, DataToChange
 import rope.base.project
+from rope.refactor.change_signature import (ArgumentAdder,
+                                            ArgumentNormalizer,
+                                            ArgumentRemover,
+                                            ChangeSignature)
+import rope.refactor.extract
+import rope.refactor.inline
+import rope.refactor.rename
 
 from traad.rope.codeassist import CodeAssistMixin
 from traad.rope.findit import FinditMixin
@@ -87,8 +94,7 @@ def get_all_resources(proj):
 class Workspace(CodeAssistMixin,
                 FinditMixin,
                 HistoryMixin,
-                ImportUtilsMixin,
-                pykka.ThreadingActor):
+                ImportUtilsMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
@@ -153,7 +159,8 @@ class Workspace(CodeAssistMixin,
         return path
 
     def get_resource(self, path):
-        return self.root_project.get_resource(path)
+        return self.root_project.get_resource(
+            self.to_relative_path(path))
 
     def get_changes(self,
                     refactoring_type,
@@ -184,6 +191,52 @@ class Workspace(CodeAssistMixin,
 
     def perform(self, changes):
         self.root_project.do(changes)
+
+    def rename(self, path, offset, name):
+        ref = rope.refactor.rename.Rename(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes(name)
+
+    def extract_method(self, path, start_offset, end_offset, name):
+        ref = rope.refactor.extract.ExtractMethod(
+            self.root_project,
+            self.get_resource(path),
+            start_offset,
+            end_offset)
+        return ref.get_changes(name)
+
+    def extract_variable(self, path, start_offset, end_offset, name):
+        ref = rope.refactor.extract.ExtractVariable(
+            self.root_project,
+            self.get_resource(path),
+            start_offset,
+            end_offset)
+        return ref.get_changes(name)
+
+    def inline(self, path, offset):
+        ref = rope.refactor.inline.create_inline(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes()
+
+    def normalize_arguments(self, path, offset):
+        changers = [ArgumentNormalizer()]
+        ref = ChangeSignature(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes(changers)
+
+    def remove_argument(self, path, offset, index):
+        changers = [ArgumentRemover(index)]
+        ref = ChangeSignature(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes(changers)
 
     # def get_children(self, path):
     #     '''Get a list of all child resources of a given path.
@@ -233,4 +286,4 @@ def changes_to_data(changes):
 
 
 def data_to_changes(workspace, data):
-    return DataToChange(workspace.root_project.get())(data)
+    return DataToChange(workspace.root_project)(data)

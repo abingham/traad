@@ -21,7 +21,7 @@ class TraadPlugin:
 
     class Context:
         def __init__(self, path):
-            self.workspace = Workspace.start(path).proxy()
+            self.workspace = Workspace(path)
             self.state = State.start().proxy()
             self.task_ids = itertools.count()
 
@@ -45,4 +45,3 @@ class TraadPlugin:
 
     def close(self):
         self.context.state.stop()
-        self.context.workspace.stop()

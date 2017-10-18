@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from functools import wraps
 import logging
 import sys
 
@@ -43,44 +44,10 @@ def protocol_version_view():
     return {'protocol-version': PROTOCOL_VERSION}
 
 
-@app.get('/root')
-def project_root_view(context):
-    try:
-        return {
-            'result': 'success',
-            'root': context.workspace.get_root().get()
-        }
-    except Exception:
-        return 'huh...'
-
-
-@app.get('/all_resources')
-def all_resources(context):
-    return {
-        'result': 'success',
-        'resources': context.workspace.get_all_resources().get()
-    }
-
-
-@app.get('/task/<task_id>')
-def task_status_view(task_id, context):
-    try:
-        return context.state.get_task_state(int(task_id)).get()
-    except KeyError:
-        bottle.abort(404, "No task with that ID")
-
-
-@app.get('/tasks')
-def full_task_status(context):
-    status = context.state.get_full_state().get()
-    log.info('full status: {}'.format(status))
-    return status
-
-
 @app.post('/history/undo')
 def undo_view(context):
     args = bottle.request.json
-    changes = context.workspace.undo(args['index']).get()
+    changes = context.workspace.undo(args['index'])
 
     return {'result': 'success',
             'changes': [changes_to_data(c) for c in changes]}
@@ -89,7 +56,7 @@ def undo_view(context):
 @app.post('/history/redo')
 def redo_view(context):
     args = bottle.request.json
-    changes = context.workspace.redo(args['index']).get()
+    changes = context.workspace.redo(args['index'])
 
     # TODO: What if it actually fails?
     return {'result': 'success',
@@ -100,7 +67,7 @@ def redo_view(context):
 def undo_history_view(context):
     return {
         'result': 'success',
-        'history': context.workspace.undo_history().get()
+        'history': context.workspace.undo_history()
     }
 
 
@@ -108,7 +75,7 @@ def undo_history_view(context):
 def redo_history_view(context):
     return {
         'result': 'success',
-        'history': context.workspace.redo_history().get()
+        'history': context.workspace.redo_history()
     }
 
 
@@ -116,7 +83,7 @@ def redo_history_view(context):
 def undo_info_view(idx, context):
     return {
         'result': 'success',
-        'info': context.workspace.undo_info(int(idx)).get()
+        'info': context.workspace.undo_info(int(idx))
     }
 
 
@@ -124,7 +91,7 @@ def undo_info_view(idx, context):
 def redo_info_view(idx, context):
     return {
         'result': 'success',
-        'info': context.workspace.redo_info(int(idx)).get()
+        'info': context.workspace.redo_info(int(idx))
     }
 
 
@@ -147,7 +114,7 @@ def perform_view(context):
     try:
         changes = args['changes']
         changes = data_to_changes(context.workspace, changes)
-        context.workspace.perform(changes).get()
+        context.workspace.perform(changes)
         return {
             'result': 'success'
         }
@@ -162,21 +129,13 @@ def perform_view(context):
 
 def _basic_refactoring(context,
                        refactoring,
-                       path,
                        refactoring_args,
                        change_args):
     try:
-        task_id = next(context.task_ids)
-        state = context.state
-        state.create(task_id)
-
-        # TODO: ts = TaskState(state, task_id), ???
-
         changes = context.workspace.get_changes(
             refactoring,
-            path,
             refactoring_args,
-            change_args).get()
+            change_args)
 
         return {
             'result': 'success',
@@ -190,81 +149,88 @@ def _basic_refactoring(context,
         }
 
 
+def standard_refactoring(f):
+    @wraps(f)
+    def wrapper(context, *args, **kwargs):
+        try:
+            changes = f(context, *args, **kwargs)
+
+            return {
+                'result': 'success',
+                'changes': changes_to_data(changes)
+            }
+        except:
+            log.exception('{} error'.format('rename'))
+            return {
+                'result': 'failure',
+                'message': str(sys.exc_info()[1])
+            }
+
+    return wrapper
+
+
 #  TODO: Should this be a GET? We're not making any changes.
 @app.post('/refactor/rename')
+@standard_refactoring
 def rename_view(context):
     args = bottle.request.json
-
-    return _basic_refactoring(
-        context,
-        rope.refactor.rename.Rename,
-        path=args['path'],
-        refactoring_args=(args.get('offset'),),
-        change_args=(args['name'],))
-
-
-def extract_core(context, method):
-    """Common implementation for extract-method and extract-variable views.
-
-    Args:
-      method: The refactoring method to actually call.
-      request: The bottle request for the refactoring.
-    """
-    args = bottle.request.json
-    return _basic_refactoring(
-        context,
-        method,
-        path=args['path'],
-        refactoring_args=(args['start-offset'], args['end-offset']),
-        change_args=(args['name'],))
+    return context.workspace.rename(
+        args['path'],
+        args.get('offset'),
+        args['name'])
 
 
 @app.post('/refactor/extract_method')
+@standard_refactoring
 def extract_method_view(context):
-    return extract_core(
-        context,
-        rope.refactor.extract.ExtractMethod)
+    args = bottle.request.json
+    return context.workspace.extract_method(
+        args['path'],
+        args['start-offset'],
+        args['end-offset'],
+        args['name'])
 
 
 @app.post('/refactor/extract_variable')
+@standard_refactoring
 def extract_variable_view(context):
-    return extract_core(
-        context,
-        rope.refactor.extract.ExtractVariable)
+    args = bottle.request.json
+    return context.workspace.extract_variable(
+        args['path'],
+        args['start-offset'],
+        args['end-offset'],
+        args['name'])
 
 
 @app.post('/refactor/inline')
+@standard_refactoring
 def inline_view(context):
     args = bottle.request.json
-    return _basic_refactoring(
-        context,
-        rope.refactor.inline.create_inline,
-        path=args['path'],
-        refactoring_args=(args['offset'],))
+    return context.workspace.inline(
+        args['path'],
+        args['offset'])
 
 
 @app.post('/refactor/normalize_arguments')
+@standard_refactoring
 def normalize_arguments_view(context):
     args = bottle.request.json
-    changers = [ArgumentNormalizer()]
-    return _basic_refactoring(
-        context,
-        ChangeSignature,
-        path=args['path'],
-        refactoring_args=(args['offset'],),
-        change_args=(changers,))
+    return context.workspace.normalize_arguments(
+        args['path'],
+        args['offset'])
+
+
+def asdffdsa(bar): pass
 
 
 @app.post('/refactor/remove_argument')
+@standard_refactoring
 def remove_argument_view(context):
     args = bottle.request.json
-    changers = [ArgumentRemover(args['arg_index'])]
-    return _basic_refactoring(
-        context,
-        ChangeSignature,
-        path=args['path'],
-        refactoring_args=(args['offset'],),
-        change_args=(changers,))
+    return context.workspace.remove_argument(
+        args['path'],
+        args['offset'],
+        args['arg_index'])
 
 
 @app.post('/refactor/add_argument')
