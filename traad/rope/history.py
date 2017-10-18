@@ -22,18 +22,16 @@ class HistoryMixin:
     @traad.trace.trace
     @validate
     def undo(self, index=0):
-        self.root_project.history.undo(
+        return self.root_project.history.undo(
             self.root_project.history.undo_list[index])
-
 
     @traad.trace.trace
     @validate
     def redo(self, idx=0):
         '''Redo the last undone operation.
         '''
-        self.root_project.history.redo(
+        return self.root_project.history.redo(
             self.root_project.history.redo_list[idx])
-
 
     @traad.trace.trace
     def undo_history(self):
@@ -43,7 +41,6 @@ class HistoryMixin:
           A list of descriptions of undoable changes/refactorings.
         '''
         return [cs.description for cs in self.root_project.history.undo_list]
-
 
     @traad.trace.trace
     def redo_history(self):

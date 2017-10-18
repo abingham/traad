@@ -73,19 +73,20 @@ def full_task_status(context):
 @app.post('/history/undo')
 def undo_view(context):
     args = bottle.request.json
-    context.workspace.undo(args['index']).get()
+    changes = context.workspace.undo(args['index']).get()
 
-    # TODO: What if it actually fails?
-    return {'result': 'success'}
+    return {'result': 'success',
+            'changes': [changes_to_data(c) for c in changes]}
 
 
 @app.post('/history/redo')
 def redo_view(context):
     args = bottle.request.json
-    context.workspace.redo(args['index']).get()
+    changes = context.workspace.redo(args['index']).get()
 
     # TODO: What if it actually fails?
-    return {'result': 'success'}
+    return {'result': 'success',
+            'changes': [changes_to_data(c) for c in changes]}
 
 
 @app.get('/history/view_undo')

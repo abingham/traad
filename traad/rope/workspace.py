@@ -182,20 +182,16 @@ class Workspace(ChangeSignatureMixin,
         Returns: All changes that would be performed by the refactoring. A list
           of the form `[[<project>, [<change set>]]`.
         """
-        mpr_factory = multiproject.MultiProjectRefactoring(
-            refactoring_type,
-            list(self.cross_projects))
-        mpr = mpr_factory(
+        ref = refactoring_type(
             self.root_project,
             self.get_resource(
                 self.to_relative_path(
                     path)),
             *refactoring_args)
-
-        return mpr.get_all_changes(*change_args)
+        return ref.get_changes(*change_args)
 
     def perform(self, changes):
-        multiproject.perform(changes)
+        self.root_project.do(changes)
 
     # def get_children(self, path):
     #     '''Get a list of all child resources of a given path.
@@ -241,18 +237,8 @@ class Workspace(ChangeSignatureMixin,
 
 
 def changes_to_data(changes):
-    return [(p.root.real_path, ChangeToData()(c))
-            for (p, c)
-            in changes]
+    return ChangeToData()(changes)
 
 
 def data_to_changes(workspace, data):
-    projects = {p.root.real_path: p
-                for p in workspace.projects.get()}
-    try:
-        return [
-            (projects[proj_set[0]],
-             DataToChange(projects[proj_set[0]])(proj_set[1]))
-            for proj_set in data]
-    except KeyError as e:
-        raise ValueError(str(e))
+    return DataToChange(workspace.root_project.get())(data)
