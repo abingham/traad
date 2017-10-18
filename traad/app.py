@@ -2,7 +2,13 @@ from contextlib import contextmanager
 import logging
 import sys
 
+import rope.contrib.codeassist
+from rope.refactor.change_signature import (ArgumentAdder,
+                                            ArgumentNormalizer,
+                                            ArgumentRemover,
+                                            ChangeSignature)
 import rope.refactor.extract
+import rope.refactor.inline
 import rope.refactor.rename
 
 from . import bottle
@@ -184,7 +190,6 @@ def _basic_refactoring(context,
         }
 
 
-
 #  TODO: Should this be a GET? We're not making any changes.
 @app.post('/refactor/rename')
 def rename_view(context):
@@ -229,49 +234,52 @@ def extract_variable_view(context):
 
 
 @app.post('/refactor/inline')
-def inline_view():
+def inline_view(context):
     args = bottle.request.json
     return _basic_refactoring(
-
-    )
-    return standard_async_task(bottle.request.app.project.inline,
-                               args['path'],
-                               args['offset'])
+        context,
+        rope.refactor.inline.create_inline,
+        path=args['path'],
+        refactoring_args=(args['offset'],))
 
 
 @app.post('/refactor/normalize_arguments')
 def normalize_arguments_view(context):
     args = bottle.request.json
-    return standard_async_task(
+    changers = [ArgumentNormalizer()]
+    return _basic_refactoring(
         context,
-        context.workspace.normalize_arguments,
-        args['path'],
-        args['offset'])
+        ChangeSignature,
+        path=args['path'],
+        refactoring_args=(args['offset'],),
+        change_args=(changers,))
 
 
 @app.post('/refactor/remove_argument')
 def remove_argument_view(context):
     args = bottle.request.json
-    return standard_async_task(
+    changers = [ArgumentRemover(args['arg_index'])]
+    return _basic_refactoring(
         context,
-        context.workspace.remove_argument,
-        args['arg_index'],
-        args['path'],
-        args['offset'])
+        ChangeSignature,
+        path=args['path'],
+        refactoring_args=(args['offset'],),
+        change_args=(changers,))
 
 
 @app.post('/refactor/add_argument')
 def add_argument_view(context):
     args = bottle.request.json
-    return standard_async_task(
+    changers = [ArgumentAdder(args['index'],
+                              args['name'],
+                              args['default'],
+                              args['value'])]
+    return _basic_refactoring(
         context,
-        context.workspace.add_argument,
-        args['path'],
-        args['offset'],
-        args['index'],
-        args['name'],
-        args['default'],
-        args['value'])
+        ChangeSignature,
+        path=args['path'],
+        refactoring_args=(args['offset'],),
+        change_args=(changers,))
 
 
 @app.post('/code_assist/completions')

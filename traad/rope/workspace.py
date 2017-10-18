@@ -1,17 +1,13 @@
-import contextlib
 import os
 
 import pykka
 
 from rope.base.change import ChangeToData, DataToChange
 import rope.base.project
-from rope.refactor import multiproject
 
-from traad.rope.change_signature import ChangeSignatureMixin
 from traad.rope.codeassist import CodeAssistMixin
 from traad.rope.findit import FinditMixin
 from traad.rope.history import HistoryMixin
-from traad.rope.inline import InlineMixin
 from traad.rope.importutil import ImportUtilsMixin
 
 
@@ -88,10 +84,8 @@ def get_all_resources(proj):
 #         return Change(self.rope_ref, *args)
 
 
-class Workspace(ChangeSignatureMixin,
-                CodeAssistMixin,
+class Workspace(CodeAssistMixin,
                 FinditMixin,
-                InlineMixin,
                 HistoryMixin,
                 ImportUtilsMixin,
                 pykka.ThreadingActor):
