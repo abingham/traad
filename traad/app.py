@@ -220,9 +220,6 @@ def normalize_arguments_view(context):
         args['offset'])
 
 
-def asdffdsa(bar): pass
-
-
 @app.post('/refactor/remove_argument')
 @standard_refactoring
 def remove_argument_view(context):
@@ -248,65 +245,65 @@ def add_argument_view(context):
         change_args=(changers,))
 
 
-@app.post('/code_assist/completions')
-def code_assist_completion_view(context):
-    args = bottle.request.json
+# @app.post('/code_assist/completions')
+# def code_assist_completion_view(context):
+#     args = bottle.request.json
 
-    log.info('get completion: {}'.format(args))
+#     log.info('get completion: {}'.format(args))
 
-    with open(args['path'], 'r') as f:
-        code = f.read()
+#     with open(args['path'], 'r') as f:
+#         code = f.read()
 
-    results = context.workspace.code_assist(
-        code,
-        args['offset'],
-        args['path']).get()
+#     results = context.workspace.code_assist(
+#         code,
+#         args['offset'],
+#         args['path']).get()
 
-    # TODO: What if it fails?
-    return {
-        'result': 'success',
-        'completions': results,
-    }
-
-
-@app.post('/code_assist/doc')
-def code_assist_doc_view(context):
-    args = bottle.request.json
-
-    log.info('get doc: {}'.format(args))
-
-    with open(args['path'], 'r') as f:
-        code = f.read()
-
-    doc = context.workspace.get_doc(
-        code=code,
-        offset=args['offset'],
-        path=args['path']).get()
-
-    return {
-        'result': 'failure' if doc is None else 'success',
-        'doc': doc
-    }
+#     # TODO: What if it fails?
+#     return {
+#         'result': 'success',
+#         'completions': results,
+#     }
 
 
-@app.post('/code_assist/calltip')
-def code_assist_calltip_view(context):
-    args = bottle.request.json
+# @app.post('/code_assist/doc')
+# def code_assist_doc_view(context):
+#     args = bottle.request.json
 
-    log.info('get calltip: {}'.format(args))
+#     log.info('get doc: {}'.format(args))
 
-    with open(args['path'], 'r') as f:
-        code = f.read()
+#     with open(args['path'], 'r') as f:
+#         code = f.read()
 
-    calltip = context.workspace.get_calltip(
-        code=code,
-        offset=args['offset'],
-        path=args['path']).get()
+#     doc = context.workspace.get_doc(
+#         code=code,
+#         offset=args['offset'],
+#         path=args['path']).get()
 
-    return {
-        'result': 'failure' if calltip is None else 'success',
-        'calltip': calltip
-    }
+#     return {
+#         'result': 'failure' if doc is None else 'success',
+#         'doc': doc
+#     }
+
+
+# @app.post('/code_assist/calltip')
+# def code_assist_calltip_view(context):
+#     args = bottle.request.json
+
+#     log.info('get calltip: {}'.format(args))
+
+#     with open(args['path'], 'r') as f:
+#         code = f.read()
+
+#     calltip = context.workspace.get_calltip(
+#         code=code,
+#         offset=args['offset'],
+#         path=args['path']).get()
+
+#     return {
+#         'result': 'failure' if calltip is None else 'success',
+#         'calltip': calltip
+#     }
 
 
 # @get('/code_assist/definition')
@@ -323,51 +320,51 @@ def code_assist_calltip_view(context):
 #     }
 
 
-@app.post('/findit/occurrences')
-def findit_occurences_view(context):
-    args = bottle.request.json
-    data = context.workspace.find_occurrences(
-        args['offset'],
-        args['path']).get()
+# @app.post('/findit/occurrences')
+# def findit_occurences_view(context):
+#     args = bottle.request.json
+#     data = context.workspace.find_occurrences(
+#         args['offset'],
+#         args['path']).get()
 
-    # TODO: What if it actually fails?
-    return {
-        'result': 'success',
-        'data': data,
-    }
-
-
-@app.post('/findit/implementations')
-def findit_implementations_view(context):
-    args = bottle.request.json
-    data = context.workspace.find_implementations(
-        args['offset'],
-        args['path']).get()
-
-    # TODO: What if it actually fails?
-    return {
-        'result': 'success',
-        'data': data,
-    }
+#     # TODO: What if it actually fails?
+#     return {
+#         'result': 'success',
+#         'data': data,
+#     }
 
 
-@app.post('/findit/definition')
-def findit_definitions_view(context):
-    args = bottle.request.json
+# @app.post('/findit/implementations')
+# def findit_implementations_view(context):
+#     args = bottle.request.json
+#     data = context.workspace.find_implementations(
+#         args['offset'],
+#         args['path']).get()
 
-    with open(args['path'], 'r') as f:
-        code = f.read()
+#     # TODO: What if it actually fails?
+#     return {
+#         'result': 'success',
+#         'data': data,
+#     }
 
-    data = context.workspace.find_definition(
-        code,
-        args['offset'],
-        args['path']).get()
 
-    # TODO: What if it actually fails?
-    return {
-        'result': 'success',
-        'data': data,
-    }
+# @app.post('/findit/definition')
+# def findit_definitions_view(context):
+#     args = bottle.request.json
+
+#     with open(args['path'], 'r') as f:
+#         code = f.read()
+
+#     data = context.workspace.find_definition(
+#         code,
+#         args['offset'],
+#         args['path']).get()
+
+#     # TODO: What if it actually fails?
+#     return {
+#         'result': 'success',
+#         'data': data,
+#     }
 
 
 def _importutil_core(context, method):
