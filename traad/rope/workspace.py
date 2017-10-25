@@ -1,21 +1,12 @@
 import os
 
-import pykka
-
-from rope.base.change import ChangeToData, DataToChange
 import rope.base.project
-from rope.refactor.change_signature import (ArgumentAdder,
-                                            ArgumentNormalizer,
-                                            ArgumentRemover,
-                                            ChangeSignature)
 import rope.refactor.extract
 import rope.refactor.inline
 import rope.refactor.rename
-
-from traad.rope.codeassist import CodeAssistMixin
-from traad.rope.findit import FinditMixin
-from traad.rope.history import HistoryMixin
-from traad.rope.importutil import ImportUtilsMixin
+from rope.base.change import ChangeToData, DataToChange
+from rope.refactor.change_signature import ArgumentNormalizer, ArgumentRemover, ChangeSignature
+from rope.refactor.importutils import ImportOrganizer
 
 
 def get_all_resources(proj):
@@ -91,10 +82,7 @@ def get_all_resources(proj):
 #         return Change(self.rope_ref, *args)
 
 
-class Workspace(CodeAssistMixin,
-                FinditMixin,
-                HistoryMixin,
-                ImportUtilsMixin):
+class Workspace:
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
@@ -237,6 +225,27 @@ class Workspace(CodeAssistMixin,
             self.get_resource(path),
             offset)
         return ref.get_changes(changers)
+
+    def _organize_imports(self, operation, path):
+        organizer = ImportOrganizer(self.root_project)
+        return getattr(organizer, operation)(
+            self.get_resource(path))
+
+    def organize_imports(self, path):
+        return self._organize_imports("organize_imports", path)
+
+    def expand_star_imports(self, path):
+        return self._organize_imports("expand_star_imports", path)
+
+    def froms_to_imports(self, path):
+        return self._organize_imports("froms_to_imports", path)
+
+    def relatives_to_absolutes(self, path):
+        return self._organize_imports("relatives_to_absolutes", path)
+
+    def handle_long_imports(self, path):
+        return self._organize_imports("handle_long_imports", path)
+
 
     # def get_children(self, path):
     #     '''Get a list of all child resources of a given path.

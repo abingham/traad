@@ -1,21 +1,12 @@
-from contextlib import contextmanager
-from functools import wraps
 import logging
 import sys
-
-import rope.contrib.codeassist
-from rope.refactor.change_signature import (ArgumentAdder,
-                                            ArgumentNormalizer,
-                                            ArgumentRemover,
-                                            ChangeSignature)
-import rope.refactor.extract
-import rope.refactor.inline
-import rope.refactor.rename
+from contextlib import contextmanager
+from functools import wraps
 
 from . import bottle
 from .plugin import TraadPlugin
-from .state import TaskState
 from .rope.workspace import changes_to_data, data_to_changes
+from .state import TaskState
 
 
 log = logging.getLogger('traad.app')
@@ -120,7 +111,7 @@ def perform_view(context):
         }
     except:
         e = sys.exc_info()[1]
-        log.error('perform error: {}'.format(e))
+        log.exception('perform error: {}'.format(e))
         return {
             'result': 'failure',
             'message': str(e)
@@ -367,50 +358,44 @@ def add_argument_view(context):
 #     }
 
 
-def _importutil_core(context, method):
-    # TODO: This patterns of async-tasks is repeated several times.
-    # Refactor it.
-
+@app.post("/imports/organize")
+@standard_refactoring
+def organize_imports_view(context):
     args = bottle.request.json
-    return standard_async_task(
-        context,
-        method,
+    return context.workspace.organize_imports(
         args['path'])
 
 
-@app.post("/imports/organize")
-def organize_imports_view(context):
-    return _importutil_core(
-        context,
-        context.workspace.organize_imports)
-
-
 @app.post("/imports/expand_star")
+@standard_refactoring
 def expand_star_imports_view(context):
-    return _importutil_core(
-        context,
-        context.workspace.expand_star_imports)
+    args = bottle.request.json
+    return context.workspace.expand_star_imports(
+        args['path'])
 
 
 @app.post("/imports/froms_to_imports")
+@standard_refactoring
 def from_to_imports_view(context):
-    return _importutil_core(
-        context,
-        context.workspace.froms_to_imports)
+    args = bottle.request.json
+    return context.workspace.froms_to_imports(
+        args['path'])
 
 
 @app.post("/imports/relatives_to_absolutes")
+@standard_refactoring
 def relatives_to_absolutes_view(context):
-    return _importutil_core(
-        context,
-        context.workspace.relatives_to_absolutes)
+    args = bottle.request.json
+    return context.workspace.relatives_to_absolutes(
+        args['path'])
 
 
 @app.post("/imports/handle_long_imports")
+@standard_refactoring
 def handle_long_imports_view(context):
-    return _importutil_core(
-        context,
-        context.workspace.handle_long_imports)
+    args = bottle.request.json
+    return context.workspace.handle_long_imports(
+        args['path'])
 
 
 def standard_async_task(context, method, *args):
