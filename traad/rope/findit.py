@@ -16,10 +16,9 @@ class FinditMixin:
         implementations.
 
         """
-        path = self.to_relative_path(path)
         results = func(
-            self.proj,
-            self.proj.get_resource(path),
+            self.root_project,
+            self.get_resource(path),
             offset)
         return emap(location_to_tuple, results)
 
@@ -30,7 +29,6 @@ class FinditMixin:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The traad Project object.
           offset: The offset into ``path`` of the symbol.
           path: The path to the resource containing the symbol to
             search for.
@@ -51,7 +49,6 @@ class FinditMixin:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The traad Project object.
           offset: The offset into ``path`` of the method name.
           path: The path to the resource containing the method name to
             search for.
@@ -72,7 +69,6 @@ class FinditMixin:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The traad Project object.
           code: The source code containing the method symbol.
           offset: The offset into ``code`` of the symbol.
           path: The path to the resource containing ``code``.
@@ -85,7 +81,7 @@ class FinditMixin:
 
         path = self.to_relative_path(path)
         defn = rope.contrib.findit.find_definition(
-            self.proj,
+            self.root_project,
             code,
             offset,
             self.get_resource(path))

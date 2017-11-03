@@ -285,18 +285,18 @@ def code_assist_calltip_view(context):
     }
 
 
-# @get('/code_assist/definition')
-# def code_assist_definition_view():
-#     args = request.json
+@app.get('/code_assist/definition')
+def code_assist_definition_view():
+    args = request.json
 
-#     log.info('get definition: {}'.format(args))
+    log.info('get definition: {}'.format(args))
 
-#     return {
-#         'results': context.workspace.get_definition_location(
-#             code=args['code'],
-#             offset=args['offset'],
-#             path=args['path'])
-#     }
+    return {
+        'results': context.workspace.get_definition_location(
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
 
 
 # @app.post('/findit/occurrences')
@@ -304,7 +304,7 @@ def code_assist_calltip_view(context):
 #     args = bottle.request.json
 #     data = context.workspace.find_occurrences(
 #         args['offset'],
-#         args['path']).get()
+#         args['path'])
 
 #     # TODO: What if it actually fails?
 #     return {
@@ -318,7 +318,7 @@ def code_assist_calltip_view(context):
 #     args = bottle.request.json
 #     data = context.workspace.find_implementations(
 #         args['offset'],
-#         args['path']).get()
+#         args['path'])
 
 #     # TODO: What if it actually fails?
 #     return {
@@ -337,7 +337,7 @@ def code_assist_calltip_view(context):
 #     data = context.workspace.find_definition(
 #         code,
 #         args['offset'],
-#         args['path']).get()
+#         args['path'])
 
 #     # TODO: What if it actually fails?
 #     return {
