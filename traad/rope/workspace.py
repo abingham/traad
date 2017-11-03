@@ -2,7 +2,6 @@ import os
 
 import rope.base.project
 import rope.contrib.codeassist
-import rope.refactor.extract
 import rope.refactor.inline
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
@@ -12,6 +11,7 @@ from rope.refactor.change_signature import (ArgumentAdder,
                                             ChangeSignature)
 from rope.refactor.importutils import ImportOrganizer
 
+from .extract import ExtractMixin
 from .history import HistoryMixin
 
 
@@ -88,7 +88,8 @@ def get_all_resources(proj):
 #         return Change(self.rope_ref, *args)
 
 
-class Workspace(HistoryMixin):
+class Workspace(ExtractMixin,
+                HistoryMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
@@ -191,22 +192,6 @@ class Workspace(HistoryMixin):
             self.root_project,
             self.get_resource(path),
             offset)
-        return ref.get_changes(name)
-
-    def extract_method(self, path, start_offset, end_offset, name):
-        ref = rope.refactor.extract.ExtractMethod(
-            self.root_project,
-            self.get_resource(path),
-            start_offset,
-            end_offset)
-        return ref.get_changes(name)
-
-    def extract_variable(self, path, start_offset, end_offset, name):
-        ref = rope.refactor.extract.ExtractVariable(
-            self.root_project,
-            self.get_resource(path),
-            start_offset,
-            end_offset)
         return ref.get_changes(name)
 
     def inline(self, path, offset):
