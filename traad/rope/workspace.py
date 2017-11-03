@@ -2,6 +2,7 @@ import os
 
 import rope.base.project
 import rope.refactor.inline
+import rope.refactor.multiproject
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
 
@@ -176,13 +177,17 @@ class Workspace(ChangeSignatureMixin,
         Returns: All changes that would be performed by the refactoring. A list
           of the form `[[<project>, [<change set>]]`.
         """
-        ref = refactoring_type(
+        refactoring = refactoring_type(
             self.root_project,
             self.get_resource(
                 self.to_relative_path(
                     path)),
             *refactoring_args)
-        return ref.get_changes(*change_args)
+        multi_project_refactoring = rope.refactor.MultiProjectRefactoring(
+            refactoring, self.cross_projects)
+        return multi_project_refactoring(
+            self.root_project,
+            *change_args).get_all_changes(*change_args)
 
     def perform(self, changes):
         self.root_project.do(changes)

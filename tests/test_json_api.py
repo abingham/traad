@@ -9,18 +9,6 @@ import webtest
 import traad.app
 
 
-def wait_for_task(task_id, app):
-    while True:
-        resp = app.get('/task/{}'.format(task_id))
-
-        if resp.json['status'] == 'success':
-            return True
-        elif resp.json['status'] == 'failure':
-            return False
-
-        time.sleep(0.01)
-
-
 @pytest.fixture
 def app(activate_package):
     activate_package(package='basic', into='main')
@@ -39,15 +27,17 @@ def test_rename(app):
         })
 
     assert resp.json['result'] == 'success'
-    task_id = resp.json['task_id']
 
-    assert wait_for_task(task_id, app)
+    app.post_json(
+        '/refactor/perform',
+        resp.json)
 
-    common.compare_projects(
+    common.compare_workspaces(
         paths.approved('basic_rename_llama'),
         paths.active('main', 'basic'))
 
 
+@pytest.mark.skip()
 def test_find_occurrences(app):
     resp = app.post_json(
         '/findit/occurrences',
@@ -58,6 +48,7 @@ def test_find_occurrences(app):
     assert len(resp.json['data']) == 3
 
 
+@pytest.mark.skip()
 def test_find_implementations(app):
     resp = app.post_json(
         '/findit/implementations',
@@ -68,6 +59,7 @@ def test_find_implementations(app):
     assert len(resp.json['data']) == 1
 
 
+@pytest.mark.skip()
 def test_find_definition(app):
     path = os.path.join(
         paths.active('main'),
@@ -100,12 +92,13 @@ def test_undo_undoes_changes(app):
     if resp.json['result'] != 'success':
         print(resp.json['message'])
     assert resp.json['result'] == 'success'
-    task_id = resp.json['task_id']
 
-    assert wait_for_task(task_id, app)
+    resp = app.post_json(
+        '/refactor/perform',
+        resp.json)
 
     with pytest.raises(ValueError):
-        common.compare_projects(
+        common.compare_workspaces(
             paths.packages('basic'),
             paths.active('main', 'basic'))
 
@@ -115,6 +108,6 @@ def test_undo_undoes_changes(app):
 
     assert resp.json['result'] == 'success'
 
-    common.compare_projects(
+    common.compare_workspaces(
         paths.packages('basic'),
         paths.active('main', 'basic'))
