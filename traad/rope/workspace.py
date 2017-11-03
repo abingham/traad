@@ -5,11 +5,11 @@ import rope.contrib.codeassist
 import rope.refactor.inline
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
-from rope.refactor.importutils import ImportOrganizer
 
 from .change_signature import ChangeSignatureMixin
 from .extract import ExtractMixin
 from .history import HistoryMixin
+from .imports import ImportsMixin
 
 
 def get_all_resources(proj):
@@ -87,7 +87,8 @@ def get_all_resources(proj):
 
 class Workspace(ChangeSignatureMixin,
                 ExtractMixin,
-                HistoryMixin):
+                HistoryMixin,
+                ImportsMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
@@ -198,26 +199,6 @@ class Workspace(ChangeSignatureMixin,
             self.get_resource(path),
             offset)
         return ref.get_changes()
-
-    def _organize_imports(self, operation, path):
-        organizer = ImportOrganizer(self.root_project)
-        return getattr(organizer, operation)(
-            self.get_resource(path))
-
-    def organize_imports(self, path):
-        return self._organize_imports("organize_imports", path)
-
-    def expand_star_imports(self, path):
-        return self._organize_imports("expand_star_imports", path)
-
-    def froms_to_imports(self, path):
-        return self._organize_imports("froms_to_imports", path)
-
-    def relatives_to_absolutes(self, path):
-        return self._organize_imports("relatives_to_absolutes", path)
-
-    def handle_long_imports(self, path):
-        return self._organize_imports("handle_long_imports", path)
 
     def code_assist(self, code, offset, path):
         '''Get code-assist completions for a point in a file.
