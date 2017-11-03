@@ -353,7 +353,7 @@ def organize_imports_view(context):
         args['path'])
 
 
-@app.post("/imports/expand_star")
+@app.post("/imports/expand_stars")
 @standard_refactoring
 def expand_star_imports_view(context):
     args = bottle.request.json
