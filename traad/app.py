@@ -86,17 +86,6 @@ def redo_info_view(idx, context):
     }
 
 
-@app.post('/test/long_running')
-def long_running_test(context):
-    import traad.test
-    args = bottle.request.json
-
-    return standard_async_task(
-        context,
-        traad.test.long_running,
-        args['message'])
-
-
 # TODO: COmmon exception handler decorator? Middleware?
 @app.post('/refactor/perform')
 def perform_view(context):
