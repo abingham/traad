@@ -1,3 +1,6 @@
+"""Functions for managing Python 2/3 compatibility.
+"""
+
 import inspect
 import sys
 

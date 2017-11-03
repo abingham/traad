@@ -10,7 +10,7 @@ from .rope.workspace import changes_to_data, data_to_changes
 
 log = logging.getLogger('traad.app')
 
-PROTOCOL_VERSION = 2
+PROTOCOL_VERSION = 3
 
 app = bottle.Bottle()
 
