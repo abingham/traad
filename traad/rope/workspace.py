@@ -5,7 +5,10 @@ import rope.refactor.extract
 import rope.refactor.inline
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
-from rope.refactor.change_signature import ArgumentNormalizer, ArgumentRemover, ChangeSignature
+from rope.refactor.change_signature import (ArgumentAdder,
+                                            ArgumentNormalizer,
+                                            ArgumentRemover,
+                                            ChangeSignature)
 from rope.refactor.importutils import ImportOrganizer
 
 
@@ -220,6 +223,14 @@ class Workspace:
 
     def remove_argument(self, path, offset, index):
         changers = [ArgumentRemover(index)]
+        ref = ChangeSignature(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes(changers)
+
+    def add_argument(self, path, offset, index, name, default, value):
+        changers = [ArgumentAdder(index, name, default, value)]
         ref = ChangeSignature(
             self.root_project,
             self.get_resource(path),

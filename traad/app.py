@@ -222,18 +222,16 @@ def remove_argument_view(context):
 
 
 @app.post('/refactor/add_argument')
+@standard_refactoring
 def add_argument_view(context):
     args = bottle.request.json
-    changers = [ArgumentAdder(args['index'],
-                              args['name'],
-                              args['default'],
-                              args['value'])]
-    return _basic_refactoring(
-        context,
-        ChangeSignature,
-        path=args['path'],
-        refactoring_args=(args['offset'],),
-        change_args=(changers,))
+    return context.workspace.add_argument(
+        args['path'],
+        args['offset'],
+        args['arg_index'],
+        args['name'],
+        args['default'],
+        args['value'])
 
 
 # @app.post('/code_assist/completions')
