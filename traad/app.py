@@ -6,7 +6,6 @@ from functools import wraps
 from . import bottle
 from .plugin import TraadPlugin
 from .rope.workspace import changes_to_data, data_to_changes
-from .state import TaskState
 
 
 log = logging.getLogger('traad.app')

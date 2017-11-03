@@ -2,7 +2,6 @@ import itertools
 
 from .compat import getargspec
 from .rope.workspace import Workspace
-from .state import State
 
 
 class TraadPlugin:
@@ -12,7 +11,6 @@ class TraadPlugin:
     keyword on handlers. This object has three members:
 
      - workspace: A `traad.rope.Workspace`
-     - state: A `traad.state.State`
      - task_ids: An iterable from which new task IDs can be fetched
 
     """
@@ -22,7 +20,6 @@ class TraadPlugin:
     class Context:
         def __init__(self, path):
             self.workspace = Workspace(path)
-            self.state = State.start().proxy()
             self.task_ids = itertools.count()
 
     def __init__(self, root_project_path, keyword='context'):
@@ -42,6 +39,3 @@ class TraadPlugin:
 
         # Replace the route callback with the wrapped one.
         return wrapper
-
-    def close(self):
-        self.context.state.stop()
