@@ -307,36 +307,27 @@ class Workspace:
             offset,
             self.get_resource(path))
 
+    def get_calltip(self, code, offset, path):
+        """Get the calltip of a function.
 
-    # def get_children(self, path):
-    #     '''Get a list of all child resources of a given path.
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must be relative to the root of the project.
 
-    #     ``path`` may be absolute or relative. If ``path`` is relative,
-    #     then it must to be relative to the root of the project.
+        Args:
+          code: The source code.
+          offset: An offset into ``code`` of the object to query.
+          path: The path to the resource in which the search is
+            being done.
 
-    #     Args:
-    #       path: The path of the file/directory to query.
+        Returns: A calltip string.
+        """
 
-    #     Returns: A list of tuples of the form (path,
-    #       is_folder).
+        return rope.contrib.codeassist.get_calltip(
+            self.root_project,
+            code,
+            offset,
+            self.get_resource(path))
 
-    #     '''
-
-    #     path = self.to_relative_path(path)
-
-    #     children = self.proj.get_resource(path).get_children()
-    #     return [(child.path, child.is_folder()) for child in children]
-
-    # def get_all_resources(self):
-    #     '''Get a list of all resources in the project.
-
-    #     Returns: A list of tuples of the form (path,
-    #         is_folder).
-    #     '''
-    #     return list(get_all_resources(self.proj))
-
-    # def get_root(self):
-    #     return self.proj.root.real_path
 
     def __repr__(self):
         return 'Project("{}")'.format(

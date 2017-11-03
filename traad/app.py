@@ -265,24 +265,24 @@ def code_assist_doc_view(context):
     }
 
 
-# @app.post('/code_assist/calltip')
-# def code_assist_calltip_view(context):
-#     args = bottle.request.json
+@app.post('/code_assist/calltip')
+def code_assist_calltip_view(context):
+    args = bottle.request.json
 
-#     log.info('get calltip: {}'.format(args))
+    log.info('get calltip: {}'.format(args))
 
-#     with open(args['path'], 'r') as f:
-#         code = f.read()
+    with open(args['path'], 'r') as f:
+        code = f.read()
 
-#     calltip = context.workspace.get_calltip(
-#         code=code,
-#         offset=args['offset'],
-#         path=args['path']).get()
+    calltip = context.workspace.get_calltip(
+        code=code,
+        offset=args['offset'],
+        path=args['path'])
 
-#     return {
-#         'result': 'failure' if calltip is None else 'success',
-#         'calltip': calltip
-#     }
+    return {
+        'result': 'failure' if calltip is None else 'success',
+        'calltip': calltip
+    }
 
 
 # @get('/code_assist/definition')
