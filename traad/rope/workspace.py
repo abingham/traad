@@ -1,6 +1,7 @@
 import os
 
 import rope.base.project
+import rope.contrib.codeassist
 import rope.refactor.extract
 import rope.refactor.inline
 import rope.refactor.rename
@@ -257,6 +258,33 @@ class Workspace:
     def handle_long_imports(self, path):
         return self._organize_imports("handle_long_imports", path)
 
+    def code_assist(self, code, offset, path):
+        '''Get code-assist completions for a point in a file.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          self: The Project to use.
+          code: The source code in which the completion should
+            happen. Note that this may differ from the contents of the
+            resource at ``path``.
+          offset: The offset into ``code`` where the completion should
+            happen.
+          path: The path to the resource in which the completion is
+            being done.
+
+        Returns: A list of tuples of the form (name, documentation,
+          scope, type) for each possible completion.
+        '''
+
+        results = rope.contrib.codeassist.code_assist(
+            self.root_project,
+            code,
+            offset,
+            self.get_resource(path))
+        rslt = [(r.name, r.get_doc(), r.scope, r.type) for r in results]
+        return rslt
 
     # def get_children(self, path):
     #     '''Get a list of all child resources of a given path.

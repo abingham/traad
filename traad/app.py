@@ -223,25 +223,26 @@ def add_argument_view(context):
         args['value'])
 
 
-# @app.post('/code_assist/completions')
-# def code_assist_completion_view(context):
-#     args = bottle.request.json
+@app.post('/code_assist/completions')
+def code_assist_completion_view(context):
+    args = bottle.request.json
 
-#     log.info('get completion: {}'.format(args))
+    log.info('get completion: {}'.format(args))
 
-#     with open(args['path'], 'r') as f:
-#         code = f.read()
+    with open(args['path'], 'r') as f:
+        code = f.read()
 
-#     results = context.workspace.code_assist(
-#         code,
-#         args['offset'],
-#         args['path']).get()
+    results = context.workspace.code_assist(
+        code,
+        args['offset'],
+        args['path'])
 
-#     # TODO: What if it fails?
-#     return {
-#         'result': 'success',
-#         'completions': results,
-#     }
+    # TODO: What if it fails?
+    print(results)
+    return {
+        'result': 'success',
+        'completions': results,
+    }
 
 
 # @app.post('/code_assist/doc')
@@ -383,41 +384,3 @@ def handle_long_imports_view(context):
     args = bottle.request.json
     return context.workspace.handle_long_imports(
         args['path'])
-
-
-def standard_async_task(context, method, *args):
-    """Launch a typical async task.
-
-    This creates a `TaskState` for the new task and runs the task. The
-    assumption here is that `method` is a pykka actor method that will
-    execute in a separate thread. This function doesn't do anything to
-    magically make `method` execute asynchronously.
-
-    Args:
-      method: The asynchronous callable to execute.
-      args: The arguments to pass to ``method``.
-
-    """
-    log.info('{}: {}'.format(method, args))
-
-    try:
-        task_id = next(context.task_ids)
-        state = context.state
-        state.create(task_id)
-
-        method(TaskState(state, task_id),
-               *args)
-
-        log.info('{}: success'.format(method))
-
-        return {
-            'result': 'success',
-            'task_id': task_id
-        }
-    except:
-        e = sys.exc_info()[1]
-        log.error('{} error: {}'.format(method, e))
-        return {
-            'result': 'failure',
-            'message': str(e)
-        }
