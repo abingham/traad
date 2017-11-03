@@ -2,7 +2,6 @@ import common
 import os
 import paths
 import pytest
-import time
 
 import webtest
 
