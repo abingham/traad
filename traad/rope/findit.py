@@ -1,9 +1,6 @@
 from eagertools import emap
 import rope.contrib.findit
 
-import traad.trace
-from traad.rope.validate import validate
-
 
 def location_to_tuple(location):
     return (location.resource.path,
@@ -26,9 +23,6 @@ class FinditMixin:
             offset)
         return emap(location_to_tuple, results)
 
-
-    @traad.trace.trace
-    @validate
     def find_occurrences(self, offset, path):
         """Find occurrences of a symbol at a point in a file.
 
@@ -50,9 +44,6 @@ class FinditMixin:
             path,
             offset)
 
-
-    @traad.trace.trace
-    @validate
     def find_implementations(self, offset, path):
         """Find the places a given method is overridden.
 
@@ -74,9 +65,6 @@ class FinditMixin:
             path,
             offset)
 
-
-    @traad.trace.trace
-    @validate
     def find_definition(self, code, offset, path):
         """Find the definition location of a symbol.
 
