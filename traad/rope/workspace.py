@@ -5,12 +5,9 @@ import rope.contrib.codeassist
 import rope.refactor.inline
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
-from rope.refactor.change_signature import (ArgumentAdder,
-                                            ArgumentNormalizer,
-                                            ArgumentRemover,
-                                            ChangeSignature)
 from rope.refactor.importutils import ImportOrganizer
 
+from .change_signature import ChangeSignatureMixin
 from .extract import ExtractMixin
 from .history import HistoryMixin
 
@@ -88,7 +85,8 @@ def get_all_resources(proj):
 #         return Change(self.rope_ref, *args)
 
 
-class Workspace(ExtractMixin,
+class Workspace(ChangeSignatureMixin,
+                ExtractMixin,
                 HistoryMixin):
     """An actor that controls access to an underlying Rope project.
     """
@@ -200,30 +198,6 @@ class Workspace(ExtractMixin,
             self.get_resource(path),
             offset)
         return ref.get_changes()
-
-    def normalize_arguments(self, path, offset):
-        changers = [ArgumentNormalizer()]
-        ref = ChangeSignature(
-            self.root_project,
-            self.get_resource(path),
-            offset)
-        return ref.get_changes(changers)
-
-    def remove_argument(self, path, offset, index):
-        changers = [ArgumentRemover(index)]
-        ref = ChangeSignature(
-            self.root_project,
-            self.get_resource(path),
-            offset)
-        return ref.get_changes(changers)
-
-    def add_argument(self, path, offset, index, name, default, value):
-        changers = [ArgumentAdder(index, name, default, value)]
-        ref = ChangeSignature(
-            self.root_project,
-            self.get_resource(path),
-            offset)
-        return ref.get_changes(changers)
 
     def _organize_imports(self, operation, path):
         organizer = ImportOrganizer(self.root_project)
