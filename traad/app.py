@@ -245,24 +245,24 @@ def code_assist_completion_view(context):
     }
 
 
-# @app.post('/code_assist/doc')
-# def code_assist_doc_view(context):
-#     args = bottle.request.json
+@app.post('/code_assist/doc')
+def code_assist_doc_view(context):
+    args = bottle.request.json
 
-#     log.info('get doc: {}'.format(args))
+    log.info('get doc: {}'.format(args))
 
-#     with open(args['path'], 'r') as f:
-#         code = f.read()
+    with open(args['path'], 'r') as f:
+        code = f.read()
 
-#     doc = context.workspace.get_doc(
-#         code=code,
-#         offset=args['offset'],
-#         path=args['path']).get()
+    doc = context.workspace.get_doc(
+        code=code,
+        offset=args['offset'],
+        path=args['path'])
 
-#     return {
-#         'result': 'failure' if doc is None else 'success',
-#         'doc': doc
-#     }
+    return {
+        'result': 'failure' if doc is None else 'success',
+        'doc': doc
+    }
 
 
 # @app.post('/code_assist/calltip')

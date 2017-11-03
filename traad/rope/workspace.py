@@ -265,7 +265,6 @@ class Workspace:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The Project to use.
           code: The source code in which the completion should
             happen. Note that this may differ from the contents of the
             resource at ``path``.
@@ -285,6 +284,29 @@ class Workspace:
             self.get_resource(path))
         rslt = [(r.name, r.get_doc(), r.scope, r.type) for r in results]
         return rslt
+
+    def get_doc(self, code, offset, path):
+        '''Get docstring for an object.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must to be relative to the root of the project.
+
+        Args:
+          code: The source code.
+          offset: An offset into ``code`` of the object to query.
+          path: The path to the resource in which the completion is
+            being done.
+
+        Returns: The docstring for the object, or None if there is no such
+            documentation.
+        '''
+
+        return rope.contrib.codeassist.get_doc(
+            self.root_project,
+            code,
+            offset,
+            self.get_resource(path))
+
 
     # def get_children(self, path):
     #     '''Get a list of all child resources of a given path.
