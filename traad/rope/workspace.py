@@ -12,6 +12,8 @@ from rope.refactor.change_signature import (ArgumentAdder,
                                             ChangeSignature)
 from rope.refactor.importutils import ImportOrganizer
 
+from .history import HistoryMixin
+
 
 def get_all_resources(proj):
     '''Generate a sequence of (path, is_folder) tuples for all
@@ -86,7 +88,7 @@ def get_all_resources(proj):
 #         return Change(self.rope_ref, *args)
 
 
-class Workspace:
+class Workspace(HistoryMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
