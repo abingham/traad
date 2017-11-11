@@ -96,8 +96,6 @@ class Workspace(ChangeSignatureMixin,
     def __init__(self,
                  root_project_dir,
                  cross_project_dirs=[]):
-        super(Workspace, self).__init__()
-
         self._root_project = rope.base.project.Project(root_project_dir)
 
         self._cross_projects = dict()
