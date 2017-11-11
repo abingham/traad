@@ -34,6 +34,11 @@ def protocol_version_view():
     return {'protocol-version': PROTOCOL_VERSION}
 
 
+@app.get('/root')
+def root_view(context):
+    return {'root': context.workspace.root_project.root.real_path}
+
+
 @app.post('/history/undo')
 def undo_view(context):
     args = bottle.request.json
