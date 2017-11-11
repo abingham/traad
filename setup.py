@@ -20,10 +20,9 @@ setup(
         },
 
     install_requires=[
-        'decorator',
-        'pykka',
-        'pytest',
         'rope',
-        'webtest',
     ],
+    extras_require={
+        'test': ['pytest', 'webtest'],
+    },
 )
