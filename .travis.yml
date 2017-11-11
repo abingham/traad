@@ -10,4 +10,3 @@ install: python setup.py install
 
 script:
   - pytest tests
-  - pytest tests -m slowtest
