@@ -54,7 +54,7 @@ def main():
     logging.basicConfig(
         level=level)
 
-    with traad.app.using_project(args.project) as app:
+    with traad.app.using_workspace(args.project) as app:
         run_server(app, args.port)
 
 

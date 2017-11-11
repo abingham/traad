@@ -1,20 +1,18 @@
 import common
 import paths
-from traad.state import TaskState
 
 
-def test_simple_rename(activate_package, start_project, state):
+def test_simple_rename(activate_package, make_workspace):
     activate_package(package='basic', into='main')
-    proj = start_project('main')
-    state.create(1).get()
-    task_state = TaskState(state, 1)
+    workspace = make_workspace('main')
 
-    proj.rename(
-        task_state,
-        'Llama',
+    changes = workspace.rename(
         'basic/foo.py',
-        8).get()
+        8,
+        'Llama')
 
-    common.compare_projects(
+    workspace.perform(changes)
+
+    common.compare_workspaces(
         paths.approved('basic_rename_llama'),
         paths.active('main', 'basic'))

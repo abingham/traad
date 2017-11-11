@@ -1,9 +1,6 @@
 from eagertools import emap
 import rope.contrib.findit
 
-import traad.trace
-from traad.rope.validate import validate
-
 
 def location_to_tuple(location):
     return (location.resource.path,
@@ -19,16 +16,12 @@ class FinditMixin:
         implementations.
 
         """
-        path = self.to_relative_path(path)
         results = func(
-            self.proj,
-            self.proj.get_resource(path),
+            self.root_project,
+            self.get_resource(path),
             offset)
         return emap(location_to_tuple, results)
 
-
-    @traad.trace.trace
-    @validate
     def find_occurrences(self, offset, path):
         """Find occurrences of a symbol at a point in a file.
 
@@ -36,7 +29,6 @@ class FinditMixin:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The traad Project object.
           offset: The offset into ``path`` of the symbol.
           path: The path to the resource containing the symbol to
             search for.
@@ -50,9 +42,6 @@ class FinditMixin:
             path,
             offset)
 
-
-    @traad.trace.trace
-    @validate
     def find_implementations(self, offset, path):
         """Find the places a given method is overridden.
 
@@ -60,7 +49,6 @@ class FinditMixin:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The traad Project object.
           offset: The offset into ``path`` of the method name.
           path: The path to the resource containing the method name to
             search for.
@@ -74,9 +62,6 @@ class FinditMixin:
             path,
             offset)
 
-
-    @traad.trace.trace
-    @validate
     def find_definition(self, code, offset, path):
         """Find the definition location of a symbol.
 
@@ -84,7 +69,6 @@ class FinditMixin:
         then it must to be relative to the root of the project.
 
         Args:
-          self: The traad Project object.
           code: The source code containing the method symbol.
           offset: The offset into ``code`` of the symbol.
           path: The path to the resource containing ``code``.
@@ -97,7 +81,7 @@ class FinditMixin:
 
         path = self.to_relative_path(path)
         defn = rope.contrib.findit.find_definition(
-            self.proj,
+            self.root_project,
             code,
             offset,
             self.get_resource(path))

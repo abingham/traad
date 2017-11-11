@@ -2,8 +2,7 @@ import logging
 import os
 import pytest
 import shutil
-from traad.rope.project import Project
-from traad.state import State
+from traad.rope.workspace import Workspace
 
 from paths import ACTIVE_DIR, PACKAGES_DIR
 
@@ -14,31 +13,16 @@ logging.basicConfig(level=logging.CRITICAL)
 
 
 @pytest.fixture
-def start_project():
-    projects = []
-
-    def f(main, *cross):
-        proj = Project.start(
+def make_workspace():
+    def workspace_factory(main, *cross):
+        proj = Workspace(
             os.path.join(ACTIVE_DIR, main),
             cross_project_dirs=[
                 os.path.join(ACTIVE_DIR, project)
-                for project in cross]).proxy()
-        projects.append(proj)
+                for project in cross])
         return proj
 
-    yield f
-
-    for proj in projects:
-        proj.stop()
-
-
-@pytest.fixture
-def state():
-    state = State.start().proxy()
-    try:
-        yield state
-    finally:
-        state.stop()
+    return workspace_factory
 
 
 @pytest.fixture

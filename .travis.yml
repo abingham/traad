@@ -1,13 +1,16 @@
 language: python
-python:
-  - "3.6"
-  - "3.5"
-  - "3.4"
-  - "3.3"
-  - "2.7"
 
-install: python setup.py install
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+install:
+  - python setup.py install
+  - pip install -e ".[test]"
+  - pip install tox-travis
 
 script:
-  - pytest tests
-  - pytest tests -m slowtest
+  - tox

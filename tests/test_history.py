@@ -1,198 +1,197 @@
 import common
 import paths
 import pytest
-from traad.state import TaskState
 
 
 @pytest.fixture
-def fixture(activate_package, start_project, state):
+def workspace(activate_package, make_workspace):
     activate_package(package='basic', into='main')
-    proj = start_project('main')
-    state.create(1).get()
-    task_state = TaskState(state, 1)
+    workspace = make_workspace('main')
 
-    yield proj, state, task_state
+    yield workspace
 
 
-def test_undo_undoes_changes(fixture):
-    project, state, task_state = fixture
-
-    project.rename(
-        task_state,
-        'Llama',
-        'basic/foo.py',
-        8).get()
+def test_undo_undoes_changes(workspace):
+    workspace.perform(
+        workspace.rename(
+            'basic/foo.py',
+            8,
+            'Llama'))
 
     with pytest.raises(ValueError):
-        common.compare_projects(
+        common.compare_workspaces(
             paths.packages('basic'),
             paths.active('main', 'basic'))
 
-    project.undo().get()
+    workspace.undo()
 
-    common.compare_projects(
+    common.compare_workspaces(
         paths.packages('basic'),
         paths.active('main', 'basic'))
 
 
-def test_undo_exceptions(fixture):
-    project, state, task_state = fixture
+def test_undo_exceptions(workspace):
+    with pytest.raises(IndexError):
+        workspace.undo()
+
+    workspace.perform(
+        workspace.rename(
+            'basic/foo.py',
+            8,
+            'Llama'))
+
+    workspace.undo()
 
     with pytest.raises(IndexError):
-        project.undo().get()
-
-    project.rename(
-        task_state,
-        'Llama',
-        'basic/foo.py',
-        8).get()
-
-    project.undo().get()
-
-    with pytest.raises(IndexError):
-        project.undo(1).get()
+        workspace.undo(1)
 
 
-def test_undo_adds_history(fixture):
-    project, state, task_state = fixture
-    assert len(project.proj.get().history.undo_list) == 0
-    project.rename(
-        task_state,
-        'Llama',
-        'basic/foo.py',
-        8).get()
-    assert len(project.proj.get().history.undo_list) == 1
+def test_undo_adds_history(workspace):
+    assert len(workspace.root_project.history.undo_list) == 0
+
+    workspace.perform(
+        workspace.rename(
+            'basic/foo.py',
+            8,
+            'Llama'))
+
+    assert len(workspace.root_project.history.undo_list) == 1
 
 
-def test_redo_redoes_changes(fixture):
-    project, state, task_state = fixture
-    project.rename(
-        task_state,
-        'Llama',
-        'basic/foo.py',
-        8).get()
+def test_redo_redoes_changes(workspace):
+    workspace.perform(
+        workspace.rename(
+            'basic/foo.py',
+            8,
+            'Llama'))
 
     with pytest.raises(ValueError):
-        common.compare_projects(
+        common.compare_workspaces(
             paths.packages('basic'),
             paths.active('main', 'basic'))
 
-    project.undo().get()
+    workspace.undo()
 
-    common.compare_projects(
+    common.compare_workspaces(
         paths.packages('basic'),
         paths.active('main', 'basic'))
 
-    project.redo().get()
+    workspace.redo()
 
     with pytest.raises(ValueError):
-        common.compare_projects(
+        common.compare_workspaces(
             paths.packages('basic'),
             paths.active('main', 'basic'))
 
 
-def test_redo_adds_history(fixture):
-    project, state, task_state = fixture
-    project.rename(
-        task_state,
-        'Llama',
-        'basic/foo.py',
-        8).get()
-    assert len(project.proj.get().history.redo_list) == 0
-    assert len(project.proj.get().history.undo_list) == 1
-    project.undo().get()
-    assert len(project.proj.get().history.redo_list) == 1
-    assert len(project.proj.get().history.undo_list) == 0
-    project.redo().get()
-    assert len(project.proj.get().history.redo_list) == 0
-    assert len(project.proj.get().history.undo_list) == 1
+def test_redo_adds_history(workspace):
+    workspace.perform(
+        workspace.rename(
+            'basic/foo.py',
+            8,
+            'Llama'))
+
+    assert len(workspace.root_project.history.redo_list) == 0
+    assert len(workspace.root_project.history.undo_list) == 1
+
+    workspace.undo()
+
+    assert len(workspace.root_project.history.redo_list) == 1
+    assert len(workspace.root_project.history.undo_list) == 0
+
+    workspace.redo()
+
+    assert len(workspace.root_project.history.redo_list) == 0
+    assert len(workspace.root_project.history.undo_list) == 1
 
 
-def test_redo_exceptions(fixture):
-    project, state, task_state = fixture
+def test_redo_exceptions(workspace):
     with pytest.raises(IndexError):
-        project.redo().get()
+        workspace.redo()
 
-    project.rename(
-        task_state,
-        'Llama',
-        'basic/foo.py',
-        8).get()
+    workspace.perform(
+        workspace.rename(
+            'basic/foo.py',
+            8,
+            'Llama'))
 
-    project.undo().get()
-    project.redo().get()
+    workspace.undo()
+
+    workspace.redo()
 
     with pytest.raises(IndexError):
-        project.redo(1).get()
+        workspace.redo(1)
 
 
-def test_undo_history(fixture):
-    project, state, task_state = fixture
-    assert len(project.undo_history().get()) == 0
-    project.rename(task_state,
-                   'Llama',
-                   'basic/foo.py',
-                   8).get()
-    assert len(project.undo_history().get()) == 1
+def test_undo_history(workspace):
+    assert len(workspace.undo_history()) == 0
+    workspace.perform(
+        workspace.rename('basic/foo.py',
+                         8,
+                         'Llama'))
+    assert len(workspace.undo_history()) == 1
 
 
-def test_undo_info(fixture):
-    project, state, task_state = fixture
-    project.rename(task_state,
-                   'Llama',
-                   'basic/foo.py',
-                   8).get()
-    i = project.undo_info(0).get()
+def test_undo_info(workspace):
+    workspace.perform(
+        workspace.rename('basic/foo.py',
+                         8,
+                         'Llama'))
+    i = workspace.undo_info(0)
     for k in ['description', 'time', 'full_change', 'changes']:
         assert k in i
 
 
-def test_undo_info_exceptions(fixture):
-    project, state, task_state = fixture
+def test_undo_info_exceptions(workspace):
     with pytest.raises(IndexError):
-        project.undo_info(0).get()
+        workspace.undo_info(0)
 
-    project.rename(task_state,
-                   'Llama',
-                   'basic/foo.py',
-                   8).get()
-    project.undo_info(0).get()
+    workspace.perform(
+        workspace.rename('basic/foo.py',
+                         8,
+                         'Llama'))
+
+    workspace.undo_info(0)
+
     with pytest.raises(IndexError):
-        project.undo_info(1).get()
+        workspace.undo_info(1)
 
 
-def test_redo_history(fixture):
-    project, state, task_state = fixture
-    assert len(project.redo_history().get()) == 0
-    project.rename(task_state,
-                   'Llama',
-                   'basic/foo.py',
-                   8).get()
-    project.undo().get()
-    assert len(project.redo_history().get()) == 1
+def test_redo_history(workspace):
+    assert len(workspace.redo_history()) == 0
+
+    workspace.perform(
+        workspace.rename('basic/foo.py',
+                         8,
+                         'Llama'))
+
+    workspace.undo()
+
+    assert len(workspace.redo_history()) == 1
 
 
-def test_redo_info(fixture):
-    project, state, task_state = fixture
-    project.rename(task_state,
-                   'Llama',
-                   'basic/foo.py',
-                   8).get()
-    project.undo().get()
-    i = project.redo_info(0).get()
+def test_redo_info(workspace):
+    workspace.perform(
+        workspace.rename('basic/foo.py',
+                         8,
+                         'Llama'))
+
+    workspace.undo()
+
+    i = workspace.redo_info(0)
     for k in ['description', 'time', 'full_change', 'changes']:
         assert k in i
 
 
-def test_redo_info_exceptions(fixture):
-    project, state, task_state = fixture
+def test_redo_info_exceptions(workspace):
     with pytest.raises(IndexError):
-        project.redo_info(0).get()
+        workspace.redo_info(0)
 
-    project.rename(task_state,
-                   'Llama',
-                   'basic/foo.py',
-                   8).get()
-    project.undo().get()
+    workspace.perform(
+        workspace.rename('basic/foo.py',
+                         8,
+                         'Llama'))
 
-    project.redo_info(0)
+    workspace.undo()
+
+    workspace.redo_info(0)

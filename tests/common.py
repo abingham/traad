@@ -49,7 +49,7 @@ def diff_report(dc):
     return sio.read()
 
 
-def compare_projects(approved, active):
+def compare_workspaces(approved, active):
     dc = dircmp(approved, active, ignore=[".ropeproject"])
 
     if any([dc.left_only,

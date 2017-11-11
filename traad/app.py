@@ -1,21 +1,22 @@
-from contextlib import contextmanager
 import logging
 import sys
+from contextlib import contextmanager
+from functools import wraps
 
 from . import bottle
 from .plugin import TraadPlugin
-from .state import TaskState
+from .rope.workspace import changes_to_data, data_to_changes
 
 
 log = logging.getLogger('traad.app')
 
-PROTOCOL_VERSION = 2
+PROTOCOL_VERSION = 3
 
 app = bottle.Bottle()
 
 
 @contextmanager
-def using_project(project_path, app=app):
+def using_workspace(project_path, app=app):
     """Context-manager that attaches a TraadPlugin to `app` for the specified path.
 
     This plugin will be uninstalled at the end of the context.
@@ -34,62 +35,34 @@ def protocol_version_view():
 
 
 @app.get('/root')
-def project_root_view(context):
-    try:
-        return {
-            'result': 'success',
-            'root': context.project.get_root().get()
-        }
-    except Exception:
-        return 'huh...'
-
-
-@app.get('/all_resources')
-def all_resources(context):
-    return {
-        'result': 'success',
-        'resources': context.project.get_all_resources().get()
-    }
-
-
-@app.get('/task/<task_id>')
-def task_status_view(task_id, context):
-    try:
-        return context.state.get_task_state(int(task_id)).get()
-    except KeyError:
-        bottle.abort(404, "No task with that ID")
-
-
-@app.get('/tasks')
-def full_task_status(context):
-    status = context.state.get_full_state().get()
-    log.info('full status: {}'.format(status))
-    return status
+def root_view(context):
+    return {'root': context.workspace.root_project.root.real_path}
 
 
 @app.post('/history/undo')
 def undo_view(context):
     args = bottle.request.json
-    context.project.undo(args['index']).get()
+    changes = context.workspace.undo(args['index'])
 
-    # TODO: What if it actually fails?
-    return {'result': 'success'}
+    return {'result': 'success',
+            'changes': [changes_to_data(c) for c in changes]}
 
 
 @app.post('/history/redo')
 def redo_view(context):
     args = bottle.request.json
-    context.project.redo(args['index']).get()
+    changes = context.workspace.redo(args['index'])
 
     # TODO: What if it actually fails?
-    return {'result': 'success'}
+    return {'result': 'success',
+            'changes': [changes_to_data(c) for c in changes]}
 
 
 @app.get('/history/view_undo')
 def undo_history_view(context):
     return {
         'result': 'success',
-        'history': context.project.undo_history().get()
+        'history': context.workspace.undo_history()
     }
 
 
@@ -97,7 +70,7 @@ def undo_history_view(context):
 def redo_history_view(context):
     return {
         'result': 'success',
-        'history': context.project.redo_history().get()
+        'history': context.workspace.redo_history()
     }
 
 
@@ -105,7 +78,7 @@ def redo_history_view(context):
 def undo_info_view(idx, context):
     return {
         'result': 'success',
-        'info': context.project.undo_info(int(idx)).get()
+        'info': context.workspace.undo_info(int(idx))
     }
 
 
@@ -113,101 +86,142 @@ def undo_info_view(idx, context):
 def redo_info_view(idx, context):
     return {
         'result': 'success',
-        'info': context.project.redo_info(int(idx)).get()
+        'info': context.workspace.redo_info(int(idx))
     }
 
 
-@app.post('/test/long_running')
-def long_running_test(context):
-    import traad.test
+# TODO: COmmon exception handler decorator? Middleware?
+@app.post('/refactor/perform')
+def perform_view(context):
     args = bottle.request.json
 
-    return standard_async_task(
-        context,
-        traad.test.long_running,
-        args['message'])
+    try:
+        changes = args['changes']
+        changes = data_to_changes(context.workspace, changes)
+        context.workspace.perform(changes)
+        return {
+            'result': 'success'
+        }
+    except:
+        e = sys.exc_info()[1]
+        log.exception('perform error: {}'.format(e))
+        return {
+            'result': 'failure',
+            'message': str(e)
+        }
 
 
+def _basic_refactoring(context,
+                       refactoring,
+                       refactoring_args,
+                       change_args):
+    try:
+        changes = context.workspace.get_changes(
+            refactoring,
+            refactoring_args,
+            change_args)
+
+        return {
+            'result': 'success',
+            'changes': changes_to_data(changes)
+        }
+    except:
+        log.exception('{} error'.format(refactoring))
+        return {
+            'result': 'failure',
+            'message': str(sys.exc_info()[1])
+        }
+
+
+def standard_refactoring(f):
+    @wraps(f)
+    def wrapper(context, *args, **kwargs):
+        try:
+            changes = f(context, *args, **kwargs)
+
+            return {
+                'result': 'success',
+                'changes': changes_to_data(changes)
+            }
+        except:
+            log.exception('{} error'.format('rename'))
+            return {
+                'result': 'failure',
+                'message': str(sys.exc_info()[1])
+            }
+
+    return wrapper
+
+
+#  TODO: Should this be a GET? We're not making any changes.
 @app.post('/refactor/rename')
+@standard_refactoring
 def rename_view(context):
     args = bottle.request.json
-    return standard_async_task(
-        context,
-        context.project.rename,
-        args['name'],
+    return context.workspace.rename(
         args['path'],
-        args.get('offset'))
-
-
-def extract_core(context, method):
-    """Common implementation for extract-method and extract-variable views.
-
-    Args:
-      method: The refactoring method to actually call.
-      request: The bottle request for the refactoring.
-    """
-    args = bottle.request.json
-    return standard_async_task(
-        context,
-        method,
-        args['name'],
-        args['path'],
-        args['start-offset'],
-        args['end-offset'])
+        args.get('offset'),
+        args['name'])
 
 
 @app.post('/refactor/extract_method')
+@standard_refactoring
 def extract_method_view(context):
-    return extract_core(
-        context,
-        context.project.extract_method)
+    args = bottle.request.json
+    return context.workspace.extract_method(
+        args['path'],
+        args['start-offset'],
+        args['end-offset'],
+        args['name'])
 
 
 @app.post('/refactor/extract_variable')
+@standard_refactoring
 def extract_variable_view(context):
-    return extract_core(
-        context,
-        context.project.extract_variable)
+    args = bottle.request.json
+    return context.workspace.extract_variable(
+        args['path'],
+        args['start-offset'],
+        args['end-offset'],
+        args['name'])
 
 
 @app.post('/refactor/inline')
-def inline_view():
+@standard_refactoring
+def inline_view(context):
     args = bottle.request.json
-    return standard_async_task(bottle.request.app.project.inline,
-                               args['path'],
-                               args['offset'])
+    return context.workspace.inline(
+        args['path'],
+        args['offset'])
 
 
 @app.post('/refactor/normalize_arguments')
+@standard_refactoring
 def normalize_arguments_view(context):
     args = bottle.request.json
-    return standard_async_task(
-        context,
-        context.project.normalize_arguments,
+    return context.workspace.normalize_arguments(
         args['path'],
         args['offset'])
 
 
 @app.post('/refactor/remove_argument')
+@standard_refactoring
 def remove_argument_view(context):
     args = bottle.request.json
-    return standard_async_task(
-        context,
-        context.project.remove_argument,
-        args['arg_index'],
+    return context.workspace.remove_argument(
         args['path'],
-        args['offset'])
+        args['offset'],
+        args['arg_index'])
 
 
 @app.post('/refactor/add_argument')
+@standard_refactoring
 def add_argument_view(context):
     args = bottle.request.json
-    return standard_async_task(
-        context,
-        context.project.add_argument,
+    return context.workspace.add_argument(
         args['path'],
         args['offset'],
-        args['index'],
+        args['arg_index'],
         args['name'],
         args['default'],
         args['value'])
@@ -222,12 +236,13 @@ def code_assist_completion_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    results = context.project.code_assist(
+    results = context.workspace.code_assist(
         code,
         args['offset'],
-        args['path']).get()
+        args['path'])
 
     # TODO: What if it fails?
+    print(results)
     return {
         'result': 'success',
         'completions': results,
@@ -243,10 +258,10 @@ def code_assist_doc_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    doc = context.project.get_doc(
+    doc = context.workspace.get_doc(
         code=code,
         offset=args['offset'],
-        path=args['path']).get()
+        path=args['path'])
 
     return {
         'result': 'failure' if doc is None else 'success',
@@ -263,10 +278,10 @@ def code_assist_calltip_view(context):
     with open(args['path'], 'r') as f:
         code = f.read()
 
-    calltip = context.project.get_calltip(
+    calltip = context.workspace.get_calltip(
         code=code,
         offset=args['offset'],
-        path=args['path']).get()
+        path=args['path'])
 
     return {
         'result': 'failure' if calltip is None else 'success',
@@ -274,146 +289,102 @@ def code_assist_calltip_view(context):
     }
 
 
-# @get('/code_assist/definition')
-# def code_assist_definition_view():
-#     args = request.json
+@app.get('/code_assist/definition')
+def code_assist_definition_view():
+    args = request.json
 
-#     log.info('get definition: {}'.format(args))
+    log.info('get definition: {}'.format(args))
 
+    return {
+        'results': context.workspace.get_definition_location(
+            code=args['code'],
+            offset=args['offset'],
+            path=args['path'])
+    }
+
+
+# @app.post('/findit/occurrences')
+# def findit_occurences_view(context):
+#     args = bottle.request.json
+#     data = context.workspace.find_occurrences(
+#         args['offset'],
+#         args['path'])
+
+#     # TODO: What if it actually fails?
 #     return {
-#         'results': context.project.get_definition_location(
-#             code=args['code'],
-#             offset=args['offset'],
-#             path=args['path'])
+#         'result': 'success',
+#         'data': data,
 #     }
 
 
-@app.post('/findit/occurrences')
-def findit_occurences_view(context):
-    args = bottle.request.json
-    data = context.project.find_occurrences(
-        args['offset'],
-        args['path']).get()
+# @app.post('/findit/implementations')
+# def findit_implementations_view(context):
+#     args = bottle.request.json
+#     data = context.workspace.find_implementations(
+#         args['offset'],
+#         args['path'])
 
-    # TODO: What if it actually fails?
-    return {
-        'result': 'success',
-        'data': data,
-    }
-
-
-@app.post('/findit/implementations')
-def findit_implementations_view(context):
-    args = bottle.request.json
-    data = context.project.find_implementations(
-        args['offset'],
-        args['path']).get()
-
-    # TODO: What if it actually fails?
-    return {
-        'result': 'success',
-        'data': data,
-    }
+#     # TODO: What if it actually fails?
+#     return {
+#         'result': 'success',
+#         'data': data,
+#     }
 
 
-@app.post('/findit/definition')
-def findit_definitions_view(context):
-    args = bottle.request.json
+# @app.post('/findit/definition')
+# def findit_definitions_view(context):
+#     args = bottle.request.json
 
-    with open(args['path'], 'r') as f:
-        code = f.read()
+#     with open(args['path'], 'r') as f:
+#         code = f.read()
 
-    data = context.project.find_definition(
-        code,
-        args['offset'],
-        args['path']).get()
+#     data = context.workspace.find_definition(
+#         code,
+#         args['offset'],
+#         args['path'])
 
-    # TODO: What if it actually fails?
-    return {
-        'result': 'success',
-        'data': data,
-    }
-
-
-def _importutil_core(context, method):
-    # TODO: This patterns of async-tasks is repeated several times.
-    # Refactor it.
-
-    args = bottle.request.json
-    return standard_async_task(
-        context,
-        method,
-        args['path'])
+#     # TODO: What if it actually fails?
+#     return {
+#         'result': 'success',
+#         'data': data,
+#     }
 
 
 @app.post("/imports/organize")
+@standard_refactoring
 def organize_imports_view(context):
-    return _importutil_core(
-        context,
-        context.project.organize_imports)
+    args = bottle.request.json
+    return context.workspace.organize_imports(
+        args['path'])
 
 
-@app.post("/imports/expand_star")
+@app.post("/imports/expand_stars")
+@standard_refactoring
 def expand_star_imports_view(context):
-    return _importutil_core(
-        context,
-        context.project.expand_star_imports)
+    args = bottle.request.json
+    return context.workspace.expand_star_imports(
+        args['path'])
 
 
 @app.post("/imports/froms_to_imports")
+@standard_refactoring
 def from_to_imports_view(context):
-    return _importutil_core(
-        context,
-        context.project.froms_to_imports)
+    args = bottle.request.json
+    return context.workspace.froms_to_imports(
+        args['path'])
 
 
 @app.post("/imports/relatives_to_absolutes")
+@standard_refactoring
 def relatives_to_absolutes_view(context):
-    return _importutil_core(
-        context,
-        context.project.relatives_to_absolutes)
+    args = bottle.request.json
+    return context.workspace.relatives_to_absolutes(
+        args['path'])
 
 
 @app.post("/imports/handle_long_imports")
+@standard_refactoring
 def handle_long_imports_view(context):
-    return _importutil_core(
-        context,
-        context.project.handle_long_imports)
-
-
-def standard_async_task(context, method, *args):
-    """Launch a typical async task.
-
-    This creates a `TaskState` for the new task and runs the task. The
-    assumption here is that `method` is a pykka actor method that will
-    execute in a separate thread. This function doesn't do anything to
-    magically make `method` execute asynchronously.
-
-    Args:
-      method: The asynchronous callable to execute.
-      args: The arguments to pass to ``method``.
-
-    """
-    log.info('{}: {}'.format(method, args))
-
-    try:
-        task_id = next(context.task_ids)
-        state = context.state
-        state.create(task_id)
-
-        method(TaskState(state, task_id),
-               *args)
-
-        log.info('{}: success'.format(method))
-
-        return {
-            'result': 'success',
-            'task_id': task_id
-        }
-    except:
-        e = sys.exc_info()[1]
-        log.error('{} error: {}'.format(method, e))
-        return {
-            'result': 'failure',
-            'message': str(e)
-        }
+    args = bottle.request.json
+    return context.workspace.handle_long_imports(
+        args['path'])

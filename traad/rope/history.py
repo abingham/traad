@@ -1,5 +1,5 @@
-import traad.trace
-from traad.rope.validate import validate
+"""History related functionality.
+"""
 
 
 def _history_info(seq, idx):
@@ -19,43 +19,35 @@ def _history_info(seq, idx):
 
 
 class HistoryMixin:
-    @traad.trace.trace
-    @validate
+    """Workspace methods related to history mangement.
+    """
+
     def undo(self, index=0):
-        self.proj.history.undo(
-            self.proj.history.undo_list[index])
+        return self.root_project.history.undo(
+            self.root_project.history.undo_list[index])
 
-
-    @traad.trace.trace
-    @validate
     def redo(self, idx=0):
         '''Redo the last undone operation.
         '''
-        self.proj.history.redo(
-            self.proj.history.redo_list[idx])
+        return self.root_project.history.redo(
+            self.root_project.history.redo_list[idx])
 
-
-    @traad.trace.trace
     def undo_history(self):
         '''Get a list of undo-able changes.
 
         Returns:
           A list of descriptions of undoable changes/refactorings.
         '''
-        return [cs.description for cs in self.proj.history.undo_list]
+        return [cs.description for cs in self.root_project.history.undo_list]
 
-
-    @traad.trace.trace
     def redo_history(self):
         '''Get a list of redo-able changes.
 
         Returns:
           A list of descriptions of redoable changes/refactorings.
         '''
-        return [cs.description for cs in self.proj.history.redo_list]
+        return [cs.description for cs in self.root_project.history.redo_list]
 
-
-    @traad.trace.trace
     def undo_info(self, idx):
         '''Get information about a single undoable operation.
 
@@ -68,10 +60,8 @@ class HistoryMixin:
         Returns:
            A dict of information about the undoable change.
         '''
-        return _history_info(self.proj.history.undo_list, idx)
+        return _history_info(self.root_project.history.undo_list, idx)
 
-
-    @traad.trace.trace
     def redo_info(self, idx):
         '''Get information about a single redoable operation.
 
@@ -84,4 +74,4 @@ class HistoryMixin:
         Returns:
            A dict of information about the redoable change.
         '''
-        return _history_info(self.proj.history.redo_list, idx)
+        return _history_info(self.root_project.history.redo_list, idx)

@@ -1,19 +1,14 @@
-import itertools
-
 from .compat import getargspec
-from .rope.project import Project
-from .state import State
+from .rope.workspace import Workspace
 
 
 class TraadPlugin:
-    """Bottle plugin that manages Project, State, and Task-IDs context for traad.
+    """Bottle plugin that manages the Workspace context for traad.
 
     If this plugin is active, it passes a `Context` object to the `context`
-    keyword on handlers. This object has three members:
+    keyword on handlers. This object has these attributes:
 
-     - project: A `traad.rope.Project`
-     - state: A `traad.state.State`
-     - task_ids: An iterable from which new task IDs can be fetched
+     - workspace: A `traad.rope.Workspace`
 
     """
     name = 'traad'
@@ -21,16 +16,14 @@ class TraadPlugin:
 
     class Context:
         def __init__(self, path):
-            self.project = Project.start(path).proxy()
-            self.state = State.start().proxy()
-            self.task_ids = itertools.count()
+            self.workspace = Workspace(path)
 
-    def __init__(self, project_path, keyword='context'):
-        self.context = TraadPlugin.Context(project_path)
+    def __init__(self, root_project_path, keyword='context'):
+        self.context = TraadPlugin.Context(root_project_path)
         self.keyword = keyword
 
     def apply(self, callback, context):
-        # Test if the original callback accepts a 'db' keyword.
+        # Test if the original callback accepts a 'context' keyword.
         # Ignore it if it does not need a database handle.
         args = getargspec(context.callback)[0]
         if self.keyword not in args:
@@ -42,7 +35,3 @@ class TraadPlugin:
 
         # Replace the route callback with the wrapped one.
         return wrapper
-
-    def close(self):
-        self.context.state.stop()
-        self.context.project.stop()
