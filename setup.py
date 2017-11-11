@@ -23,6 +23,6 @@ setup(
         'rope',
     ],
     extras_require={
-        'test': ['pytest', 'webtest'],
+        'test': ['pytest', 'tox', 'webtest'],
     },
 )
