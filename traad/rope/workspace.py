@@ -11,6 +11,7 @@ from .code_assist import CodeAssistMixin
 from .extract import ExtractMixin
 from .history import HistoryMixin
 from .imports import ImportsMixin
+from .validate import validate
 
 
 def get_all_resources(proj):
@@ -32,58 +33,6 @@ def get_all_resources(proj):
 
         if res.is_folder():
             todo.extend((child.path for child in res.get_children()))
-
-
-# class Change:
-#     """This represents a single, fully-specified change that can be
-#     performed.
-
-#     This includes both the refactoring type as well as the arguments
-#     to the refactoring, the resources, etc. You can direcly call
-#     perform() on this object to run the refactoring.
-#     """
-#     def __init__(self, refactoring, *args):
-#         self.refactoring = refactoring
-#         self.args = args
-
-#         self.changes = self.refactoring.get_all_changes(*args)
-#         self._performed = False
-
-#     @property
-#     def descriptions(self):
-#         """An iterable of descriptions of the changes that this
-#         refactoring will make.
-#         """
-#         for proj, cset in self.changes:
-#             yield cset.get_description()
-
-#     @property
-#     def resources(self):
-#         """An iterable of resources that this refactoring will modify.
-#         """
-#         for proj, cset in self.changes:
-#             for res in cset.get_changed_resources():
-#                 yield res
-
-#     def perform(self):
-#         "Perform the refactoring."
-#         assert not self._performed
-
-#         multiproject.perform(self.changes)
-#         self._performed = True
-
-
-# class MultiProjectRefactoring:
-#     """Support class for performing multi-project refactorings.
-#     """
-#     def __init__(self, project, refactoring_type, *args):
-#         cross_ref = multiproject.MultiProjectRefactoring(
-#             refactoring_type,
-#             list(project.cross_projects.values()))
-#         self.rope_ref = cross_ref(project.proj, *args)
-
-#     def get_change(self, *args):
-#         return Change(self.rope_ref, *args)
 
 
 class Workspace(ChangeSignatureMixin,
@@ -190,6 +139,7 @@ class Workspace(ChangeSignatureMixin,
     def perform(self, changes):
         self.root_project.do(changes)
 
+    @validate
     def rename(self, path, offset, name):
         ref = rope.refactor.rename.Rename(
             self.root_project,
@@ -197,6 +147,7 @@ class Workspace(ChangeSignatureMixin,
             offset)
         return ref.get_changes(name)
 
+    @validate
     def inline(self, path, offset):
         ref = rope.refactor.inline.create_inline(
             self.root_project,

@@ -1,7 +1,10 @@
 import rope.contrib.codeassist
 
+from .validate import validate
+
 
 class CodeAssistMixin:
+    @validate
     def code_assist(self, code, offset, path):
         '''Get code-assist completions for a point in a file.
 
@@ -29,6 +32,7 @@ class CodeAssistMixin:
         rslt = [(r.name, r.get_doc(), r.scope, r.type) for r in results]
         return rslt
 
+    @validate
     def get_doc(self, code, offset, path):
         '''Get docstring for an object.
 
@@ -51,6 +55,7 @@ class CodeAssistMixin:
             offset,
             self.get_resource(path))
 
+    @validate
     def get_calltip(self, code, offset, path):
         """Get the calltip of a function.
 
