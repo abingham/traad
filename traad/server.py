@@ -55,6 +55,7 @@ def main():
         level=level)
 
     with traad.app.using_workspace(args.project) as app:
+        log.info('Project root: %s', args.project)
         run_server(app, args.port)
 
 
