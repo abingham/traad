@@ -1,6 +1,7 @@
 import os
 
 import rope.base.project
+import rope.refactor.encapsulate_field
 import rope.refactor.inline
 import rope.refactor.introduce_parameter
 import rope.refactor.multiproject
@@ -163,6 +164,14 @@ class Workspace(ChangeSignatureMixin,
             self.get_resource(path),
             offset)
         return ref.get_changes(parameter)
+
+    @validate
+    def encapsulate_field(self, path, offset):
+        ref = rope.refactor.encapsulate_field.EncapsulateField(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes()
 
     def __repr__(self):
         return 'Project("{}")'.format(

@@ -205,6 +205,15 @@ def introduce_parameter_view(context):
         args['parameter'])
 
 
+@app.post('/refactor/encapsulate_field')
+@standard_refactoring
+def encapsulate_field_view(context):
+    args = bottle.request.json
+    return context.workspace.encapsulate_field(
+        args['path'],
+        args['offset'])
+
+
 @app.post('/refactor/normalize_arguments')
 @standard_refactoring
 def normalize_arguments_view(context):
