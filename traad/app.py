@@ -195,6 +195,16 @@ def inline_view(context):
         args['offset'])
 
 
+@app.post('/refactor/introduce_parameter')
+@standard_refactoring
+def introduce_parameter_view(context):
+    args = bottle.request.json
+    return context.workspace.introduce_parameter(
+        args['path'],
+        args['offset'],
+        args['parameter'])
+
+
 @app.post('/refactor/normalize_arguments')
 @standard_refactoring
 def normalize_arguments_view(context):

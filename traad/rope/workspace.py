@@ -2,6 +2,7 @@ import os
 
 import rope.base.project
 import rope.refactor.inline
+import rope.refactor.introduce_parameter
 import rope.refactor.multiproject
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
@@ -154,6 +155,14 @@ class Workspace(ChangeSignatureMixin,
             self.get_resource(path),
             offset)
         return ref.get_changes()
+
+    @validate
+    def introduce_parameter(self, path, offset, parameter):
+        ref = rope.refactor.introduce_parameter.IntroduceParameter(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes(parameter)
 
     def __repr__(self):
         return 'Project("{}")'.format(
