@@ -7,6 +7,7 @@ import rope.refactor.introduce_parameter
 import rope.refactor.localtofield
 import rope.refactor.multiproject
 import rope.refactor.rename
+import rope.refactor.usefunction
 from rope.base.change import ChangeToData, DataToChange
 
 from .change_signature import ChangeSignatureMixin
@@ -177,6 +178,14 @@ class Workspace(ChangeSignatureMixin,
     @validate
     def local_to_field(self, path, offset):
         ref = rope.refactor.localtofield.LocalToField(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes()
+
+    @validate
+    def use_function(self, path, offset):
+        ref = rope.refactor.usefunction.UseFunction(
             self.root_project,
             self.get_resource(path),
             offset)

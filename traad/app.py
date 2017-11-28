@@ -223,6 +223,15 @@ def local_to_field_view(context):
         args['offset'])
 
 
+@app.post('/refactor/use_function')
+@standard_refactoring
+def use_function_view(context):
+    args = bottle.request.json
+    return context.workspace.use_function(
+        args['path'],
+        args['offset'])
+
+
 @app.post('/refactor/normalize_arguments')
 @standard_refactoring
 def normalize_arguments_view(context):
