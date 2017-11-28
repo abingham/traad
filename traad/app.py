@@ -214,6 +214,15 @@ def encapsulate_field_view(context):
         args['offset'])
 
 
+@app.post('/refactor/local_to_field')
+@standard_refactoring
+def local_to_field_view(context):
+    args = bottle.request.json
+    return context.workspace.local_to_field(
+        args['path'],
+        args['offset'])
+
+
 @app.post('/refactor/normalize_arguments')
 @standard_refactoring
 def normalize_arguments_view(context):

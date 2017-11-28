@@ -4,6 +4,7 @@ import rope.base.project
 import rope.refactor.encapsulate_field
 import rope.refactor.inline
 import rope.refactor.introduce_parameter
+import rope.refactor.localtofield
 import rope.refactor.multiproject
 import rope.refactor.rename
 from rope.base.change import ChangeToData, DataToChange
@@ -168,6 +169,14 @@ class Workspace(ChangeSignatureMixin,
     @validate
     def encapsulate_field(self, path, offset):
         ref = rope.refactor.encapsulate_field.EncapsulateField(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes()
+
+    @validate
+    def local_to_field(self, path, offset):
+        ref = rope.refactor.localtofield.LocalToField(
             self.root_project,
             self.get_resource(path),
             offset)
