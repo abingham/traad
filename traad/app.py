@@ -90,7 +90,7 @@ def redo_info_view(idx, context):
     }
 
 
-# TODO: COmmon exception handler decorator? Middleware?
+# TODO: Common exception handler decorator? Middleware?
 @app.post('/refactor/perform')
 def perform_view(context):
     args = bottle.request.json
@@ -163,6 +163,14 @@ def rename_view(context):
         args.get('offset'),
         args['name'])
 
+@app.post('/refactor/move')
+@standard_refactoring
+def move_view(context):
+    args = bottle.request.json
+    return context.workspace.move(
+        args['path'],
+        args.get('offset'),
+        args['dest'])
 
 @app.post('/refactor/extract_method')
 @standard_refactoring
