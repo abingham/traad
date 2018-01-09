@@ -2,12 +2,13 @@ import logging
 import sys
 
 import traad.app
+from traad.plugin import RopeWorkspacePlugin
 
 
 log = logging.getLogger('traad.server')
 
 
-def run_server(app, port):
+def run_server(project_path, app, port):
     host = 'localhost'
 
     log.info('Python version: {}'.format(sys.version))
@@ -18,6 +19,8 @@ def run_server(app, port):
             host,
             port))
 
+    workspace_plugin = RopeWorkspacePlugin(project_path)
+    app.install(workspace_plugin)
     app.run(host=host, port=port)
 
 
@@ -54,9 +57,11 @@ def main():
     logging.basicConfig(
         level=level)
 
-    with traad.app.using_workspace(args.project) as app:
-        log.info('Project root: %s', args.project)
-        run_server(app, args.port)
+    log.info('Project root: %s', args.project)
+
+    run_server(args.project,
+               traad.app.app,
+               args.port)
 
 
 if __name__ == '__main__':

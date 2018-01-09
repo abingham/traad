@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 from . import bottle
-from .plugin import TraadPlugin
+from .plugin import RopeWorkspacePlugin
 from .rope.workspace import changes_to_data, data_to_changes
 
 
@@ -13,20 +13,6 @@ log = logging.getLogger('traad.app')
 PROTOCOL_VERSION = 3
 
 app = bottle.Bottle()
-
-
-@contextmanager
-def using_workspace(project_path, app=app):
-    """Context-manager that attaches a TraadPlugin to `app` for the specified path.
-
-    This plugin will be uninstalled at the end of the context.
-    """
-    traad_plugin = TraadPlugin(project_path)
-    app.install(traad_plugin)
-    try:
-        yield app
-    finally:
-        app.uninstall(traad_plugin)
 
 
 @app.get('/protocol_version')
