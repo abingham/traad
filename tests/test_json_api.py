@@ -6,14 +6,19 @@ import pytest
 import webtest
 
 import traad.app
+from traad.plugin import RopeWorkspacePlugin
 
 
 @pytest.fixture
 def app(activate_package):
     activate_package(package='basic', into='main')
 
-    with traad.app.using_workspace(paths.active('main')) as app:
-        yield webtest.TestApp(app)
+    plugin = RopeWorkspacePlugin(paths.active('main'))
+    traad.app.app.install(plugin)
+    try:
+        yield webtest.TestApp(traad.app.app)
+    finally:
+        traad.app.app.uninstall(plugin)
 
 
 def test_rename(app):
