@@ -321,8 +321,8 @@ def code_assist_calltip_view(context):
 
 
 @app.get('/code_assist/definition')
-def code_assist_definition_view():
-    args = request.json
+def code_assist_definition_view(context):
+    args = bottle.request.json
 
     log.info('get definition: {}'.format(args))
 
