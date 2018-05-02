@@ -1,6 +1,9 @@
 *.py[co]
 .ropeproject
 .cache
+.pytest_cache
+.csearchindex
+.python-version
 
 wiki
 

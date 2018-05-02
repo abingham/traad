@@ -2,7 +2,7 @@ from .compat import getargspec
 from .rope.workspace import Workspace
 
 
-class TraadPlugin:
+class RopeWorkspacePlugin:
     """Bottle plugin that manages the Workspace context for traad.
 
     If this plugin is active, it passes a `Context` object to the `context`
@@ -19,7 +19,7 @@ class TraadPlugin:
             self.workspace = Workspace(path)
 
     def __init__(self, root_project_path, keyword='context'):
-        self.context = TraadPlugin.Context(root_project_path)
+        self.context = RopeWorkspacePlugin.Context(root_project_path)
         self.keyword = keyword
 
     def apply(self, callback, context):

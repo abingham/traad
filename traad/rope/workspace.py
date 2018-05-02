@@ -7,6 +7,7 @@ import rope.refactor.introduce_parameter
 import rope.refactor.localtofield
 import rope.refactor.multiproject
 import rope.refactor.rename
+import rope.refactor.move
 import rope.refactor.usefunction
 from rope.base.change import ChangeToData, DataToChange
 
@@ -160,6 +161,14 @@ class Workspace(ChangeSignatureMixin,
             self.get_resource(path),
             offset)
         return ref.get_changes(name)
+
+    @validate
+    def move(self, path, offset, dest_path):
+        ref = rope.refactor.move.create_move(
+            self.root_project,
+            self.get_resource(path),
+            offset)
+        return ref.get_changes(self.get_resource(dest_path))
 
     @validate
     def inline(self, path, offset):
