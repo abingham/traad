@@ -144,7 +144,7 @@ def standard_refactoring(f):
                 'changes': changes_to_data(changes)
             }
         except:
-            log.exception('{} error'.format('rename'))
+            log.exception('error')
             return {
                 'result': 'failure',
                 'message': str(sys.exc_info()[1])
@@ -152,13 +152,23 @@ def standard_refactoring(f):
 
     return wrapper
 
+
 @app.post('/refactor/move_global')
 @standard_refactoring
 def move_global_view(context):
     args = bottle.request.json
     return context.workspace.move_global(
         args['path'],
-        args.get('offset'),
+        args['offset'],
+        args['dest'])
+
+
+@app.post('/refactor/move_module')
+@standard_refactoring
+def move_module_view(context):
+    args = bottle.request.json
+    return context.workspace.move_module(
+        args['path'],
         args['dest'])
 
 

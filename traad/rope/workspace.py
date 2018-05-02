@@ -115,6 +115,10 @@ class Workspace(ChangeSignatureMixin,
         return self.root_project.get_file(
             self.to_relative_path(path))
 
+    def get_folder(self, path):
+        return self.root_project.get_folder(
+            self.to_relative_path(path))
+
     def get_changes(self,
                     refactoring_type,
                     path,
