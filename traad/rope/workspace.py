@@ -15,6 +15,7 @@ from .code_assist import CodeAssistMixin
 from .extract import ExtractMixin
 from .history import HistoryMixin
 from .imports import ImportsMixin
+from .move import MoveMixin
 from .validate import validate
 
 
@@ -43,7 +44,8 @@ class Workspace(ChangeSignatureMixin,
                 CodeAssistMixin,
                 ExtractMixin,
                 HistoryMixin,
-                ImportsMixin):
+                ImportsMixin,
+                MoveMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
@@ -107,6 +109,10 @@ class Workspace(ChangeSignatureMixin,
 
     def get_resource(self, path):
         return self.root_project.get_resource(
+            self.to_relative_path(path))
+
+    def get_file(self, path):
+        return self.root_project.get_file(
             self.to_relative_path(path))
 
     def get_changes(self,

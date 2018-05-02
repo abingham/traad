@@ -152,6 +152,15 @@ def standard_refactoring(f):
 
     return wrapper
 
+@app.post('/refactor/move_global')
+@standard_refactoring
+def move_global_view(context):
+    args = bottle.request.json
+    return context.workspace.move_global(
+        args['path'],
+        args.get('offset'),
+        args['dest'])
+
 
 #  TODO: Should this be a GET? We're not making any changes.
 @app.post('/refactor/rename')
