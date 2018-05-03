@@ -1,4 +1,12 @@
 from setuptools import setup, find_packages
+import sys
+
+install_requires=[
+    'rope',
+]
+
+if sys.version_info < (3, 4):
+    install_requires.append('enum34')
 
 setup(
     name='traad',
@@ -19,9 +27,7 @@ setup(
             ],
         },
 
-    install_requires=[
-        'rope',
-    ],
+    install_requires=install_requires,
     extras_require={
         'test': ['pytest', 'tox', 'webtest'],
     },

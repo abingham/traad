@@ -5,6 +5,7 @@ from functools import wraps
 
 from . import bottle
 from .plugin import RopeWorkspacePlugin
+from .rope.thing_at import thing_at
 from .rope.workspace import changes_to_data, data_to_changes
 
 
@@ -23,6 +24,16 @@ def protocol_version_view():
 @app.get('/root')
 def root_view(context):
     return {'root': context.workspace.root_project.root.real_path}
+
+
+@app.post('/thing_at')
+def thing_at_view(context):
+    args = bottle.request.json
+    thing = thing_at(
+        context.workspace.root_project,
+        context.workspace.get_resource(args['path']),
+        offset=args.get('offset'))
+    return {'thing': thing.value if thing is not None else ''}
 
 
 @app.post('/history/undo')
