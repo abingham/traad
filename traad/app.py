@@ -169,6 +169,13 @@ def move_module_view(context):
         args['dest'])
 
 
+@app.post('/auto_import/get_imports')
+def get_imports_view(context):
+    args = bottle.request.json
+    return context.workspace.get_imports(
+        args['path'],
+        args['offset'])
+
 #  TODO: Should this be a GET? We're not making any changes.
 @app.post('/refactor/rename')
 @standard_refactoring

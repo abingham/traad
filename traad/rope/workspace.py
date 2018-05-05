@@ -11,6 +11,7 @@ import rope.refactor.move
 import rope.refactor.usefunction
 from rope.base.change import ChangeToData, DataToChange
 
+from .auto_import import AutoImportMixin
 from .change_signature import ChangeSignatureMixin
 from .code_assist import CodeAssistMixin
 from .extract import ExtractMixin
@@ -41,7 +42,8 @@ def get_all_resources(proj):
             todo.extend((child.path for child in res.get_children()))
 
 
-class Workspace(ChangeSignatureMixin,
+class Workspace(AutoImportMixin,
+                ChangeSignatureMixin,
                 CodeAssistMixin,
                 ExtractMixin,
                 HistoryMixin,
@@ -52,6 +54,8 @@ class Workspace(ChangeSignatureMixin,
     def __init__(self,
                  root_project_dir,
                  cross_project_dirs=[]):
+        AutoImportMixin.__init__(self)
+
         self._root_project = rope.base.project.Project(root_project_dir)
 
         self._cross_projects = dict()
