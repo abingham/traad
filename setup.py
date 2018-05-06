@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
 import sys
 
-install_requires=[
+install_requires = [
     'rope',
+    'ultan'
 ]
 
 if sys.version_info < (3, 4):
