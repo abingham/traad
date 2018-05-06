@@ -5,11 +5,13 @@ import sys
 
 install_requires = [
     'rope',
-    'ultan'
 ]
 
 if sys.version_info < (3, 4):
     install_requires.append('enum34')
+else:
+    # We only enable ultan stuff in 3.4+
+    install_requires.append('ultan')
 
 
 def local_file(*name):
