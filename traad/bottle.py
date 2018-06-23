@@ -3005,6 +3005,9 @@ def run(app=None, server='wsgiref', host='127.0.0.1', port=8080,
             _stderr("Bottle v%s server starting up (using %s)...\n" % (__version__, repr(server)))
             _stderr("Listening on http://%s:%d/\n" % (server.host, server.port))
             _stderr("Hit Ctrl-C to quit.\n\n")
+            # Output to stderr can get stuck in the buffer. Flush stderr
+            # to ensure the above lines are written immediately.
+            sys.stderr.flush()
 
         if reloader:
             lockfile = os.environ.get('BOTTLE_LOCKFILE')
