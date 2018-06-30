@@ -76,3 +76,25 @@ class CodeAssistMixin:
             code,
             offset,
             self.get_resource(path))
+
+    @validate
+    def get_definition_location(self, code, offset, path):
+        """Get the definition location of a function.
+
+        ``path`` may be absolute or relative. If ``path`` is relative,
+        then it must be relative to the root of the project.
+
+        Args:
+          code: The source code.
+          offset: An offset into ``code`` of the object to query.
+          path: The path to the resource in which the search is
+            being done.
+
+        Returns: A (`rope.base.resources.Resource`, lineno) tuple.
+        """
+
+        return rope.contrib.codeassist.get_definition_location(
+            self.root_project,
+            code,
+            offset,
+            self.get_resource(path))
