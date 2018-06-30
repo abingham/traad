@@ -1,4 +1,3 @@
-from eagertools import emap
 import rope.contrib.findit
 
 from .validate import validate
@@ -12,7 +11,23 @@ def location_to_tuple(location):
             location.lineno)
 
 
+def location_to_dict(location):
+    return {
+        "path": location.resource.path,
+        "name": location.resource.name,
+        "realpath": location.resource.real_path,
+        # "isfolder": location.resource.is_folder(),
+        # "parent": location.resource.parent,
+        # "exists": location.resource.exists(),
+        "region": location.region,
+        "offset": location.offset,
+        "unsure": location.unsure,
+        "lineno": location.lineno,
+    }
+
+
 class FinditMixin:
+    # TODO: Delete. No Longer useful.
     def _find_locations(self, func, path, offset):
         """Common implementation for occurrences and
         implementations.
@@ -22,7 +37,7 @@ class FinditMixin:
             self.root_project,
             self.get_resource(path),
             offset)
-        return emap(location_to_tuple, results)
+        return list(map(location_to_dict, results))
 
     @validate
     def find_occurrences(self, offset, path):
@@ -36,14 +51,23 @@ class FinditMixin:
           path: The path to the resource containing the symbol to
             search for.
 
-        Returns: A sequence of tuples of the form (path, (region-start,
-          region-stop), offset, unsure, lineno).
+        Returns: A list of dicts (one per location) with elements: {"path",
+          "name", "realpath", "region", "offset", "unsure", "lineno"}, or None
+          if no implementations could be found.
+
         """
 
-        return self._find_locations(
-            rope.contrib.findit.find_occurrences,
-            path,
-            offset)
+        results = rope.contrib.findit.find_occurrences(
+            self.root_project,
+            self.get_resource(path),
+            offset,
+            unsure=True)
+        return list(map(location_to_dict, results))
+
+        # return self._find_locations(
+        #     rope.contrib.findit.find_occurrences,
+        #     path,
+        #     offset)
 
     @validate
     def find_implementations(self, offset, path):
@@ -57,14 +81,17 @@ class FinditMixin:
           path: The path to the resource containing the method name to
             search for.
 
-        Returns: A sequence of tuples of the form (path, (region-start,
-          region-stop), offset, unsure, lineno).
+        Returns: A list of dicts (one per location) with elements: {"path",
+          "name", "realpath", "region", "offset", "unsure", "lineno"}, or None
+          if no implementations could be found.
+
         """
 
-        return self._find_locations(
-            rope.contrib.findit.find_implementations,
-            path,
+        results = rope.contrib.findit.find_implementations(
+            self.root_project,
+            self.get_resource(path),
             offset)
+        return list(map(location_to_dict, results))
 
     @validate
     def find_definition(self, code, offset, path):
@@ -78,9 +105,9 @@ class FinditMixin:
           offset: The offset into ``code`` of the symbol.
           path: The path to the resource containing ``code``.
 
-        Returns: A tuple of the form (path, (region-start,
-          region-stop), offset, unsure, lineno), or `None` if the
-          definition can't be found.
+        Returns: A dict with elements {"path", "name", "realpath", "region",
+          "offset", "unsure", "lineno"}, or None if the definition can't be
+          found.
 
         """
 
@@ -91,4 +118,4 @@ class FinditMixin:
             offset,
             self.get_resource(path))
 
-        return None if defn is None else location_to_tuple(defn)
+        return None if defn is None else location_to_dict(defn)
