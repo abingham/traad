@@ -159,12 +159,33 @@ class Workspace(AutoImportMixin,
         self.root_project.do(changes)
 
     @validate
-    def rename(self, path, offset, name):
+    def rename(self, path, offset, new_name,
+               in_hierarchy=False, unsure=None, docs=False):
+        """Rename the object in `path` at `offset`.
+
+        Parameters:
+
+         - `in_hierarchy`: when renaming a method this keyword forces
+           to rename all matching methods in the hierarchy
+         - `docs`: when `True` rename refactoring will rename
+           occurrences in comments and strings where the name is
+           visible.  Setting it will make renames faster, too.
+         - `unsure`: decides what to do about unsure occurrences.
+           If `None`, they are ignored.  Otherwise `unsure` is
+           called with an instance of `occurrence.Occurrence` as
+           parameter.  If it returns `True`, the occurrence is
+           considered to be a match.
+
+        """
         ref = rope.refactor.rename.Rename(
             self.root_project,
             self.get_resource(path),
             offset)
-        return ref.get_changes(name)
+        return ref.get_changes(
+            new_name,
+            in_hierarchy=in_hierarchy,
+            unsure=unsure,
+            docs=docs)
 
     @validate
     def move(self, path, offset, dest_path):
