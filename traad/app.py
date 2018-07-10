@@ -181,10 +181,21 @@ def get_imports_view(context):
 @standard_refactoring
 def rename_view(context):
     args = bottle.request.json
+
+    log.info("`rename_view` called: {}".format(args))
+
+    # TODO 1: Modify "emacs-traad" to use these parameters.
+    docs = bool(args.get('docs', False))
+    unsure = args.get('unsure', None)
+    in_hierarchy = bool(args.get('in_hierarchy', False))
+
     return context.workspace.rename(
         args['path'],
         args.get('offset'),
-        args['name'])
+        args['name'],
+        docs=docs,
+        in_hierarchy=in_hierarchy,
+        unsure=unsure)
 
 @app.post('/refactor/move')
 @standard_refactoring
