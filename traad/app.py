@@ -186,7 +186,7 @@ def rename_view(context):
 
     # TODO 1: Modify "emacs-traad" to use these parameters.
     docs = bool(args.get('docs', False))
-    unsure = bool(args.get('unsure', False))
+    unsure = args.get('unsure', None)
     in_hierarchy = bool(args.get('in_hierarchy', False))
 
     return context.workspace.rename(
