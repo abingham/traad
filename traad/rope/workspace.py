@@ -18,6 +18,7 @@ from .extract import ExtractMixin
 from .history import HistoryMixin
 from .imports import ImportsMixin
 from .move import MoveMixin
+from .findit import FinditMixin
 from .validate import validate
 
 
@@ -48,7 +49,8 @@ class Workspace(AutoImportMixin,
                 ExtractMixin,
                 HistoryMixin,
                 ImportsMixin,
-                MoveMixin):
+                MoveMixin,
+                FinditMixin):
     """An actor that controls access to an underlying Rope project.
     """
     def __init__(self,
