@@ -403,51 +403,74 @@ def code_assist_definition_view(context):
         }
 
 
-# @app.post('/findit/occurrences')
-# def findit_occurences_view(context):
-#     args = bottle.request.json
-#     data = context.workspace.find_occurrences(
-#         args['offset'],
-#         args['path'])
+@app.get('/findit/occurrences')
+def findit_occurrences_view(context):
+    args = bottle.request.json
 
-#     # TODO: What if it actually fails?
-#     return {
-#         'result': 'success',
-#         'data': data,
-#     }
+    log.info('findit occurrences: {}'.format(args))
 
+    locations = context.workspace.find_occurrences(
+        args['offset'],
+        args['path'])
 
-# @app.post('/findit/implementations')
-# def findit_implementations_view(context):
-#     args = bottle.request.json
-#     data = context.workspace.find_implementations(
-#         args['offset'],
-#         args['path'])
-
-#     # TODO: What if it actually fails?
-#     return {
-#         'result': 'success',
-#         'data': data,
-#     }
+    if locations is None:
+        return {
+            'result': 'failure',
+            'locations': None,
+        }
+    else:
+        return {
+            'result': 'success',
+            'locations': locations,
+        }
 
 
-# @app.post('/findit/definition')
-# def findit_definitions_view(context):
-#     args = bottle.request.json
+@app.get('/findit/implementations')
+def findit_implementations_view(context):
+    args = bottle.request.json
 
-#     with open(args['path'], 'r') as f:
-#         code = f.read()
+    log.info('findit implementations: {}'.format(args))
 
-#     data = context.workspace.find_definition(
-#         code,
-#         args['offset'],
-#         args['path'])
+    locations = context.workspace.find_implementations(
+        args['offset'],
+        args['path'])
 
-#     # TODO: What if it actually fails?
-#     return {
-#         'result': 'success',
-#         'data': data,
-#     }
+    if locations is None:
+        return {
+            'result': 'failure',
+            'locations': None,
+        }
+    else:
+        return {
+            'result': 'success',
+            'locations': locations,
+        }
+
+
+@app.get('/findit/definition')
+def findit_definition_view(context):
+    args = bottle.request.json
+
+    log.info('findit definition: {}'.format(args))
+
+    with open(args['path'], 'r') as f:
+        code = f.read()
+
+    location = context.workspace.find_definition(
+        code,
+        args['offset'],
+        args['path'])
+
+    if location is None:
+        return {
+            'result': 'failure',
+            'location': None,
+        }
+    else:
+        return {
+            'result': 'success',
+            'location': location,
+        }
 
 
 @app.post("/imports/organize")
