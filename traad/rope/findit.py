@@ -27,18 +27,6 @@ def location_to_dict(location):
 
 
 class FinditMixin:
-    # TODO: Delete. No Longer useful.
-    def _find_locations(self, func, path, offset):
-        """Common implementation for occurrences and
-        implementations.
-
-        """
-        results = func(
-            self.root_project,
-            self.get_resource(path),
-            offset)
-        return list(map(location_to_dict, results))
-
     @validate
     def find_occurrences(self, offset, path):
         """Find occurrences of a symbol at a point in a file.
@@ -63,11 +51,6 @@ class FinditMixin:
             offset,
             unsure=True)
         return list(map(location_to_dict, results))
-
-        # return self._find_locations(
-        #     rope.contrib.findit.find_occurrences,
-        #     path,
-        #     offset)
 
     @validate
     def find_implementations(self, offset, path):
