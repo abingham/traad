@@ -368,18 +368,39 @@ def code_assist_calltip_view(context):
     }
 
 
-@app.get('/code_assist/definition')
+@app.post('/code_assist/definition')
 def code_assist_definition_view(context):
     args = bottle.request.json
 
     log.info('get definition: {}'.format(args))
 
-    return {
-        'results': context.workspace.get_definition_location(
-            code=args['code'],
-            offset=args['offset'],
-            path=args['path'])
-    }
+    if 'code' in args:
+        code = args['code']
+    else:
+        with open(args['path'], 'r') as f:
+            code = f.read()
+
+    definition, line = context.workspace.get_definition_location(
+        code=code,
+        offset=args['offset'],
+        path=args['path'])
+
+    if definition is None:
+        return {
+            'result': "failure",
+            'realpath': None,
+            'path': None,
+            'name': None,
+            'lineno': None,
+        }
+    else:
+        return {
+            'result': "success",
+            'realpath': definition.real_path,
+            'path': definition.path,
+            'name': definition.name,
+            'lineno': line,
+        }
 
 
 @app.get('/findit/occurrences')
