@@ -374,8 +374,11 @@ def code_assist_definition_view(context):
 
     log.info('get definition: {}'.format(args))
 
-    with open(args['path'], 'r') as f:
-        code = f.read()
+    if 'code' in args:
+        code = args['code']
+    else:
+        with open(args['path'], 'r') as f:
+            code = f.read()
 
     definition, line = context.workspace.get_definition_location(
         code=code,
